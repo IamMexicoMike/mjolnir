@@ -1,4 +1,8 @@
 #include <iostream>
+#include <chrono>
+#include <ctime>
+#include <fstream>
+#include <algorithm>
 
 #include <opencv2/opencv.hpp>
 
@@ -8,18 +12,42 @@
 using namespace std;
 using namespace cv;
 
-void determinarPropiedadesUbicacion(Point p){}
+int determinarPropiedadesUbicacion(const cv::Point p) //Sólo puede haber un objeto activo a la vez
+{
+
+    //considerar std::all_of, std::any_of, std::none_of en lugar de for_each
+    //así como std::find, std::find_if, std::find_if_not
+    for_each(flechas.begin(), flechas.end(), [&](flecha& f)
+    {
+        //hacer algo
+    });
+
+    for_each(rectangulos.begin(), rectangulos.end(), [&](rectangulo& r)
+    {
+        // hacer algo
+
+    });
+
+    vector<rectangulo>::iterator itr = find_if(rectangulos.begin(), rectangulos.end(), [&p](rectangulo& r)
+    {
+         return r.pertenece_a_area(p);
+    });
+    if(itr != rectangulos.end()) //también podemos usar std::begin(rectangulos)
+        itr->seleccionar();
+
+}
 
 inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
 {
-    matriz = Mat(ALTURA_REGION, ANCHO_REGION, CV_8UC3, Scalar(200,200,200));
-    for(int i=15-(desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
-        line(matriz, Point(i,0), Point(i,matriz.rows), Scalar(255,255,255), 1, 4, 0); //cuadrícula, vertical
-    for(int i=15-(desplazamientoOrigen.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
-        line(matriz, Point(0,i), Point(matriz.cols,i), Scalar(255,255,255), 1, 4, 0); //cuadrícula, horizontal
+    std::chrono::time_point<std::chrono::system_clock> t_inicial, t_final;
+    t_inicial = std::chrono::system_clock::now();
 
-    Rect rect(Point(300-desplazamientoOrigen.x, -100-desplazamientoOrigen.y), Point(400-desplazamientoOrigen.x,400-desplazamientoOrigen.y));
-    rectangle(matriz, rect, Scalar(123,211,43), 2, CV_AA);
+    matriz = Mat(ALTURA_REGION, ANCHO_REGION, CV_8UC3, GRIS);
+    for(int i=15-(desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
+        line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
+    for(int i=15-(desplazamientoOrigen.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
+        line(matriz, Point(0,i), Point(matriz.cols,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
+
     if(b_dibujando_flecha) //dibujamos una flecha temporal
         arrowedLine(matriz, Point(puntoInicioFlecha.x - desplazamientoOrigen.x, puntoInicioFlecha.y - desplazamientoOrigen.y),
                     Point(puntoTerminoFlecha.x - desplazamientoOrigen.x,puntoTerminoFlecha.y - desplazamientoOrigen.y),
@@ -32,13 +60,16 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
     {
         rectangle(matriz, Rect(puntoOrigenRectangulo - desplazamientoOrigen, puntoFinRectangulo - desplazamientoOrigen),
                   cv::Scalar(100, 65, 150), 2, CV_AA);
-        cout << "renderizando rect" << endl;
     }
 
 
     //dibujamos todas als flechas
     for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, desplazamientoOrigen);});
     for_each(rectangulos.begin(), rectangulos.end(), [&](rectangulo& r) {r.dibujarse(matriz, desplazamientoOrigen);});
+
+    t_final = std::chrono::system_clock::now();
+    std::chrono::duration<double> t_renderizar = t_final - t_inicial;
+    cout << t_renderizar.count() << "s\n";
 
     imshow("Diagrama", matriz);
     //diagrama_completo.colRange(0, region.cols) = region.colRange(0, region.cols);
@@ -82,6 +113,9 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
             b_renderizar = true;
         }
         break;
+    case 103: //g de guardar
+        //fstream fs("diagrama") //necesitas definir el operador << para tus clases
+        break;
 
     }
     //cout << desplazamientoOrigen << endl;
@@ -93,7 +127,7 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
 inline void manejarInputMouse(int event, int x, int y, int, void*)
 {
     bool b_renderizar = false;
-    cout << x <<","<< y << " evento: " << event << endl;
+    //cout << x <<","<< y << " evento: " << event << endl;
     puntoActualMouse = cv::Point(x,y); //esta variable es para dibujar figuras en callbacks del teclado
 
     if(event == CV_EVENT_RBUTTONDOWN)
@@ -114,7 +148,10 @@ inline void manejarInputMouse(int event, int x, int y, int, void*)
             rectangulos.push_back(rectangulo(puntoOrigenRectangulo, puntoFinRectangulo));
             b_renderizar = true;
         }
-        else {
+        else
+        {
+            int b_punto_clave = determinarPropiedadesUbicacion(cv::Point(x,y) + desplazamientoOrigen);
+
             botonMouseIzquierdoAbajo = true;
             puntoClickMouseIzquierdo = cv::Point(x,y); //necesitábamos considerar desplazamientoOrigen
 
@@ -162,8 +199,6 @@ inline void manejarInputMouse(int event, int x, int y, int, void*)
             b_renderizar = true;
         }
     }
-
-    determinarPropiedadesUbicacion(Point(x,y)); //esta función aún no la implementas
 
     if(b_renderizar)
         renderizarDiagrama(region);

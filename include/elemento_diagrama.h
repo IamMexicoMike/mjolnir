@@ -21,13 +21,19 @@ class flecha
 {
 public:
     flecha(cv::Point inicio, cv::Point fin):
-        _inicio(inicio), _fin(fin) {}
+        _inicio(inicio), _fin(fin),
+        _centro(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2),
+        _b_seleccionado(false)
+        {}
 
     void dibujarse(cv::Mat& m, cv::Point despl);
+    void seleccionar(bool val){_b_seleccionado = val;}
 
 private:
     cv::Point _inicio;
     cv::Point _fin;
+    cv::Point _centro;
+    bool _b_seleccionado;
 };
 
 //claramente estas tres clases son idénticas, con calma diseña una mejor interface.
@@ -38,14 +44,20 @@ class rectangulo
 public:
     rectangulo(cv::Point inicio, cv::Point fin):
         _inicio(inicio), _fin(fin),
-        _centro(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2) {}
+        _centro(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2),
+        _b_seleccionado(false)
+        {}
 
     void dibujarse(cv::Mat& m, cv::Point despl);
+    bool pertenece_a_area(cv::Point pt);
+    void seleccionar(bool val=true){_b_seleccionado = val;}
 
 private:
     cv::Point _inicio;
     cv::Point _fin;
     cv::Point _centro;
+    int _altura, _ancho;
+    bool _b_seleccionado;
 };
 
 #endif // ELEMENTO_DIAGRAMA_H

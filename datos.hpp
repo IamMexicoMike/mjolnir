@@ -13,6 +13,9 @@
 
 #include "elemento_diagrama.h"
 
+const cv::Scalar BLANCO(255,255,255); //no se pueden constexpresear
+const cv::Scalar GRIS(200,200,200);
+
 /*Esta es de las variables más importantes del diagrama. Todos los "widgets" necesitan conocer su valor
  * para ser dibujados. Ejemplo:
  * arrowedLine(matriz, Point(400-desplazamientoOrigen.x,400-desplazamientoOrigen.y),
