@@ -8,6 +8,8 @@
 #define TECLADO_FLECHA_DERECHA 2555904
 
 #include <vector>
+#include <map>
+#include <set>
 
 #include <opencv2/opencv.hpp>
 
@@ -50,4 +52,13 @@ cv::Point puntoActualMouse(0,0); //para el uso con el teclado, y evitar llamar W
 
 //la idea es que haya un vector de elemento_diagrama y ya
 std::vector<flecha> flechas;
-std::vector<rectangulo> rectangulos;
+std::map<int,rectangulo> rectangulos;
+int llave_rectangulo_seleccionado__ = -1; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente
+int llave_rectangulo_highlight__ = -1;
+
+enum class Ubicacion
+{
+    Vacia,
+    Cuenta,
+    SinCambios //delibera si esto es necesario
+};

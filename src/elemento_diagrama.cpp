@@ -16,13 +16,17 @@ void flecha::dibujarse(cv::Mat& m, cv::Point despl) //deberíamos inlinear?
                 cv::Point(_fin.x - despl.x, _fin.y - despl.y), cv::Scalar(205,155,25), 2, CV_AA);
 }
 
+int rectangulo::id_ = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
+
 void rectangulo::dibujarse(cv::Mat& m, cv::Point despl)
 {
-    cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), cv::Scalar(150, 65, 150), 2, CV_AA);
+    cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), _color, 2, CV_AA);
     cv::rectangle(m, cv::Rect(cv::Point(_centro.x - despl.x - 4, _centro.y - despl.y - 4), cv::Size(8,8)),
                   cv::Scalar(150, 165, 250), 1, CV_AA);
+    if(_b_higlighteado)
+        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), cv::Scalar(150, 215, 50), 1, CV_AA); //hoveriando
     if(_b_seleccionado)
-        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), cv::Scalar(150, 215, 50), 1, CV_AA);
+        ; //algo
 }
 
 /*Es crítico que esta función esté optimizada*/
