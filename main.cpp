@@ -9,64 +9,20 @@
 
 #include "datos.hpp"
 #include "elemento_diagrama.h"
+#include "utilidades.hpp"
 
 using namespace std;
 using namespace cv;
 
 inline void renderizarDiagrama(cv::Mat& matriz); //prototipo
 
-//esta función se está saliendo de control. Debe determinar propiedades, no determinar si debe dibujarse. Resuélvelo
-Ubicacion determinarPropiedadesUbicacion(const cv::Point p) //No creo que el pase por valor sea muy costoso
-{
-    //considerar std::all_of, std::any_of, std::none_of en lugar de for_each //por qué?
-    //así como std::find, std::find_if, std::find_if_not
-    for_each(flechas.begin(), flechas.end(), [&](flecha& f)
-    {
-        //hacer algo
-    });
-
-    /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
-    auto encontrarIdHighlight = [&]() -> int
-    {
-        for(auto& rec : rectangulos)
-            if(rec.second.pertenece_a_area(p))
-                return rec.first;
-        return -1;
-    };
-
-    int llave = encontrarIdHighlight(); //asignamos el id del rectángulo que cumplió las condiciones, o -1.
-
-    /*El caso más frecuente: no hay cambios en lo que se highlighteo*/
-    if(llave == llave_rectangulo_highlight__) //no hay cambios, no renderizamos
-        return Ubicacion::SinCambios;
-
-    /*Segundo caso: Había algo highlighteado pero ya no*/
-    if(llave < 0)
-    {
-        rectangulos.at(llave_rectangulo_highlight__).highlightear(false);//des-highlighteamos el anterior
-        llave_rectangulo_highlight__ = -1;
-        return Ubicacion::Vacia;
-    }
-
-    /*Tercer caso: hay algo highlighteable*/
-    rectangulos.at(llave).highlightear(true); //highlighteamos al nuevo
-
-    /*Si es que había otro highlighteado antes lo deshighlighteamos*/
-    if(llave_rectangulo_highlight__ > 0)
-        rectangulos.at(llave_rectangulo_highlight__).highlightear(false);
-
-    llave_rectangulo_highlight__ = llave; //actualizamos la llave
-
-    return Ubicacion::Cuenta;
-
-}
 
 inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
 {
-    std::chrono::time_point<std::chrono::system_clock> t_inicial, t_final;
+    std::chrono::time_point<std::chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
     t_inicial = std::chrono::system_clock::now();
 
-    matriz = Mat(ALTURA_REGION, ANCHO_REGION, CV_8UC3, GRIS);
+    matriz = Mat(ALTURA_REGION, ANCHO_REGION, CV_8UC3, GRIS); //inicializamos la matriz que renderizará al color gris
     for(int i=15-(desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
         line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
     for(int i=15-(desplazamientoOrigen.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
@@ -75,7 +31,7 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
     if(b_dibujando_flecha) //dibujamos una flecha temporal
         arrowedLine(matriz, Point(puntoInicioFlecha.x - desplazamientoOrigen.x, puntoInicioFlecha.y - desplazamientoOrigen.y),
                     Point(puntoTerminoFlecha.x - desplazamientoOrigen.x,puntoTerminoFlecha.y - desplazamientoOrigen.y),
-                    Scalar(105,205,25), 2, CV_AA);
+                    COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
     if(b_dibujando_circulo) //dibujamos un circulo temporal
         ;
@@ -83,26 +39,24 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
     if(b_dibujando_rectangulo) //dibujamos un rectángulo temporal
     {
         rectangle(matriz, Rect(puntoOrigenRectangulo - desplazamientoOrigen, puntoFinRectangulo - desplazamientoOrigen),
-                  cv::Scalar(100, 65, 150), 2, CV_AA);
+                  COLOR_RECT_DIBUJANDO, 2, CV_AA);
     }
 
 
     //dibujamos todas als flechas
     for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, desplazamientoOrigen);});
 
-    //con for_each y lambdas no pudiste. Revisa sintaxis
+    //dibujamos todos los rectángulos
     for(auto& rec : rectangulos)
         rec.second.dibujarse(matriz, desplazamientoOrigen);
 
+    // medimos tiempo
     t_final = std::chrono::system_clock::now();
     std::chrono::duration<double> t_renderizar = t_final - t_inicial;
     //cout << t_renderizar.count() << "s\n";
 
-    imshow("Diagrama", matriz);
-    //diagrama_completo.colRange(0, region.cols) = region.colRange(0, region.cols);
-    //diagrama_completo = region;
-    //imshow("Diagrama Completo", diagrama_completo);
-} //actualizamos el diagrama
+    imshow("Diagrama", matriz); //actualizamos el diagrama
+}
 
 inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
 {
@@ -144,7 +98,7 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
         //fstream fs("diagrama") //necesitas definir el operador << para tus clases
         break;
     case 50: //debug, 3
-        cout << "valor global: " << llave_rectangulo_highlight__ << endl;
+        cout << "valor global: " << global::llave_rectangulo_highlight << endl;
 
     }
     //cout << desplazamientoOrigen << endl;
@@ -156,18 +110,12 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
 inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
     bool b_renderizar = false;
-    //cout << x <<","<< y << " evento: " << event << endl;
-    puntoActualMouse = cv::Point(x,y); //esta variable es para dibujar figuras en callbacks del teclado
+    puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
 
-    std::bitset<32> bitset_evento(event);
-    std::bitset<32> bitset_flags(flags);
-    /*cout << "evento: " << bitset_evento
-         << "flags: " << bitset_flags << endl;*/
-
-    if(event == CV_EVENT_RBUTTONDOWN)
+    if(event == CV_EVENT_RBUTTONDOWN) //no necesita propiedades_ubicacion, es para panning
     {
         botonMouseDerechoAbajo = true;
-        puntoClickMouseDerecho = cv::Point(x,y);
+        puntoClickMouseDerecho = puntoActualMouse;
         puntoInicioDesplazamiento = desplazamientoOrigen;
     }
 
@@ -176,51 +124,109 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 
     if(event == CV_EVENT_LBUTTONDOWN) //te falta usar SHIFT y CTRL
     {
-        Ubicacion ubicacion = determinarPropiedadesUbicacion(cv::Point(x,y) + desplazamientoOrigen);
+        b_renderizar = true; //entramos aquí relativamente pocas veces por lo que no es costoso
 
-        /*Si estábamos dibujando un rectángulo y dimos click, lo insertamos*/
+        /*Si estábamos dibujando un rectángulo y dimos click, lo insertamos y no hacemos nada más*/
         if(b_dibujando_rectangulo)
         {
             b_dibujando_rectangulo = false;
             rectangulos.insert({rectangulo::consecutivo(), rectangulo(puntoOrigenRectangulo, puntoFinRectangulo)});
             b_renderizar = true;
         }
+
+        //de lo contrario, evaluamos el punto y establecemos condiciones para la selección y el arrastre
         else
         {
-
-
             botonMouseIzquierdoAbajo = true;
-            puntoClickMouseIzquierdo = cv::Point(x,y); //necesitábamos considerar desplazamientoOrigen
+
+            /*En este caso, siempre consultamos las propiedades de la ubicación*/
+            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + desplazamientoOrigen,
+                                                                     flechas, rectangulos);
 
             //añadir una condición para determinar si dibujamos o no la flecha
             b_dibujando_flecha = true; //añadir condición
-            puntoInicioFlecha = cv::Point(x,y) + desplazamientoOrigen; //añadir condición
+            puntoInicioFlecha = puntoActualMouse + desplazamientoOrigen; //añadir condición
+            puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
+
+            //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
+            if(props.first > 0)
+            {
+                if(global::llave_rectangulo_seleccionado > 0) //si había otro brother seleccionado antes
+                    rectangulos.at(global::llave_rectangulo_seleccionado).seleccionar(false); //des-seleccionamos al anterior
+                rectangulos.at(props.first).seleccionar(true); //seleccionamos al brother
+                global::llave_rectangulo_seleccionado = props.first; //actualizamos al seleccionado
+                global::b_drag = true; //condiciones de arrastre habilitadas
+                global::ptInicioArrastre = puntoActualMouse + desplazamientoOrigen;
+                global::ptFinArrastre = global::ptInicioArrastre;
+                b_dibujando_flecha = false;
+            }
+
+            else if(global::llave_rectangulo_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
+            {
+                rectangulos.at(global::llave_rectangulo_seleccionado).seleccionar(false); //lo des-seleccionamos
+                global::llave_rectangulo_seleccionado=-1; //y reseteamos el id de selección
+            }
+
+        }
+    }
+
+    if(event == CV_EVENT_LBUTTONUP)
+    {
+        botonMouseIzquierdoAbajo = false;
+        global::b_drag = false; //terminan las condiciones de arrastre
+
+        if(b_dibujando_flecha) //esto se va a revampear
+        {
+            flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + desplazamientoOrigen));
+            b_dibujando_flecha = false;
+            b_renderizar = true;
         }
     }
 
     if(event == CV_EVENT_MOUSEMOVE)
     {
-        Ubicacion ubicacion = determinarPropiedadesUbicacion(cv::Point(x,y) + desplazamientoOrigen);
-        if( (ubicacion == Ubicacion::Cuenta) || (ubicacion == Ubicacion::Vacia) ) //poco estético
-            b_renderizar = true; //highlight on hover
+        //No es correcto llamar propiedades_ubicacion para todo movimiento. e.g. cuando haces panning no lo necesitas.
 
-        if(botonMouseDerechoAbajo) //si estamos haciendo panning
+        /*cambia esto!
+        if( (ubicacion == Ubicacion::Cuenta) || (ubicacion == Ubicacion::Vacia) ) //poco estético
+            b_renderizar = true; //highlight on hover*/
+
+        if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
         {
+            //no necesitamos propiedades ubicacion
             desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
             desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
             b_renderizar = true;
-        } //CV_EVENT_MOUSEMOVE && botonMouseDerechoAbajo
+        }
 
-        if(botonMouseIzquierdoAbajo) //puede que queramos diseñar más eventos que cumplan estas características
+        if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Moviendo el cursor con click izquierdo apretado.
         {
+            //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
+            if(global::b_drag)
+            {
+                cv::Point pt = puntoActualMouse + desplazamientoOrigen;
+                cv::Point dif = pt - global::ptInicioArrastre;
+                rectangulos.at(global::llave_rectangulo_seleccionado).arrastrar(dif);
+                global::ptInicioArrastre = pt;
+                //el vector de arrasre el ptFinArrastre - ptInicioArrastre
+
+                b_renderizar = true;
+            }
+            //...
 
             if(b_dibujando_flecha)  //dibujar flecha
             {
-                puntoTerminoFlecha = cv::Point(x,y) + desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
+                puntoTerminoFlecha = puntoActualMouse + desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
                 b_renderizar = true;
             }
+        }
 
-        } //CV_EVENT_MOUSEMOVE && botonMouseIzquierdoAbajo
+        if(!botonMouseDerechoAbajo && !botonMouseIzquierdoAbajo) //estamos chillin'
+        {
+            ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + desplazamientoOrigen,
+                                                                     flechas, rectangulos);
+            b_renderizar = true;
+        }
 
         if(b_dibujando_rectangulo)
         {
@@ -229,17 +235,6 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
         }
 
     } //CV_EVENT_MOUSEMOVE
-
-    if(event == CV_EVENT_LBUTTONUP)
-    {
-        botonMouseIzquierdoAbajo = false;
-        if(b_dibujando_flecha)
-        {
-            flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + desplazamientoOrigen));
-            b_dibujando_flecha = false;
-            b_renderizar = true;
-        }
-    }
 
     if(b_renderizar)
         renderizarDiagrama(region);

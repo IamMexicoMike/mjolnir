@@ -31,34 +31,26 @@ cv::Mat menu(ALTURA_REGION, ANCHO_MENU, CV_8UC3, cv::Scalar(200,50,150));
 cv::Mat diagrama_completo(ALTURA_REGION, ANCHO_REGION + ANCHO_MENU, CV_8UC3, cv::Scalar(150,150,150));
 
 
-bool botonMouseIzquierdoAbajo=false;
-bool botonMouseDerechoAbajo=false;
-cv::Point puntoClickMouseDerecho(0,0);
-cv::Point puntoClickMouseIzquierdo(0,0);
-cv::Point puntoInicioDesplazamiento(0,0);
+bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
+bool botonMouseDerechoAbajo=false; //panning
+cv::Point puntoClickMouseDerecho(0,0); //panning
+cv::Point puntoInicioDesplazamiento(0,0); //panning
 
-bool b_dibujando_flecha;
-cv::Point puntoInicioFlecha(0,0);
-cv::Point puntoTerminoFlecha(0,0);
+bool b_dibujando_flecha; //flechas temporales
+cv::Point puntoInicioFlecha(0,0); //flechas temporales
+cv::Point puntoTerminoFlecha(0,0); //flechas temporales
 
 bool b_dibujando_circulo;           //completar esta interfaz
 cv::Point puntoOrigenCirculo(0,0);
 
-bool b_dibujando_rectangulo;
-cv::Point puntoOrigenRectangulo(0,0);
-cv::Point puntoFinRectangulo(0,0);
+bool b_dibujando_rectangulo; //retángulo temporal
+cv::Point puntoOrigenRectangulo(0,0); //retángulo temporal
+cv::Point puntoFinRectangulo(0,0); //retángulo temporal
 
-cv::Point puntoActualMouse(0,0); //para el uso con el teclado, y evitar llamar WINAPI
+cv::Point puntoActualMouse(0,0); //evita llamar WINAPI, se actualiza en cada evento del mouse
 
-//la idea es que haya un vector de elemento_diagrama y ya
+//la idea es que haya un vector de elemento_diagrama* y ya
 std::vector<flecha> flechas;
 std::map<int,rectangulo> rectangulos;
-int llave_rectangulo_seleccionado__ = -1; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente
-int llave_rectangulo_highlight__ = -1;
 
-enum class Ubicacion
-{
-    Vacia,
-    Cuenta,
-    SinCambios //delibera si esto es necesario
-};
+//poner esto en un namespace global
