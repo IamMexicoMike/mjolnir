@@ -11,6 +11,15 @@ elemento_diagrama::~elemento_diagrama()
     //dtor
 }
 
+flecha::flecha(int llave_origen, int llave_destino, std::map<int, rectangulo>& contenedor)
+{
+    _inicio = contenedor.at(llave_origen)._centro;
+    _fin = contenedor.at(llave_destino)._centro;
+    _centro = cv::Point(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2);
+    _b_seleccionado = false;
+}
+
+
 void flecha::dibujarse(cv::Mat& m, cv::Point despl) //deberíamos inlinear?
 {
     arrowedLine(m, cv::Point(_inicio.x - despl.x, _inicio.y - despl.y), //despl es desplazamientoOrigen
@@ -51,6 +60,7 @@ void rectangulo::arrastrar(const cv::Point pt) //no es realmente un punto, sino 
 {
     _fin += pt;
     _inicio += pt;
+    _centro += pt;
 }
 
 void rectangulo::relocalizar(const cv::Point pt) //el punto tiene una referencia absoluta

@@ -14,6 +14,10 @@
 using namespace std;
 using namespace cv;
 
+/*Te quedaste en lo siguiente: Definiste un nuevo constructor para flechas, a partir de rectángulos
+Falta determinar cómo los rectángulos avisarán a las flechas suscritas a ellos que cambien sus coordenadas
+venga mike*/
+
 inline void renderizarDiagrama(cv::Mat& matriz); //prototipo
 
 
@@ -99,6 +103,18 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
         break;
     case 50: //debug, 3
         cout << "valor global: " << global::llave_rectangulo_highlight << endl;
+        break;
+    case 3014656: //supr
+        if(global::llave_rectangulo_seleccionado > 0)
+        {
+            rectangulos.erase(global::llave_rectangulo_seleccionado);
+            global::llave_rectangulo_seleccionado = -1;
+            global::llave_rectangulo_highlight = -1;
+            ubicacion::determinar_propiedades_ubicacion(puntoActualMouse, flechas, rectangulos); //para actualizar highlight
+            b_renderizar = true;
+        }
+        break;
+
 
     }
     //cout << desplazamientoOrigen << endl;
@@ -111,6 +127,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
     bool b_renderizar = false;
     puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
+    cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
 
     if(event == CV_EVENT_RBUTTONDOWN) //no necesita propiedades_ubicacion, es para panning
     {
@@ -143,22 +160,28 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + desplazamientoOrigen,
                                                                      flechas, rectangulos);
 
-            //añadir una condición para determinar si dibujamos o no la flecha
-            b_dibujando_flecha = true; //añadir condición
-            puntoInicioFlecha = puntoActualMouse + desplazamientoOrigen; //añadir condición
-            puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
-
             //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
-            if(props.first > 0)
+            if(props.first > 0 )
             {
                 if(global::llave_rectangulo_seleccionado > 0) //si había otro brother seleccionado antes
                     rectangulos.at(global::llave_rectangulo_seleccionado).seleccionar(false); //des-seleccionamos al anterior
                 rectangulos.at(props.first).seleccionar(true); //seleccionamos al brother
                 global::llave_rectangulo_seleccionado = props.first; //actualizamos al seleccionado
-                global::b_drag = true; //condiciones de arrastre habilitadas
-                global::ptInicioArrastre = puntoActualMouse + desplazamientoOrigen;
-                global::ptFinArrastre = global::ptInicioArrastre;
-                b_dibujando_flecha = false;
+
+                if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
+                {
+                    b_dibujando_flecha = true; //añadir condición
+                    puntoInicioFlecha = puntoActualMouse + desplazamientoOrigen; //añadir condición
+                    puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
+                }
+                else //de lo contrario, arrastramos
+                {
+                    global::b_drag = true; //condiciones de arrastre habilitadas
+                    global::ptInicioArrastre = puntoActualMouse + desplazamientoOrigen;
+                    global::ptFinArrastre = global::ptInicioArrastre;
+                    b_dibujando_flecha = false;
+                }
+                //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
             }
 
             else if(global::llave_rectangulo_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
@@ -187,10 +210,6 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
         //No es correcto llamar propiedades_ubicacion para todo movimiento. e.g. cuando haces panning no lo necesitas.
 
-        /*cambia esto!
-        if( (ubicacion == Ubicacion::Cuenta) || (ubicacion == Ubicacion::Vacia) ) //poco estético
-            b_renderizar = true; //highlight on hover*/
-
         if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
         {
             //no necesitamos propiedades ubicacion
@@ -214,8 +233,11 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             }
             //...
 
-            if(b_dibujando_flecha)  //dibujar flecha
+            if(b_dibujando_flecha)  //dibujando flecha
             {
+                auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + desplazamientoOrigen,
+                                                                     flechas, rectangulos); //para highlightear el destino
+
                 puntoTerminoFlecha = puntoActualMouse + desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
                 b_renderizar = true;
             }
