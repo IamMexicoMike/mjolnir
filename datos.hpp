@@ -43,14 +43,13 @@ cv::Point puntoTerminoFlecha(0,0); //flechas temporales
 bool b_dibujando_circulo;           //completar esta interfaz
 cv::Point puntoOrigenCirculo(0,0);
 
-bool b_dibujando_rectangulo; //retángulo temporal
-cv::Point puntoOrigenRectangulo(0,0); //retángulo temporal
-cv::Point puntoFinRectangulo(0,0); //retángulo temporal
+bool b_dibujando_objeto; //objeto temporal
+cv::Point puntoOrigenobjeto(0,0); //objeto temporal
+cv::Point puntoFinobjeto(0,0); //objeto temporal
 
 cv::Point puntoActualMouse(0,0); //evita llamar WINAPI, se actualiza en cada evento del mouse
 
 //la idea es que haya un vector de elemento_diagrama* y ya
 std::vector<flecha> flechas;
-std::map<int,rectangulo> rectangulos;
 
 //poner esto en un namespace global
