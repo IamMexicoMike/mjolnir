@@ -56,9 +56,11 @@ std::map<int,rectangulo> rectangulos;
 int llave_rectangulo_seleccionado__ = -1; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente
 int llave_rectangulo_highlight__ = -1;
 
-enum class Ubicacion
+enum class UbicacionFlags
 {
     Vacia,
-    Cuenta,
+    HayElemento,
     SinCambios //delibera si esto es necesario
 };
+
+std::pair<int, UbicacionFlags>

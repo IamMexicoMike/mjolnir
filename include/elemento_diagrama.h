@@ -4,6 +4,9 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 
+const cv::Scalar COLOR_HIGHLIGHT(150, 215, 50);
+const cv::Scalar COLOR_SELECCIONADO(15, 255, 250);
+
 class elemento_diagrama
 {
 public:

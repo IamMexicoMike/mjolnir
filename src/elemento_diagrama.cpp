@@ -24,9 +24,9 @@ void rectangulo::dibujarse(cv::Mat& m, cv::Point despl)
     cv::rectangle(m, cv::Rect(cv::Point(_centro.x - despl.x - 4, _centro.y - despl.y - 4), cv::Size(8,8)),
                   cv::Scalar(150, 165, 250), 1, CV_AA);
     if(_b_higlighteado)
-        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), cv::Scalar(150, 215, 50), 1, CV_AA); //hoveriando
+        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), COLOR_HIGHLIGHT, 1, CV_AA); //hoveriando
     if(_b_seleccionado)
-        ; //algo
+        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), COLOR_SELECCIONADO, 3, CV_AA); //hoveriando
 }
 
 /*Es crítico que esta función esté optimizada*/
