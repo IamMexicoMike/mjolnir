@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="opencv_mjolnir" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/opencv_mjolnir" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-Wshadow" />
+					<Add option="-Wredundant-decls" />
+					<Add option="-Wcast-align" />
+					<Add option="-Wundef" />
+					<Add option="-Wunreachable-code" />
+					<Add option="-Wmissing-include-dirs" />
+					<Add option="-std=c++11" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-lopencv_core2413.dll -lopencv_highgui2413.dll  -lopencv_imgproc2413.dll" />
+					<Add option="-lsnana -lgdi32 -lcomdlg32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="datos.hpp" />
+		<Unit filename="include/cuenta.h" />
+		<Unit filename="include/elemento_diagrama.h" />
+		<Unit filename="include/nana_main.h" />
+		<Unit filename="include/utilidades.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="src/cuenta.cpp" />
+		<Unit filename="src/elemento_diagrama.cpp" />
+		<Unit filename="src/nana_main.cpp" />
+		<Unit filename="src/utilidades.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger>
+				<search_path add="C:\Users\turambar\Documents\Proyectos\opencv_mjolnir\" />
+			</debugger>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
