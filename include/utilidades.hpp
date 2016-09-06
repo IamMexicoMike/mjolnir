@@ -38,8 +38,8 @@ namespace header
 class ubicacion
 {
 public:
-    enum class Flags { Vacia, Objeto, SinCambios}; //no me convence
-    static std::pair<int, Flags> determinar_propiedades_ubicacion(cv::Point, std::vector<flecha>&, std::map<int, objeto>&);
+    enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
+    static std::pair<int, ubicacion::Flags> determinar_propiedades_ubicacion(cv::Point, std::vector<flecha>&, std::map<int, objeto>&);
 };
 
 

@@ -44,7 +44,7 @@ void objeto::dibujarse(cv::Mat& m, cv::Point despl)
         cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), COLOR_SELECCION, 3, CV_AA); //selección
 
     if(_b_highlighteado)
-        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), COLOR_HIGHLIGHT, 1, CV_AA); //highlight
+        cv::rectangle(m, cv::Rect(_inicio - despl, _fin - despl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
 }
 
 /*Es crítico que esta función esté optimizada*/

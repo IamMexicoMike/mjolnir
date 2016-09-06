@@ -9,7 +9,8 @@ std::map<int, relacion> global::relaciones;
 std::map<int, objeto> global::objetos;
 cv::Point global::desplazamientoOrigen(0,0);
 
-//Debe determinar propiedades, no determinar si debe dibujarse. Actualmente highlightea...
+/**Debe determinar propiedades del punto en función de la dimensión en la que está.
+ No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
 std::pair<int, ubicacion::Flags> ubicacion::determinar_propiedades_ubicacion(cv::Point p,   //No creo que el pase de p por valor sea muy costoso
     std::vector<flecha>& flechas, std::map<int, objeto>& objetos)
 {
@@ -31,11 +32,11 @@ std::pair<int, ubicacion::Flags> ubicacion::determinar_propiedades_ubicacion(cv:
 
     int llave = encontrarIdHighlight(); //asignamos el id del rectángulo que cumplió las condiciones, o -1.
 
-    /**El caso más frecuente: no hay cambios en lo que se highlighteo*/
+    /*El caso más frecuente: no hay cambios en lo que se highlighteo*/
     if(llave == global::llave_objeto_highlight) //no hay cambios, no renderizamos
         return std::pair<int, ubicacion::Flags>(llave, ubicacion::Flags::SinCambios);
 
-    /**Segundo caso: Había algo highlighteado pero ya no*/
+    /*Segundo caso: Había algo highlighteado pero ya no*/
     if(llave < 0)
     {
         objetos.at(global::llave_objeto_highlight).highlightear(false);//des-highlighteamos el anterior
@@ -43,7 +44,7 @@ std::pair<int, ubicacion::Flags> ubicacion::determinar_propiedades_ubicacion(cv:
         return std::pair<int, ubicacion::Flags>(llave, ubicacion::Flags::Vacia);
     }
 
-    /**Tercer caso: hay algo highlighteable*/
+    /*Tercer caso: hay algo highlighteable*/
     objetos.at(llave).highlightear(true); //highlighteamos al nuevo
 
     /*Si es que había otro highlighteado antes lo deshighlighteamos*/

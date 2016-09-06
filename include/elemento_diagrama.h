@@ -9,8 +9,8 @@
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
-const cv::Scalar COLOR_HIGHLIGHT(150, 215, 50);
 const cv::Scalar COLOR_SELECCION(50, 255, 25);
+const cv::Scalar COLOR_HIGHLIGHT_(150, 215, 50);
 
 enum class Notificacion{Movimiento, Destruccion /*añadir necesarias*/};
 

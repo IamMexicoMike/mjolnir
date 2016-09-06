@@ -1,12 +1,12 @@
 #include <iostream>
-#include <chrono>
-#include <ctime>
+#include <chrono> //para profiles
+#include <ctime> //para profiles
 #include <fstream>
 #include <algorithm>
 #include <bitset> //borrame si no debuggeas
 #include <future>
 #include <thread>
-#include "nana_main.h"
+#include "redes.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -17,11 +17,7 @@
 using namespace std;
 using namespace cv;
 
-/*Te quedaste en lo siguiente: Definiste un nuevo constructor para flechas, a partir de rectángulos
-Falta determinar cómo los rectángulos avisarán a las flechas suscritas a ellos que cambien sus coordenadas
-venga mike*/
-
-inline void renderizarDiagrama(cv::Mat& matriz); //prototipo
+/* La mejor manera de fracasar es no intentarlo */
 
 
 inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
@@ -73,7 +69,7 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
     // medimos tiempo
     t_final = std::chrono::system_clock::now();
     std::chrono::duration<double> t_renderizar = t_final - t_inicial;
-    cout << t_renderizar.count() << "s\n";
+    //cout << t_renderizar.count() << "s\n";
 
     imshow("Mjolnir", matriz); //actualizamos el diagrama
 }
@@ -197,15 +193,18 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
         b_renderizar = true; //entramos aquí relativamente pocas veces por lo que no es costoso
 
-        /*Si estábamos dibujando un rectángulo y dimos click, lo insertamos y no hacemos nada más*/
+        /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
         if(b_dibujando_objeto)
         {
             b_dibujando_objeto = false;
             global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
+
+            /*solicitamos las propiedades del nuevo objeto a crear*/
+            //...
             b_renderizar = true;
         }
 
-        //de lo contrario, evaluamos el punto y establecemos condiciones para la selección y el arrastre
+        /*de lo contrario, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
         else
         {
             botonMouseIzquierdoAbajo = true;
@@ -213,6 +212,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             /*En este caso, siempre consultamos las propiedades de la ubicación*/
             auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
                                                                      flechas, global::objetos);
+
 
             //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
             if(props.first > 0 ) //props.first es el id
@@ -328,11 +328,10 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 
 int main()
 {
-    //diagrama_completo.colRange(0, region.cols) = region.colRange(0, region.cols);
     namedWindow("Mjolnir");
     setMouseCallback("Mjolnir", manejarInputMouse);
+    std::thread t1(redes_main);
     renderizarDiagrama(region);
-    //thread t1(nana_fun);
 
     while (true)
     {
@@ -342,6 +341,6 @@ int main()
         manejarInputTeclado(region, k);
     }
 
-    //t1.join();
+    t1.join();
     return 0;
 }
