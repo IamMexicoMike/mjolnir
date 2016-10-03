@@ -24,7 +24,8 @@
 				</Compiler>
 				<Linker>
 					<Add option="-lopencv_core2413.dll -lopencv_highgui2413.dll  -lopencv_imgproc2413.dll" />
-					<Add option="-lsnana -lgdi32 -lcomdlg32" />
+					<Add option="-lws2_32" />
+					<Add option="-lfltk -luser32 -lcomdlg32 -lcomctl32 -luuid -lole32 -lgdi32" />
 				</Linker>
 			</Target>
 		</Build>
@@ -35,12 +36,14 @@
 		<Unit filename="datos.hpp" />
 		<Unit filename="include/cuenta.h" />
 		<Unit filename="include/elemento_diagrama.h" />
-		<Unit filename="include/nana_main.h" />
+		<Unit filename="include/gui.h" />
+		<Unit filename="include/redes.h" />
 		<Unit filename="include/utilidades.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/cuenta.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />
-		<Unit filename="src/nana_main.cpp" />
+		<Unit filename="src/gui.cpp" />
+		<Unit filename="src/redes.cpp" />
 		<Unit filename="src/utilidades.cpp" />
 		<Extensions>
 			<code_completion />

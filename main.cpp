@@ -7,6 +7,7 @@
 #include <future>
 #include <thread>
 #include "redes.h"
+#include "gui.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -113,8 +114,9 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
     case 103: //g de guardar
         //fstream fs("diagrama") //necesitas definir el operador << para tus clases
         break;
-    case 50: //debug, 3
+    case 50: //debug, 2
         cout << "valor global: " << global::llave_objeto_highlight << endl;
+        foo_gui();
         break;
     case 100: //d de debug
         cout << "obj sel: " << global::llave_objeto_seleccionado << " obj hgl: " << global::llave_objeto_highlight << endl;
@@ -331,16 +333,19 @@ int main()
     namedWindow("Mjolnir");
     setMouseCallback("Mjolnir", manejarInputMouse);
     std::thread t1(redes_main);
+    std::thread t2(main_gui);
     renderizarDiagrama(region);
 
     while (true)
     {
-        int k = waitKey(0); //nota que comparamos unsigned con signed, y funciona. Hmm
+        int k = waitKey(30); //nota que comparamos unsigned con signed, y funciona. Hmm
         if(-1 == k) //de este modo, si cierras la ventana efectivamente sales del ciclo
             break;
         manejarInputTeclado(region, k);
+        /**Cada 30 ms verificamos buffers y actualizamos la UI de acuerdo*/
     }
 
     t1.join();
+    t2.join();
     return 0;
 }

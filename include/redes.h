@@ -19,9 +19,12 @@ class cliente
 public:
   cliente(asio::io_service& io_service, std::string huesped, short puerto) :
     socket_(io_service),
-    endpoint_(asio::ip::address::from_string(huesped), puerto),
     temporizador(io_service)
   {
+    tcp::resolver resolvedor(io_service);
+    tcp::resolver::query query("turambar2.ddns.net", "1337");
+    tcp::resolver::iterator iter = resolvedor.resolve(query);
+    endpoint_ = iter->endpoint();
     conectar();
     timer_queue(); //podemos hacerlo como un sistema operativo
   }
@@ -82,12 +85,12 @@ private:
   void timer_queue()
   {
     asio::error_code ec;
-    temporizador.expires_from_now(std::chrono::seconds(1), ec);
+    temporizador.expires_from_now(std::chrono::milliseconds(25), ec);
     temporizador.async_wait(
       [this](std::error_code ec)
       {
         if(!ec)
-          std::cout << "Tic" << std::endl;
+          /*checar alguna queue o enviar algun mensaje*/;
         else
           std::cout << "Error temporizador: " << ec.value() <<  ": " <<  ec.message() << std::endl;
         timer_queue();

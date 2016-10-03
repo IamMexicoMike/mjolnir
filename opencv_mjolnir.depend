@@ -1,0 +1,70 @@
+# depslib dependency file v1.0
+1473380209 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
+	<iostream>
+	<chrono>
+	<ctime>
+	<fstream>
+	<algorithm>
+	<bitset>
+	<future>
+	<thread>
+	"redes.h"
+	"gui.h"
+	<opencv2/opencv.hpp>
+	"datos.hpp"
+	"elemento_diagrama.h"
+	"utilidades.hpp"
+
+1474405359 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
+	<cstdlib>
+	<iostream>
+	<memory>
+	<utility>
+	<chrono>
+	"asio.hpp"
+	"asio/steady_timer.hpp"
+
+1473204607 c:\users\propietario\documents\proyectos\mjolnir\datos.hpp
+	<vector>
+	<map>
+	<set>
+	<opencv2/opencv.hpp>
+	"elemento_diagrama.h"
+
+1474993094 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
+	<vector>
+	<map>
+	<memory>
+	<opencv2/opencv.hpp>
+
+1473204607 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
+	<vector>
+	<map>
+	<opencv2/opencv.hpp>
+	"elemento_diagrama.h"
+
+1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\cuenta.cpp
+	"cuenta.h"
+
+1473204607 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
+	<vector>
+
+1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+	"elemento_diagrama.h"
+	"utilidades.hpp"
+	<iostream>
+
+1473204902 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
+	"redes.h"
+
+1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
+	"utilidades.hpp"
+
+1473380394 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
+	"gui.h"
+
+1473378134 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
+	<FL/Fl.H>
+	<FL/Fl_Window.H>
+	<FL/Fl_Box.H>
+

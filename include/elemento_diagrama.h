@@ -84,8 +84,8 @@ public:
     void relocalizar(const cv::Point pt); //es abrupto (no se usa todavía)
     void arrastrar(const cv::Point pt); //es para drag
     friend flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor); //SOSPECHOSO
-    cv::Point get_centro(){return _centro;}
-    int get_id() {return _id;}
+    cv::Point get_centro() const {return _centro;} /**añadiste const*/
+    int get_id() const {return _id;}
 
     cv::Point anadir_relacion(int id_relacion){_relaciones.push_back(id_relacion); return _centro;}; //demasiado específico
     void quitar_relacion(int id_relacion)
