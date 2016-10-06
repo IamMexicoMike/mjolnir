@@ -27,7 +27,7 @@ int (*extract_funptr())()
 
 /**Este callback se llama cada 10ms y ejecuta funciones que el hilo del diagrama manda a ejecutar,
 en el hilo de la GUI*/
-void callback1(void*)
+void callback_fptrs(void*)
 {
   int (*pfun)() = extract_funptr();
   if(pfun != nullptr)
@@ -35,12 +35,12 @@ void callback1(void*)
       pfun();
   }
 
-  Fl::repeat_timeout(0.01, callback1);
+  Fl::repeat_timeout(0.01, callback_fptrs);
 }
 
 int main_gui()
 {
-  Fl::add_timeout(0.01, callback1);
+  Fl::add_timeout(0.01, callback_fptrs);
   Fl_Window *window = new Fl_Window(300,280);
   Fl_Box *box = new Fl_Box(20,40,260,100,"Venga Mike");
   box->box(FL_UP_BOX);

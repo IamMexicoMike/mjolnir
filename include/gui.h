@@ -17,7 +17,7 @@ extern std::mutex mtx_funptrs;
 void push_funptr(int(*funptr)());
 int(*extract_funptr())();
 
-void callback1(void*);
+void callback_fptrs(void*);
 int main_gui();
 int foo_gui();
 int foobar();

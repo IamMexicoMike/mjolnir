@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1475775872 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
+1475786773 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -24,23 +24,24 @@
 	"asio.hpp"
 	"asio/steady_timer.hpp"
 
-1475762317 c:\users\propietario\documents\proyectos\mjolnir\datos.hpp
+1475782257 c:\users\propietario\documents\proyectos\mjolnir\datos.hpp
 	<vector>
 	<map>
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
 
-1475763425 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
+1475786312 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
 	<vector>
 	<map>
 	<memory>
 	<opencv2/opencv.hpp>
+	"utilidades.hpp"
 
-1475620838 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
+1475786517 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
 	<vector>
 	<map>
+	<mutex>
 	<opencv2/opencv.hpp>
-	"elemento_diagrama.h"
 
 1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\cuenta.cpp
 	"cuenta.h"
@@ -48,23 +49,25 @@
 1475519498 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
 	<vector>
 
-1475763425 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+1475786536 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
 	"elemento_diagrama.h"
 	"utilidades.hpp"
+	<windows.h>
 	<iostream>
 
 1473204902 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
 	"redes.h"
 
-1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
+1475786421 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
 	"utilidades.hpp"
+	"elemento_diagrama.h"
 
-1475775482 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
+1475778786 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
 	"gui.h"
 	<iostream>
 	<FL/Fl_RGB_Image.H>
 
-1475775891 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
+1475778786 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
 	<queue>
 	<mutex>
 	<FL/Fl.H>

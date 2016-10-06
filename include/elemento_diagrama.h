@@ -7,6 +7,9 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utilidades.hpp"
+
+
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
 const cv::Scalar COLOR_SELECCION(50, 255, 25);
@@ -36,9 +39,9 @@ class flecha
 public:
     /**Construye una flecha a partir de dos puntos*/
     flecha(cv::Point inicio, cv::Point fin):
-        _inicio(inicio), _fin(fin),
-        _centro(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2),
-        _b_seleccionado(false)
+        inicio_(inicio), fin_(fin),
+        centro_(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2),
+        b_seleccionado_(false)
         {}
 
     //parametrizar este constructor con contenedores de tipo arbitrario, no sólo rectángulo
@@ -47,13 +50,13 @@ public:
 
 
     void dibujarse(cv::Mat& m, cv::Point despl);
-    void seleccionar(bool val){_b_seleccionado = val;}
+    void seleccionar(bool val){b_seleccionado_ = val;}
 
 private:
-    cv::Point _inicio;
-    cv::Point _fin;
-    cv::Point _centro;
-    bool _b_seleccionado;
+    cv::Point inicio_;
+    cv::Point fin_;
+    cv::Point centro_;
+    bool b_seleccionado_;
     cv::Scalar _color;
 };
 
@@ -65,85 +68,85 @@ class objeto
 {
 public:
     objeto(cv::Point inicio, cv::Point fin):
-        _id (id_++), //primero asignamos, luego incrementamos
-        _inicio(inicio), _fin(fin),
-        _centro(_inicio.x + (_fin.x - _inicio.x)/2, _inicio.y + (_fin.y - _inicio.y)/2),
-        _ancho(_fin.x - _inicio.y), _altura(_fin.y - _inicio.y),
-        _b_seleccionado(false), _b_highlighteado(false),
-        _color(_color_inicial)
+        id_ (sid++), //primero asignamos, luego incrementamos
+        inicio_(inicio), fin_(fin),
+        centro_(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2),
+        b_seleccionado_(false), _b_highlighteado(false),
+        color_(cv::Scalar(100, 65, 150))
         {
-          std::cout << "soy el constructor de objetos[" << _id << "]\n";
+          std::cout << "soy el constructor de objetos[" << id_ << "]\n";
         }
 
     ~objeto(); //si el objeto es destruido avisa a sus relaciones y luego las destruye
 
-    void dibujarse(cv::Mat& m, cv::Point despl);
-    bool pertenece_a_area(const cv::Point pt);
-    void seleccionar(bool val=true){_b_seleccionado = val;} //seleccionamos para un efecto más permanente
-    void highlightear(bool val=true){_b_highlighteado = val;} //highlighteamos para efecto visual
-    void imprimir_datos(); //debug
-    std::vector<int>& get_relaciones() {return _relaciones;}
-    void arrastrar(const cv::Point pt); //es para drag
-    friend flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor); //SOSPECHOSO
-    cv::Point get_centro() const {return _centro;} /**añadiste const*/
-    int get_id() const {return _id;}
+    cv::Point centro() const {return centro_;} /**añadiste const*/
+    int id() const {return id_;}
 
-    cv::Point anadir_relacion(int id_relacion){_relaciones.push_back(id_relacion); return _centro;}; //demasiado específico
-    void quitar_relacion(int id_relacion)
-    {
-        auto itr = find(objeto::_relaciones.begin(), objeto::_relaciones.end(), id_relacion);
-        objeto::_relaciones.erase(itr);
-    };
+    std::vector<int>& get_relaciones() {return relaciones_;}
+    cv::Point anadir_relacion(int id_relacion){relaciones_.emplace_back(id_relacion); return centro_;}; //demasiado específico
+    bool pertenece_a_area(const cv::Point pt);
+
+    void highlightear(bool val=true){_b_highlighteado = val;} //highlighteamos para efecto visual
+    void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
+    void dibujarse(cv::Mat& m, cv::Point despl);
+    void arrastrar(const cv::Point pt); //es para drag
+
+    void imprimir_datos(); //debug
+
+    friend flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor); //SOSPECHOSO
+
+
     /**notifica a todas las relaciones suscritas*/
     void notificar(Notificacion noti);
-    /**notificar a alguna relacion*/
-    void notificar(Notificacion noti, int id);
+
     /**recibe notificaciones de alguna relación*/
-    void recibir_notificacion(int id, Notificacion noti);
+    void recibir_notificacion(int, Notificacion noti);
 
-    static int id_;
-
+    static int sid;
 private:
-    int _id;
-    cv::Point _inicio;
-    cv::Point _fin;
-    cv::Point _centro;
-    int _ancho, _altura;
-    bool _b_seleccionado;
+    int id_;
+    cv::Point inicio_;
+    cv::Point fin_;
+    cv::Point centro_;
+    bool b_seleccionado_;
     bool _b_highlighteado;   //se usa para objeto::dibujarse
-    cv::Scalar _color;
-
-    std::vector<int> _relaciones; //las relaciones (conexiones) que este objeto tiene con otros
-
-    static const cv::Scalar _color_inicial;
+    cv::Scalar color_;
+    std::vector<int> relaciones_; //las relaciones (conexiones) que este objeto tiene con otros
 };
-
-/*Tanto relación como objeto pueden notificarse uno a otro*/
 
 /**relacion enlaza dos objetos*/
 class relacion
 {
 public:
-    relacion(int id_ob1, int id_ob2);
-    ~relacion()
-    {
-      std::cout << "soy el destructor de relacion[" << _id << "]" << std::endl;
-    }
+  relacion(int id_ob1, int id_ob2):
+    id_(sid++),
+    ids_({id_ob1, id_ob2}),
+    pt1_(glb::objetos.at(id_ob1).anadir_relacion(id_)),
+    pt2_(glb::objetos.at(id_ob2).anadir_relacion(id_))
+  {
+    std::cout << "soy el constructor de relacion[" << id_ << ']' << "y vinculo " << id_ob1 << ',' << id_ob2 << std::endl;
+  }
 
-    void recibir_notificacion(int id, Notificacion noti); //el id del objeto que emitió la notificiación y el tipo de esta
-    void notificar(int id, Notificacion noti); //necesita pensarse profundamente. Es como un mensajero. a quién? a los dos?
-    void dibujarse(cv::Mat& m, cv::Point despl);
-    int get_id(){return _id;}
-    std::pair<int,int> get_objetos(){return ids;}
+  ~relacion()
+  {
+    std::cout << "soy el destructor de relacion[" << id_ << "]" << std::endl;
+  }
 
-    static int id_;
+  int id(){return id_;}
+  void recibir_notificacion(int id, Notificacion noti); //el id del objeto que emitió la notificiación y el tipo de esta
+  void notificar(int id, Notificacion noti); //necesita pensarse profundamente. Es como un mensajero. a quién? a los dos?
+  void dibujarse(cv::Mat& m, cv::Point despl);
+
+  std::pair<int,int> get_objetos(){return ids_;}
+
+  static int sid;
 
 private:
-    int _id;
-    std::pair<int,int> ids; //un par de pares<id, punto>
-    cv::Point pt1, pt2;
-    bool _b_seleccionado;
-    cv::Scalar _color;
+  int id_;
+  std::pair<int,int> ids_; //un par de pares<id, punto>
+  cv::Point pt1_, pt2_;
+  bool b_seleccionado_;
+  cv::Scalar _color;
 };
 
 #endif // ELEMENTO_DIAGRAMA_H

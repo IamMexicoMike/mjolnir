@@ -17,7 +17,6 @@ cv::Mat region(ALTURA_REGION, ANCHO_REGION, CV_8UC3, cv::Scalar(200,200,200)); /
 cv::Mat mat_panel = region.colRange(region.cols - 100, region.cols);
 cv::Mat mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
 
-
 bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
 bool botonMouseDerechoAbajo=false; //panning
 cv::Point puntoClickMouseDerecho(0,0); //panning
@@ -36,5 +35,5 @@ cv::Point puntoFinobjeto(0,0); //objeto temporal
 
 cv::Point puntoActualMouse(0,0); //evita llamar WINAPI, se actualiza en cada evento del mouse
 
-//la idea es que haya un vector de elemento_diagrama* y ya
+//la idea es que haya un vector de unique_ptr<objeto> y ya
 std::vector<flecha> flechas;

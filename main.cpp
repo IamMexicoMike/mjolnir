@@ -30,39 +30,39 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
 
     /**Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
     matriz = GRIS;
-    for(int i=15-(global::desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
+    for(int i=15-(glb::desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
         line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
-    for(int i=15-(global::desplazamientoOrigen.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
+    for(int i=15-(glb::desplazamientoOrigen.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
         line(matriz, Point(0,i), Point(matriz.cols,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
 
     if(b_dibujando_flecha) //dibujamos una flecha temporal
-        arrowedLine(matriz, Point(puntoInicioFlecha.x - global::desplazamientoOrigen.x, puntoInicioFlecha.y - global::desplazamientoOrigen.y),
-                    Point(puntoTerminoFlecha.x - global::desplazamientoOrigen.x,puntoTerminoFlecha.y - global::desplazamientoOrigen.y),
+        arrowedLine(matriz, Point(puntoInicioFlecha.x - glb::desplazamientoOrigen.x, puntoInicioFlecha.y - glb::desplazamientoOrigen.y),
+                    Point(puntoTerminoFlecha.x - glb::desplazamientoOrigen.x,puntoTerminoFlecha.y - glb::desplazamientoOrigen.y),
                     COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
     if(b_dibujando_objeto) //dibujamos un rectángulo temporal
     {
-        rectangle(matriz, Rect(puntoOrigenobjeto - global::desplazamientoOrigen, puntoFinobjeto - global::desplazamientoOrigen),
+        rectangle(matriz, Rect(puntoOrigenobjeto - glb::desplazamientoOrigen, puntoFinobjeto - glb::desplazamientoOrigen),
                   COLOR_RECT_DIBUJANDO, 2, CV_AA);
     }
 
 
     //dibujamos todas als flechas - actualmente no hace nada
-    //for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, global::desplazamientoOrigen);});
+    //for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, glb::desplazamientoOrigen);});
 
     //dibujamos todos los objetos
-    for(auto& rec : global::objetos)
-        rec.second.dibujarse(matriz, global::desplazamientoOrigen);
+    for(auto& rec : glb::objetos)
+        rec.second.dibujarse(matriz, glb::desplazamientoOrigen);
 
     //dibujamos todas las relaciones
-    for(auto& rel : global::relaciones)
-        rel.second.dibujarse(matriz, global::desplazamientoOrigen);
+    for(auto& rel : glb::relaciones)
+        rel.second.dibujarse(matriz, glb::desplazamientoOrigen);
 
     mat_panel = AZUL_PALIDO;
     mat_header = BLANCO;
 
-    if(global::llave_objeto_seleccionado > 0)
-        putText(matriz, std::string("Seleccionado: " + std::to_string(global::llave_objeto_seleccionado)),
+    if(glb::llave_objeto_seleccionado > 0)
+        putText(matriz, std::string("Seleccionado: " + std::to_string(glb::llave_objeto_seleccionado)),
             header::HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0));
 
 
@@ -86,19 +86,19 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
 
     switch (k) {
     case TECLADO_FLECHA_ARRIBA:
-        global::desplazamientoOrigen.y -= DESPLAZAMIENTO;
+        glb::desplazamientoOrigen.y -= DESPLAZAMIENTO;
         break;
     case TECLADO_FLECHA_ABAJO:
-        global::desplazamientoOrigen.y += DESPLAZAMIENTO;
+        glb::desplazamientoOrigen.y += DESPLAZAMIENTO;
         break;
     case TECLADO_FLECHA_DERECHA:
-        global::desplazamientoOrigen.x += DESPLAZAMIENTO;
+        glb::desplazamientoOrigen.x += DESPLAZAMIENTO;
         break;
     case TECLADO_FLECHA_IZQUIERDA:
-        global::desplazamientoOrigen.x -= DESPLAZAMIENTO;
+        glb::desplazamientoOrigen.x -= DESPLAZAMIENTO;
         break;
     case 114: //r (ojo, R tiene su propia clave
-        puntoOrigenobjeto = puntoActualMouse + global::desplazamientoOrigen;
+        puntoOrigenobjeto = puntoActualMouse + glb::desplazamientoOrigen;
         puntoFinobjeto = puntoOrigenobjeto;
         b_dibujando_objeto = true;
         break;
@@ -106,30 +106,31 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
         if(b_dibujando_objeto)
         {
             b_dibujando_objeto = false;
-            global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
+            glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
         }
         break;
     case 103: //g de guardar
         //fstream fs("diagrama") //necesitas definir el operador << para tus clases
         break;
     case 50: //debug
-        cout << "valor global: " << global::llave_objeto_highlight << endl;
-        push_funptr(&foobar);
+        cout << "valor global: " << glb::llave_objeto_highlight << endl;
+        //push_funptr(&foobar);
+        system("Pause");
         break;
     case 100: //d de debug
-        cout << "obj sel: " << global::llave_objeto_seleccionado << " obj hgl: " << global::llave_objeto_highlight << endl;
-        for(auto& ob : global::objetos)
-            cout << ob.first << "," << ob.second.get_id() << " | " << endl;
-        for(auto& rel : global::relaciones)
-            cout << rel.first << "," << rel.second.get_id() << " | " << endl;
+        cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
+        for(auto& ob : glb::objetos)
+            cout << ob.first << "," << ob.second.id() << " | " << endl;
+        for(auto& rel : glb::relaciones)
+            cout << rel.first << "," << rel.second.id() << " | " << endl;
         cout << "\ntodas las relaciones:" << endl;
-        for(auto& rel : global::relaciones)
-            cout << "relacion " << rel.second.get_id() << ": "
+        for(auto& rel : glb::relaciones)
+            cout << "relacion " << rel.second.id() << ": "
                  << rel.second.get_objetos().first << ',' << rel.second.get_objetos().second << endl;
-        if(global::llave_objeto_seleccionado > 0)
+        if(glb::llave_objeto_seleccionado > 0)
         {
-            cout << "relaciones del objeto " << global::llave_objeto_seleccionado << ":" << endl;
-            for(auto id : global::objetos.at(global::llave_objeto_seleccionado).get_relaciones())
+            cout << "relaciones del objeto " << glb::llave_objeto_seleccionado << ":" << endl;
+            for(auto id : glb::objetos.at(glb::llave_objeto_seleccionado).get_relaciones())
                 cout << id << endl;
         }
         break;
@@ -153,17 +154,17 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
         break;
 
     case 3014656: //suprimir, borrar objeto
-        if(global::llave_objeto_seleccionado > 0)
+        if(glb::llave_objeto_seleccionado > 0)
         {
-            global::objetos.erase(global::llave_objeto_seleccionado);
-            global::llave_objeto_seleccionado = -1;
-            global::llave_objeto_highlight = -1;
-            ubicacion::determinar_propiedades_ubicacion(puntoActualMouse, flechas, global::objetos); //para actualizar highlight
+            glb::objetos.erase(glb::llave_objeto_seleccionado);
+            glb::llave_objeto_seleccionado = -1;
+            glb::llave_objeto_highlight = -1;
+            ubicacion::determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
         }
         break;
 
     }
-    //cout << global::desplazamientoOrigen << endl;
+    //cout << glb::desplazamientoOrigen << endl;
 }
 
 /**Este callback se invoca cada vez que hay un evento de mouse en la ventana a la cual se attacheó el callback.
@@ -178,7 +179,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
         botonMouseDerechoAbajo = true;
         puntoClickMouseDerecho = puntoActualMouse;
-        puntoInicioDesplazamiento = global::desplazamientoOrigen;
+        puntoInicioDesplazamiento = glb::desplazamientoOrigen;
     }
 
     if(event == CV_EVENT_RBUTTONUP)
@@ -190,7 +191,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
         if(b_dibujando_objeto)
         {
             b_dibujando_objeto = false;
-            global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
+            glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
 
             /*solicitamos las propiedades del nuevo objeto a crear*/
             //...
@@ -202,37 +203,36 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             botonMouseIzquierdoAbajo = true;
 
             /*En este caso, siempre consultamos las propiedades de la ubicación*/
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
-                                                                     flechas, global::objetos);
+            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
 
             //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
             if(props.first > 0 ) //props.first es el id
             {
-                if(global::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
-                    global::objetos.at(global::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
-                global::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
-                global::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
+                if(glb::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
+                    glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
+                glb::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
+                glb::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
 
                 if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
                 {
                     b_dibujando_flecha = true; //añadir condición
-                    puntoInicioFlecha = puntoActualMouse + global::desplazamientoOrigen; //añadir condición
+                    puntoInicioFlecha = puntoActualMouse + glb::desplazamientoOrigen; //añadir condición
                     puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
                 }
                 else //de lo contrario, arrastramos
                 {
-                    global::b_drag = true; //condiciones de arrastre habilitadas
-                    global::ptInicioArrastre = puntoActualMouse + global::desplazamientoOrigen;
-                    global::ptFinArrastre = global::ptInicioArrastre;
+                    glb::b_drag = true; //condiciones de arrastre habilitadas
+                    glb::ptInicioArrastre = puntoActualMouse + glb::desplazamientoOrigen;
+                    glb::ptFinArrastre = glb::ptInicioArrastre;
                     b_dibujando_flecha = false;
                 }
                 //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
             }
 
-            else if(global::llave_objeto_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
+            else if(glb::llave_objeto_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
             {
-                global::objetos.at(global::llave_objeto_seleccionado).seleccionar(false); //lo des-seleccionamos
-                global::llave_objeto_seleccionado=-1; //y reseteamos el id de selección
+                glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //lo des-seleccionamos
+                glb::llave_objeto_seleccionado=-1; //y reseteamos el id de selección
             }
 
         }
@@ -241,15 +241,14 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     if(event == CV_EVENT_LBUTTONUP)
     {
         botonMouseIzquierdoAbajo = false;
-        global::b_drag = false; //terminan las condiciones de arrastre
+        glb::b_drag = false; //terminan las condiciones de arrastre
 
         if(b_dibujando_flecha) //esto se va a revampear
         {
-            //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + global::desplazamientoOrigen));
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
-                                                                     flechas, global::objetos);
-            if(props.first > 0 && props.first != global::llave_objeto_seleccionado)
-                global::relaciones.emplace(relacion::id_ - 1, relacion(global::llave_objeto_seleccionado, props.first));
+            //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + glb::desplazamientoOrigen));
+            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
+            if(props.first > 0 && props.first != glb::llave_objeto_seleccionado)
+                glb::relaciones.emplace(relacion::sid - 1, relacion(glb::llave_objeto_seleccionado, props.first));
 
             b_dibujando_flecha = false;
         }
@@ -262,19 +261,19 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
         if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
         {
             //no necesitamos propiedades ubicacion
-            global::desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
-            global::desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
+            glb::desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
+            glb::desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
         }
 
         if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Moviendo el cursor con click izquierdo apretado.
         {
             //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
-            if(global::b_drag)
+            if(glb::b_drag)
             {
-                cv::Point pt = puntoActualMouse + global::desplazamientoOrigen;
-                cv::Point dif = pt - global::ptInicioArrastre;
-                global::objetos.at(global::llave_objeto_seleccionado).arrastrar(dif);
-                global::ptInicioArrastre = pt;
+                cv::Point pt = puntoActualMouse + glb::desplazamientoOrigen;
+                cv::Point dif = pt - glb::ptInicioArrastre;
+                glb::objetos.at(glb::llave_objeto_seleccionado).arrastrar(dif);
+                glb::ptInicioArrastre = pt;
                 //el vector de arrasre el ptFinArrastre - ptInicioArrastre
             }
             //...
@@ -282,22 +281,20 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             if(b_dibujando_flecha)  //dibujando flecha temporal
             {
                 /*props se va a usar después para tener feedback con el highlight*/
-                auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
-                                                                     flechas, global::objetos); //para highlightear el destino
+                auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen); //para highlightear el destino
 
-                puntoTerminoFlecha = puntoActualMouse + global::desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
+                puntoTerminoFlecha = puntoActualMouse + glb::desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
             }
         }
 
         if(!botonMouseDerechoAbajo && !botonMouseIzquierdoAbajo) //estamos chillin'
         {
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
-                                                                     flechas, global::objetos);
+            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
         }
 
         if(b_dibujando_objeto)
         {
-            puntoFinobjeto = cv::Point(x,y) + global::desplazamientoOrigen;
+            puntoFinobjeto = cv::Point(x,y) + glb::desplazamientoOrigen;
         }
 
     } //CV_EVENT_MOUSEMOVE

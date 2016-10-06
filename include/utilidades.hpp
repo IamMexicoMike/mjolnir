@@ -3,12 +3,16 @@
 
 #include <vector>
 #include <map>
+#include <mutex>
 
 #include <opencv2/opencv.hpp>
 
-#include "elemento_diagrama.h"
+extern std::mutex mtx_obj;
 
-namespace global
+class objeto;
+class relacion;
+
+namespace glb
 {
     extern int llave_objeto_seleccionado; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente. Debería estar encapsulada en una clase
     extern int llave_objeto_highlight; //se inicializan en .cpp. Debería estar encapsulada en una clase
@@ -39,7 +43,7 @@ class ubicacion
 {
 public:
     enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
-    static std::pair<int, ubicacion::Flags> determinar_propiedades_ubicacion(cv::Point, std::vector<flecha>&, std::map<int, objeto>&);
+    static std::pair<int, ubicacion::Flags> determinar_propiedades_ubicacion(cv::Point);
 };
 
 
