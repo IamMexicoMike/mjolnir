@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1473380209 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
+1475775872 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -8,12 +8,12 @@
 	<bitset>
 	<future>
 	<thread>
-	"redes.h"
-	"gui.h"
 	<opencv2/opencv.hpp>
 	"datos.hpp"
 	"elemento_diagrama.h"
 	"utilidades.hpp"
+	"redes.h"
+	"gui.h"
 
 1474405359 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
 	<cstdlib>
@@ -24,20 +24,19 @@
 	"asio.hpp"
 	"asio/steady_timer.hpp"
 
-1473204607 c:\users\propietario\documents\proyectos\mjolnir\datos.hpp
+1475762317 c:\users\propietario\documents\proyectos\mjolnir\datos.hpp
 	<vector>
 	<map>
-	<set>
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
 
-1474993094 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
+1475763425 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
 	<vector>
 	<map>
 	<memory>
 	<opencv2/opencv.hpp>
 
-1473204607 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
+1475620838 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
 	<vector>
 	<map>
 	<opencv2/opencv.hpp>
@@ -46,10 +45,10 @@
 1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\cuenta.cpp
 	"cuenta.h"
 
-1473204607 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
+1475519498 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
 	<vector>
 
-1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+1475763425 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
 	"elemento_diagrama.h"
 	"utilidades.hpp"
 	<iostream>
@@ -60,10 +59,14 @@
 1473204607 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
 	"utilidades.hpp"
 
-1473380394 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
+1475775482 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
 	"gui.h"
+	<iostream>
+	<FL/Fl_RGB_Image.H>
 
-1473378134 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
+1475775891 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
+	<queue>
+	<mutex>
 	<FL/Fl.H>
 	<FL/Fl_Window.H>
 	<FL/Fl_Box.H>

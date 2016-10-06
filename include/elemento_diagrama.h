@@ -14,7 +14,7 @@ const cv::Scalar COLOR_HIGHLIGHT_(150, 215, 50);
 
 enum class Notificacion{Movimiento, Destruccion /*añadir necesarias*/};
 
-class objeto; //fwd decl
+class objeto;
 
 /*clase base para todas las formas (rectángulo, círculo, etc.). Trabájala, falta hacer uso de ella*/
 
@@ -71,7 +71,9 @@ public:
         _ancho(_fin.x - _inicio.y), _altura(_fin.y - _inicio.y),
         _b_seleccionado(false), _b_highlighteado(false),
         _color(_color_inicial)
-        {std::cout << "soy el constructor de objetos[" << _id << "]\n";}
+        {
+          std::cout << "soy el constructor de objetos[" << _id << "]\n";
+        }
 
     ~objeto(); //si el objeto es destruido avisa a sus relaciones y luego las destruye
 
@@ -81,7 +83,6 @@ public:
     void highlightear(bool val=true){_b_highlighteado = val;} //highlighteamos para efecto visual
     void imprimir_datos(); //debug
     std::vector<int>& get_relaciones() {return _relaciones;}
-    void relocalizar(const cv::Point pt); //es abrupto (no se usa todavía)
     void arrastrar(const cv::Point pt); //es para drag
     friend flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor); //SOSPECHOSO
     cv::Point get_centro() const {return _centro;} /**añadiste const*/
@@ -124,7 +125,11 @@ class relacion
 {
 public:
     relacion(int id_ob1, int id_ob2);
-    ~relacion(){std::cout << "soy el destructor de relacion[" << _id << "]" << std::endl;}
+    ~relacion()
+    {
+      std::cout << "soy el destructor de relacion[" << _id << "]" << std::endl;
+    }
+
     void recibir_notificacion(int id, Notificacion noti); //el id del objeto que emitió la notificiación y el tipo de esta
     void notificar(int id, Notificacion noti); //necesita pensarse profundamente. Es como un mensajero. a quién? a los dos?
     void dibujarse(cv::Mat& m, cv::Point despl);

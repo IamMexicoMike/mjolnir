@@ -10,8 +10,8 @@
 
 namespace global
 {
-    extern int llave_objeto_seleccionado; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente
-    extern int llave_objeto_highlight; //se inicializan en .cpp
+    extern int llave_objeto_seleccionado; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente. Debería estar encapsulada en una clase
+    extern int llave_objeto_highlight; //se inicializan en .cpp. Debería estar encapsulada en una clase
     extern bool b_drag;
     extern cv::Point ptInicioArrastre;
     extern cv::Point ptFinArrastre;
@@ -34,7 +34,7 @@ namespace header
     const cv::Point HEADER1(100,20);
 }
 
-
+//qué es esto
 class ubicacion
 {
 public:

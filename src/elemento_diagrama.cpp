@@ -70,11 +70,6 @@ void objeto::arrastrar(const cv::Point pt) //no es realmente un punto, sino una 
     notificar(Notificacion::Movimiento);
 }
 
-void objeto::relocalizar(const cv::Point pt) //el punto tiene una referencia absoluta
-{
-
-}
-
 void objeto::notificar(Notificacion noti)
 {
     using namespace std;

@@ -3,6 +3,9 @@
 
 #include <vector>
 
+/**Clase que herede de "Drawable" y de "Cuenta" podría servir en el diagrama
+Posiblemente "Cuenta" sea una base abstracta, a partir de la cual subclases implementen su interfaz
+De igual manera "Drawable" puede que tenga subclases como círculo o cuadrado*/
 /*Activos. Representan todos los bienes y derechos que posee una empresa.
 Estos pueden se físicos (tangibles), como el dinero, un terreno, un edificio,
 etc. También pueden ser activos intangibles como la propiedad intelectual, una marca, entre otros.
@@ -52,7 +55,7 @@ Uno simple sólo tiene un débito y un crédito (póliza con un sólo movimiento?)
 Uno complejo tiene varios*/
 enum class TipoDePoliza{Diario, Ingreso, Egreso}; //por eso sirve que TipoDeCuenta y TipoDePoliza pertenecen a diferentes scopes
 
-class poliza; //forward-declaramos para habilitar compilación
+class poliza;
 
 //patrón observer: hay varias maneras de representar una cuenta
 class cuenta

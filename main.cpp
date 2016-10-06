@@ -6,27 +6,29 @@
 #include <bitset> //borrame si no debuggeas
 #include <future>
 #include <thread>
-#include "redes.h"
-#include "gui.h"
 
 #include <opencv2/opencv.hpp>
 
 #include "datos.hpp"
 #include "elemento_diagrama.h"
 #include "utilidades.hpp"
+#include "redes.h"
+#include "gui.h"
 
 using namespace std;
 using namespace cv;
 
-/* La mejor manera de fracasar es no intentarlo */
+/* La forma más rápida de fracasar es no intentarlo */
+/* Querer es poder */
+/* El que busca encuentra */
 
-
+//demasiados magic numbers
 inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
 {
     std::chrono::time_point<std::chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
     t_inicial = std::chrono::system_clock::now();
 
-    //matriz = Mat(ALTURA_REGION, ANCHO_REGION, CV_8UC3, GRIS); //inicializamos la matriz que renderizará al color gris
+    /**Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
     matriz = GRIS;
     for(int i=15-(global::desplazamientoOrigen.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
         line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
@@ -38,9 +40,6 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
                     Point(puntoTerminoFlecha.x - global::desplazamientoOrigen.x,puntoTerminoFlecha.y - global::desplazamientoOrigen.y),
                     COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
-    if(b_dibujando_circulo) //dibujamos un circulo temporal
-        ;
-
     if(b_dibujando_objeto) //dibujamos un rectángulo temporal
     {
         rectangle(matriz, Rect(puntoOrigenobjeto - global::desplazamientoOrigen, puntoFinobjeto - global::desplazamientoOrigen),
@@ -49,7 +48,7 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
 
 
     //dibujamos todas als flechas - actualmente no hace nada
-    for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, global::desplazamientoOrigen);});
+    //for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, global::desplazamientoOrigen);});
 
     //dibujamos todos los objetos
     for(auto& rec : global::objetos)
@@ -79,28 +78,28 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
 {
     cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
-    bool b_renderizar = false;
+    constexpr int DESPLAZAMIENTO = 5;
+    constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
+    constexpr int TECLADO_FLECHA_ABAJO = 2621440;
+    constexpr int TECLADO_FLECHA_IZQUIERDA = 2424832;
+    constexpr int TECLADO_FLECHA_DERECHA = 2555904;
 
-    constexpr unsigned DESPLAZAMIENTO = 5; //sospechoso contexpr. Lo estás haciendo bien?
     switch (k) {
     case TECLADO_FLECHA_ARRIBA:
         global::desplazamientoOrigen.y -= DESPLAZAMIENTO;
-        b_renderizar = true;
         break;
     case TECLADO_FLECHA_ABAJO:
         global::desplazamientoOrigen.y += DESPLAZAMIENTO;
-        b_renderizar = true;
         break;
     case TECLADO_FLECHA_DERECHA:
         global::desplazamientoOrigen.x += DESPLAZAMIENTO;
-        b_renderizar = true;
         break;
     case TECLADO_FLECHA_IZQUIERDA:
         global::desplazamientoOrigen.x -= DESPLAZAMIENTO;
-        b_renderizar = true;
         break;
     case 114: //r (ojo, R tiene su propia clave
         puntoOrigenobjeto = puntoActualMouse + global::desplazamientoOrigen;
+        puntoFinobjeto = puntoOrigenobjeto;
         b_dibujando_objeto = true;
         break;
     case 13: //tecla enter
@@ -108,15 +107,14 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
         {
             b_dibujando_objeto = false;
             global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
-            b_renderizar = true;
         }
         break;
     case 103: //g de guardar
         //fstream fs("diagrama") //necesitas definir el operador << para tus clases
         break;
-    case 50: //debug, 2
+    case 50: //debug
         cout << "valor global: " << global::llave_objeto_highlight << endl;
-        foo_gui();
+        push_funptr(&foobar);
         break;
     case 100: //d de debug
         cout << "obj sel: " << global::llave_objeto_seleccionado << " obj hgl: " << global::llave_objeto_highlight << endl;
@@ -142,7 +140,6 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
             region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
             mat_panel = region.colRange(region.cols - 100, region.cols);
             mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-            b_renderizar = true;
         }
         break;
 
@@ -152,7 +149,6 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
             region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
             mat_panel = region.colRange(region.cols - 100, region.cols);
             mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-            b_renderizar = true;
         }
         break;
 
@@ -163,21 +159,18 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
             global::llave_objeto_seleccionado = -1;
             global::llave_objeto_highlight = -1;
             ubicacion::determinar_propiedades_ubicacion(puntoActualMouse, flechas, global::objetos); //para actualizar highlight
-            b_renderizar = true;
         }
         break;
 
-
     }
     //cout << global::desplazamientoOrigen << endl;
-
-    if(b_renderizar)
-        renderizarDiagrama(matriz);
 }
 
+/**Este callback se invoca cada vez que hay un evento de mouse en la ventana a la cual se attacheó el callback.
+  Podrías tener varias ventanas con diferentes funciones que manejen el mouse
+  La lógica de este callback debe estar encapsulada, y debe ser legible*/
 inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
-    bool b_renderizar = false;
     puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
     //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
 
@@ -191,22 +184,19 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     if(event == CV_EVENT_RBUTTONUP)
         botonMouseDerechoAbajo = false;
 
-    if(event == CV_EVENT_LBUTTONDOWN) //te falta usar SHIFT y CTRL
+    if(event == CV_EVENT_LBUTTONDOWN)
     {
-        b_renderizar = true; //entramos aquí relativamente pocas veces por lo que no es costoso
-
         /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
         if(b_dibujando_objeto)
         {
             b_dibujando_objeto = false;
-            global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
+            global::objetos.emplace(objeto::id_ - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
 
             /*solicitamos las propiedades del nuevo objeto a crear*/
             //...
-            b_renderizar = true;
         }
 
-        /*de lo contrario, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
+        /*no estábamos dibujando un objeto, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
         else
         {
             botonMouseIzquierdoAbajo = true;
@@ -215,11 +205,10 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
                                                                      flechas, global::objetos);
 
-
             //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
             if(props.first > 0 ) //props.first es el id
             {
-                if(global::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes
+                if(global::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
                     global::objetos.at(global::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
                 global::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
                 global::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
@@ -259,11 +248,10 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + global::desplazamientoOrigen));
             auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
                                                                      flechas, global::objetos);
-            if(props.first > 0)
+            if(props.first > 0 && props.first != global::llave_objeto_seleccionado)
                 global::relaciones.emplace(relacion::id_ - 1, relacion(global::llave_objeto_seleccionado, props.first));
 
             b_dibujando_flecha = false;
-            b_renderizar = true;
         }
     }
 
@@ -276,7 +264,6 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
             //no necesitamos propiedades ubicacion
             global::desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
             global::desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
-            b_renderizar = true;
         }
 
         if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Moviendo el cursor con click izquierdo apretado.
@@ -289,8 +276,6 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
                 global::objetos.at(global::llave_objeto_seleccionado).arrastrar(dif);
                 global::ptInicioArrastre = pt;
                 //el vector de arrasre el ptFinArrastre - ptInicioArrastre
-
-                b_renderizar = true;
             }
             //...
 
@@ -301,7 +286,6 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
                                                                      flechas, global::objetos); //para highlightear el destino
 
                 puntoTerminoFlecha = puntoActualMouse + global::desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
-                b_renderizar = true;
             }
         }
 
@@ -309,43 +293,53 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
         {
             auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + global::desplazamientoOrigen,
                                                                      flechas, global::objetos);
-            if(props.second == ubicacion::Flags::SinCambios)
-                b_renderizar = false; //para qué renderizamos
-            else
-                b_renderizar = true;
         }
 
         if(b_dibujando_objeto)
         {
             puntoFinobjeto = cv::Point(x,y) + global::desplazamientoOrigen;
-            b_renderizar = true;
         }
 
     } //CV_EVENT_MOUSEMOVE
 
-    if(b_renderizar)
-        renderizarDiagrama(region);
-
 } //manejarInputMouse
 
+/**Necesitamos tres o más hilos:
+1) Diagrama
+2) Ciclo de eventos de asio (networking)
+3) Ciclo de eventos de la gui
+n) Más diagramas*/
 int main()
 {
+  //pruebas...
+
     namedWindow("Mjolnir");
     setMouseCallback("Mjolnir", manejarInputMouse);
-    std::thread t1(redes_main);
+    //std::thread t1(redes_main);
     std::thread t2(main_gui);
     renderizarDiagrama(region);
 
     while (true)
     {
-        int k = waitKey(30); //nota que comparamos unsigned con signed, y funciona. Hmm
-        if(-1 == k) //de este modo, si cierras la ventana efectivamente sales del ciclo
-            break;
-        manejarInputTeclado(region, k);
-        /**Cada 30 ms verificamos buffers y actualizamos la UI de acuerdo*/
+      /**Cada 30ms verificamos buffers y actualizamos la UI de acuerdo*/
+        int k = waitKey(15);
+        if(k == 27)
+        {
+          destroyWindow("Mjolnir");
+          break;
+        }
+
+        if(k != -1) //-1 se retorna cuando el timer expira o cuando se cierra la ventana
+            manejarInputTeclado(region, k);
+
+        /*...*/
+
+        /*añadir código aquí para actualizar memoria*/
+      renderizarDiagrama(region);
+      setMouseCallback("Mjolnir", manejarInputMouse);
     }
 
-    t1.join();
+    //t1.join();
     t2.join();
     return 0;
 }

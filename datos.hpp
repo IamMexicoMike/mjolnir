@@ -2,14 +2,8 @@
 #define ANCHO_MENU 200
 #define ALTURA_REGION 600
 
-#define TECLADO_FLECHA_ARRIBA 2490368
-#define TECLADO_FLECHA_ABAJO 2621440
-#define TECLADO_FLECHA_IZQUIERDA 2424832
-#define TECLADO_FLECHA_DERECHA 2555904
-
 #include <vector>
 #include <map>
-#include <set>
 
 #include <opencv2/opencv.hpp>
 
