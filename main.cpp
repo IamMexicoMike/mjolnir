@@ -76,94 +76,97 @@ inline void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar
 
 inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
 {
-    cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
+  //cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
-    constexpr int DESPLAZAMIENTO = 5;
-    constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
-    constexpr int TECLADO_FLECHA_ABAJO = 2621440;
-    constexpr int TECLADO_FLECHA_IZQUIERDA = 2424832;
-    constexpr int TECLADO_FLECHA_DERECHA = 2555904;
+  constexpr int DESPLAZAMIENTO = 5;
+  constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
+  constexpr int TECLADO_FLECHA_ABAJO = 2621440;
+  constexpr int TECLADO_FLECHA_IZQUIERDA = 2424832;
+  constexpr int TECLADO_FLECHA_DERECHA = 2555904;
 
-    switch (k) {
-    case TECLADO_FLECHA_ARRIBA:
-        glb::desplazamientoOrigen.y -= DESPLAZAMIENTO;
-        break;
-    case TECLADO_FLECHA_ABAJO:
-        glb::desplazamientoOrigen.y += DESPLAZAMIENTO;
-        break;
-    case TECLADO_FLECHA_DERECHA:
-        glb::desplazamientoOrigen.x += DESPLAZAMIENTO;
-        break;
-    case TECLADO_FLECHA_IZQUIERDA:
-        glb::desplazamientoOrigen.x -= DESPLAZAMIENTO;
-        break;
-    case 114: //r (ojo, R tiene su propia clave
-        puntoOrigenobjeto = puntoActualMouse + glb::desplazamientoOrigen;
-        puntoFinobjeto = puntoOrigenobjeto;
-        b_dibujando_objeto = true;
-        break;
-    case 13: //tecla enter
-        if(b_dibujando_objeto)
-        {
-            b_dibujando_objeto = false;
-            glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
-        }
-        break;
-    case 103: //g de guardar
-        //fstream fs("diagrama") //necesitas definir el operador << para tus clases
-        break;
-    case 50: //debug
-        cout << "valor global: " << glb::llave_objeto_highlight << endl;
-        //push_funptr(&foobar);
-        system("Pause");
-        break;
-    case 100: //d de debug
-        cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
-        for(auto& ob : glb::objetos)
-            cout << ob.first << "," << ob.second.id() << " | " << endl;
-        for(auto& rel : glb::relaciones)
-            cout << rel.first << "," << rel.second.id() << " | " << endl;
-        cout << "\ntodas las relaciones:" << endl;
-        for(auto& rel : glb::relaciones)
-            cout << "relacion " << rel.second.id() << ": "
-                 << rel.second.get_objetos().first << ',' << rel.second.get_objetos().second << endl;
-        if(glb::llave_objeto_seleccionado > 0)
-        {
-            cout << "relaciones del objeto " << glb::llave_objeto_seleccionado << ":" << endl;
-            for(auto id : glb::objetos.at(glb::llave_objeto_seleccionado).get_relaciones())
-                cout << id << endl;
-        }
-        break;
-
-    case 43: //+ ensanchamos el diagrama
-        if(region.cols < 2000)
-        {
-            region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-            mat_panel = region.colRange(region.cols - 100, region.cols);
-            mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-        }
-        break;
-
-    case 45: //- adelgazamos el diagrama
-        if(region.cols > 200)
-        {
-            region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-            mat_panel = region.colRange(region.cols - 100, region.cols);
-            mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-        }
-        break;
-
-    case 3014656: //suprimir, borrar objeto
-        if(glb::llave_objeto_seleccionado > 0)
-        {
-            glb::objetos.erase(glb::llave_objeto_seleccionado);
-            glb::llave_objeto_seleccionado = -1;
-            glb::llave_objeto_highlight = -1;
-            ubicacion::determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
-        }
-        break;
-
+  switch (k) {
+  case TECLADO_FLECHA_ARRIBA:
+    glb::desplazamientoOrigen.y -= DESPLAZAMIENTO;
+    break;
+  case TECLADO_FLECHA_ABAJO:
+    glb::desplazamientoOrigen.y += DESPLAZAMIENTO;
+    break;
+  case TECLADO_FLECHA_DERECHA:
+    glb::desplazamientoOrigen.x += DESPLAZAMIENTO;
+    break;
+  case TECLADO_FLECHA_IZQUIERDA:
+    glb::desplazamientoOrigen.x -= DESPLAZAMIENTO;
+    break;
+  case 114: //r (ojo, R tiene su propia clave
+    puntoOrigenobjeto = puntoActualMouse + glb::desplazamientoOrigen;
+    puntoFinobjeto = puntoOrigenobjeto;
+    b_dibujando_objeto = true;
+    break;
+  case 13: //tecla enter
+    if(b_dibujando_objeto)
+    {
+      b_dibujando_objeto = false;
+      glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
     }
+    break;
+  case 103: //g de guardar
+    guardar_todo();
+    break;
+  case 108: //l de load(cargar)
+    cargar_todo();
+    break;
+  case 50: //debug
+    cout << "valor global: " << glb::llave_objeto_highlight << endl;
+    //push_funptr(&foobar);
+    system("Pause");
+    break;
+  case 100: //d de debug
+    cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
+    for(auto& ob : glb::objetos)
+      cout << ob.first << "," << ob.second.id() << " | " << endl;
+    for(auto& rel : glb::relaciones)
+      cout << rel.first << "," << rel.second.id() << " | " << endl;
+    cout << "\ntodas las relaciones:" << endl;
+    for(auto& rel : glb::relaciones)
+      cout << "relacion " << rel.second.id() << ": "
+           << rel.second.get_objetos().first << ',' << rel.second.get_objetos().second << endl;
+    if(glb::llave_objeto_seleccionado > 0)
+    {
+      cout << "relaciones del objeto " << glb::llave_objeto_seleccionado << ":" << endl;
+      for(auto id : glb::objetos.at(glb::llave_objeto_seleccionado).get_relaciones())
+        cout << id << endl;
+    }
+    break;
+
+  case 43: //+ ensanchamos el diagrama
+    if(region.cols < 2000)
+    {
+      region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
+      mat_panel = region.colRange(region.cols - 100, region.cols);
+      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
+    }
+    break;
+
+  case 45: //- adelgazamos el diagrama
+    if(region.cols > 200)
+    {
+      region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
+      mat_panel = region.colRange(region.cols - 100, region.cols);
+      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
+    }
+    break;
+
+  case 3014656: //suprimir, borrar objeto
+    if(glb::llave_objeto_seleccionado > 0)
+    {
+      glb::objetos.erase(glb::llave_objeto_seleccionado);
+      glb::llave_objeto_seleccionado = -1;
+      glb::llave_objeto_highlight = -1;
+      ubicacion::determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
+    }
+    break;
+
+  }
     //cout << glb::desplazamientoOrigen << endl;
 }
 
@@ -172,132 +175,135 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
   La lógica de este callback debe estar encapsulada, y debe ser legible*/
 inline void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
-    puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
-    //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
+  puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
+  //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
 
-    if(event == CV_EVENT_RBUTTONDOWN) //no necesita propiedades_ubicacion, es para panning
+  if(event == CV_EVENT_RBUTTONDOWN) //no necesita propiedades_ubicacion, es para panning
+  {
+    botonMouseDerechoAbajo = true;
+    puntoClickMouseDerecho = puntoActualMouse;
+    puntoInicioDesplazamiento = glb::desplazamientoOrigen;
+  }
+
+  if(event == CV_EVENT_RBUTTONUP)
+    botonMouseDerechoAbajo = false;
+
+  if(event == CV_EVENT_LBUTTONDOWN)
+  {
+    /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
+    if(b_dibujando_objeto)
     {
-        botonMouseDerechoAbajo = true;
-        puntoClickMouseDerecho = puntoActualMouse;
-        puntoInicioDesplazamiento = glb::desplazamientoOrigen;
+      b_dibujando_objeto = false;
+      glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
+
+      /**solicitamos las propiedades del nuevo objeto a crear*/
+      /***/
     }
 
-    if(event == CV_EVENT_RBUTTONUP)
-        botonMouseDerechoAbajo = false;
-
-    if(event == CV_EVENT_LBUTTONDOWN)
+    /*no estábamos dibujando un objeto, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
+    else
     {
-        /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
-        if(b_dibujando_objeto)
+      botonMouseIzquierdoAbajo = true;
+      auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
+
+      if(props.first > 0 ) //props.first es el id
+      {
+        if(glb::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
+          glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
+
+        glb::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
+        glb::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
+
+        if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
         {
-            b_dibujando_objeto = false;
-            glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
-
-            /*solicitamos las propiedades del nuevo objeto a crear*/
-            //...
+          b_dibujando_flecha = true; //añadir condición
+          puntoInicioFlecha = puntoActualMouse + glb::desplazamientoOrigen; //añadir condición
+          puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
         }
-
-        /*no estábamos dibujando un objeto, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
-        else
+        else //de lo contrario, arrastramos o resizeamos. Usamos las mismas variables
         {
-            botonMouseIzquierdoAbajo = true;
-
-            /*En este caso, siempre consultamos las propiedades de la ubicación*/
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
-
-            //checamos si el punto actual coincide con un objeto. Si sí, lo seleccionamos.
-            if(props.first > 0 ) //props.first es el id
-            {
-                if(glb::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
-                    glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
-                glb::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
-                glb::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
-
-                if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
-                {
-                    b_dibujando_flecha = true; //añadir condición
-                    puntoInicioFlecha = puntoActualMouse + glb::desplazamientoOrigen; //añadir condición
-                    puntoTerminoFlecha = puntoInicioFlecha; //"reseteamos" la flecha;
-                }
-                else //de lo contrario, arrastramos
-                {
-                    glb::b_drag = true; //condiciones de arrastre habilitadas
-                    glb::ptInicioArrastre = puntoActualMouse + glb::desplazamientoOrigen;
-                    glb::ptFinArrastre = glb::ptInicioArrastre;
-                    b_dibujando_flecha = false;
-                }
-                //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
-            }
-
-            else if(glb::llave_objeto_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
-            {
-                glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //lo des-seleccionamos
-                glb::llave_objeto_seleccionado=-1; //y reseteamos el id de selección
-            }
-
+          glb::ptInicioArrastre = puntoActualMouse + glb::desplazamientoOrigen;
+          glb::ptFinArrastre = glb::ptInicioArrastre;
+          b_dibujando_flecha = false;
+          if(glb::objetos.at(props.first).es_esquina(puntoActualMouse))
+          {
+            glb::b_resize = true;
+          }
+          else
+          {
+            glb::b_drag = true;
+          }
         }
+        //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
+      }
+
+      else if(glb::llave_objeto_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
+      {
+        glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //lo des-seleccionamos
+        glb::llave_objeto_seleccionado=-1; //y reseteamos el id de selección
+      }
+    }
+  }
+
+  if(event == CV_EVENT_LBUTTONUP)
+  {
+    botonMouseIzquierdoAbajo = false;
+    glb::b_drag = false; //terminan las condiciones de arrastre y resize
+    glb::b_resize = false;
+
+    if(b_dibujando_flecha) //esto se va a revampear
+    {
+      //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + glb::desplazamientoOrigen));
+      auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
+      if(props.first > 0 && props.first != glb::llave_objeto_seleccionado)
+        glb::relaciones.emplace(relacion::sid - 1, relacion(glb::llave_objeto_seleccionado, props.first));
+
+      b_dibujando_flecha = false;
+    }
+  }
+
+  if(event == CV_EVENT_MOUSEMOVE)
+  {
+    if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
+    {
+      glb::desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
+      glb::desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
     }
 
-    if(event == CV_EVENT_LBUTTONUP)
+    if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Resizing. Moviendo el cursor con click izquierdo apretado.
     {
-        botonMouseIzquierdoAbajo = false;
-        glb::b_drag = false; //terminan las condiciones de arrastre
+      //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
+      if(glb::b_drag)
+      {
+        cv::Point pt = puntoActualMouse + glb::desplazamientoOrigen;
+        cv::Point dif = pt - glb::ptInicioArrastre;
+        glb::objetos.at(glb::llave_objeto_seleccionado).arrastrar(dif);
+        glb::ptInicioArrastre = pt;
+      }
+      else if(glb::b_resize)
+      {
+        cv::Point pt = puntoActualMouse + glb::desplazamientoOrigen;
+        cv::Point dif = pt - glb::ptInicioArrastre;
+        glb::objetos.at(glb::llave_objeto_seleccionado).resizear(dif);
+        glb::ptInicioArrastre = pt;
+      }
+      //...
 
-        if(b_dibujando_flecha) //esto se va a revampear
-        {
-            //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + glb::desplazamientoOrigen));
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
-            if(props.first > 0 && props.first != glb::llave_objeto_seleccionado)
-                glb::relaciones.emplace(relacion::sid - 1, relacion(glb::llave_objeto_seleccionado, props.first));
-
-            b_dibujando_flecha = false;
-        }
+      if(b_dibujando_flecha)  //dibujando flecha temporal
+      {
+        /*props se va a usar después para tener feedback con el highlight*/
+        /*auto props = */ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen); //para highlightear el destino
+        puntoTerminoFlecha = puntoActualMouse + glb::desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
+      }
     }
 
-    if(event == CV_EVENT_MOUSEMOVE)
-    {
-        //No es correcto llamar propiedades_ubicacion para todo movimiento. e.g. cuando haces panning no lo necesitas.
+    if(!botonMouseDerechoAbajo && !botonMouseIzquierdoAbajo) //estamos chillin'
+      /*auto props = */ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
 
-        if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
-        {
-            //no necesitamos propiedades ubicacion
-            glb::desplazamientoOrigen.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
-            glb::desplazamientoOrigen.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
-        }
+    if(b_dibujando_objeto)
+      puntoFinobjeto = cv::Point(x,y) + glb::desplazamientoOrigen;
 
-        if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Moviendo el cursor con click izquierdo apretado.
-        {
-            //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
-            if(glb::b_drag)
-            {
-                cv::Point pt = puntoActualMouse + glb::desplazamientoOrigen;
-                cv::Point dif = pt - glb::ptInicioArrastre;
-                glb::objetos.at(glb::llave_objeto_seleccionado).arrastrar(dif);
-                glb::ptInicioArrastre = pt;
-                //el vector de arrasre el ptFinArrastre - ptInicioArrastre
-            }
-            //...
-
-            if(b_dibujando_flecha)  //dibujando flecha temporal
-            {
-                /*props se va a usar después para tener feedback con el highlight*/
-                auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen); //para highlightear el destino
-
-                puntoTerminoFlecha = puntoActualMouse + glb::desplazamientoOrigen; //la flecha es temporal, no se añade sino hasta que LBUTTONUP
-            }
-        }
-
-        if(!botonMouseDerechoAbajo && !botonMouseIzquierdoAbajo) //estamos chillin'
-        {
-            auto props = ubicacion::determinar_propiedades_ubicacion(puntoActualMouse + glb::desplazamientoOrigen);
-        }
-
-        if(b_dibujando_objeto)
-        {
-            puntoFinobjeto = cv::Point(x,y) + glb::desplazamientoOrigen;
-        }
-
-    } //CV_EVENT_MOUSEMOVE
+  } //CV_EVENT_MOUSEMOVE
 
 } //manejarInputMouse
 

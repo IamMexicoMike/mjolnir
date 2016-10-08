@@ -20,6 +20,7 @@
 					<Add option="-Wunreachable-code" />
 					<Add option="-Wmissing-include-dirs" />
 					<Add option="-std=c++11" />
+					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>

@@ -17,11 +17,11 @@ namespace glb
     extern int llave_objeto_seleccionado; //recuerda que asignar algo a este id CREARÁ el mapa indeseablemente. Debería estar encapsulada en una clase
     extern int llave_objeto_highlight; //se inicializan en .cpp. Debería estar encapsulada en una clase
     extern bool b_drag;
+    extern bool b_resize;
     extern cv::Point ptInicioArrastre;
     extern cv::Point ptFinArrastre;
     extern std::map<int, relacion> relaciones;
     extern std::map<int, objeto> objetos;
-
     /*Esta es de las variables más importantes del diagrama. Todos los "widgets" necesitan conocer su valor
     * para ser dibujados. Ejemplo:
     * arrowedLine(matriz, Point(400-desplazamientoOrigen.x,400-desplazamientoOrigen.y),

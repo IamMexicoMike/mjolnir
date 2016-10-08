@@ -8,7 +8,6 @@ std::mutex mtx_funptrs;
 void push_funptr(int(*funptr)())
 {
   std::lock_guard<std::mutex> lck(mtx_funptrs);
-  std::cout << "Valor: " << funptr << std::endl;
   queue_funptrs.emplace(funptr);
 }
 

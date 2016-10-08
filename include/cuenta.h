@@ -3,8 +3,18 @@
 
 #include <vector>
 
+/**Hay tres elementos que Hacienda necesita:
+1. Catálogo de cuentas utilizado en el período
+2. Balanza de comprobación que incluya saldos iniciales, movimientos del periodo y
+   saldos finales de cada una de las cuentas de activo, pasivo, capital y resultados
+3. Información de las pólizas generadas, incluyendo el detalle de transacción, cuenta,
+   subcuenta y partida, así como sus auxiliares.
+
+   El catálogo de cuentas debe ser enviado una sola vez y cada que sea modificado, mientras que la
+   balanza de comprobación se enviará de forma mensual.*/
+
 /**Clase que herede de "Drawable" y de "Cuenta" podría servir en el diagrama
-Posiblemente "Cuenta" sea una base abstracta, a partir de la cual subclases implementen su interfaz
+Posiblemente "Cuenta" sea una base abstracta, a partir de la cual subclases implementen su interfaz.
 De igual manera "Drawable" puede que tenga subclases como círculo o cuadrado*/
 /*Activos. Representan todos los bienes y derechos que posee una empresa.
 Estos pueden se físicos (tangibles), como el dinero, un terreno, un edificio,

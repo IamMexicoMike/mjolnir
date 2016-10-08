@@ -4,6 +4,7 @@
 int glb::llave_objeto_highlight=-1;
 int glb::llave_objeto_seleccionado=-1;
 bool glb::b_drag=false;
+bool glb::b_resize=false;
 
 cv::Point glb::ptInicioArrastre(0,0);
 cv::Point glb::ptFinArrastre(0,0);
