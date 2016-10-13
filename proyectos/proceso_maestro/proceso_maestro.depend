@@ -1,0 +1,23 @@
+# depslib dependency file v1.0
+1476380461 source:c:\proyectos\proceso_maestro\main.cpp
+	<cstdlib>
+	<iostream>
+	<memory>
+	<utility>
+	<vector>
+	<map>
+	<fstream>
+	"asio.hpp"
+	"estructuras.h"
+	"socket_y_sesion.h"
+
+1476200216 source:c:\proyectos\proceso_maestro\src\estructuras.cpp
+	"estructuras.h"
+
+1476380099 c:\proyectos\proceso_maestro\include\estructuras.h
+	<map>
+
+1476380461 c:\proyectos\proceso_maestro\include\socket_y_sesion.h
+	"asio.hpp"
+	"estructuras.h"
+
