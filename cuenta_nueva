@@ -1,0 +1,81 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0303 
+header_name {.h} 
+code_name {.cxx}
+decl {const int idx_cuenta[] = {0,1,2,3,4,5};} {
+  comment {mueve esto a un enum class de la clase cuenta} selected private local
+} 
+
+Function {tipo_cb(Fl_Button *b, void* p)} {
+  comment {callback de seleccion de tipo de cuenta} open private return_type void
+} {
+  code {using namespace std;
+static int tipo=-1;
+int i = *(int*)p;
+cout << i << endl;} {}
+} 
+
+Function {ventana_cuenta_nueva()} {open return_type int
+} {
+  Fl_Window {} {
+    label {Crear cuenta} open
+    xywh {79 111 276 316} type Double
+    code0 {\#include <iostream>} visible
+  } {
+    Fl_Button {} {
+      label cancelar
+      xywh {185 270 80 30}
+    }
+    Fl_Return_Button {} {
+      label Crear
+      xywh {90 270 85 30}
+    }
+    Fl_Group {} {
+      label Tipo open
+      xywh {10 25 75 110} box GTK_UP_FRAME labelfont 8
+    } {
+      Fl_Round_Button {} {
+        label Activo
+        xywh {10 35 64 15} type Radio down_box ROUND_DOWN_BOX
+        code1 {o->callback((Fl_Callback*) tipo_cb, (void*)(idx_cuenta));}
+      }
+      Fl_Round_Button {} {
+        label Pasivo
+        user_data 1
+        xywh {10 50 64 15} type Radio down_box ROUND_DOWN_BOX
+        code0 {o->callback((Fl_Callback*) tipo_cb, (void*)(idx_cuenta+1));}
+      }
+      Fl_Round_Button {} {
+        label Capital
+        xywh {10 66 64 15} type Radio down_box ROUND_DOWN_BOX
+        code0 {o->callback((Fl_Callback*) tipo_cb, (void*)(idx_cuenta+2));}
+      }
+      Fl_Round_Button {} {
+        label Gastos
+        xywh {10 100 64 15} type Radio down_box ROUND_DOWN_BOX
+        code0 {o->callback((Fl_Callback*) tipo_cb, (void*)(idx_cuenta+3));}
+      }
+      Fl_Round_Button {} {
+        label Ingresos
+        xywh {10 115 64 15} type Radio down_box ROUND_DOWN_BOX
+        code0 {o->callback((Fl_Callback*) tipo_cb, (void*)(idx_cuenta+4));}
+      }
+    }
+    Fl_Group {} {
+      label Subtipo open
+      xywh {130 25 70 55} box GTK_UP_FRAME labelfont 8
+    } {
+      Fl_Round_Button {} {
+        xywh {135 35 64 15} type Radio down_box ROUND_DOWN_BOX
+      }
+      Fl_Round_Button {} {
+        xywh {135 50 64 15} type Radio down_box ROUND_DOWN_BOX
+      }
+    }
+  }
+  code {using namespace std;
+/* codigo pendiente */
+w->show();
+w->end();
+return 0;} {}
+} 

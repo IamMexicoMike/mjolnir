@@ -58,13 +58,49 @@ int main_gui()
 int foo_gui()
 {
   Fl_Window *window = new Fl_Window(300,300);
-  Fl_Box *box = new Fl_Box(20,40,260,100,"Hello, World!");
+  Fl_Box *box = new Fl_Box(20,40,260,100,"Mike ftw");
   box->box(FL_UP_BOX);
   box->labelsize(36);
   box->labelfont(FL_BOLD);
   box->labelcolor(14);
   window->end();
   window->show();
+  Fl_Double_Window* vv = make_window();
+  vv->end();
+  vv->show();
   //Fl::run();
   return 0;
+}
+
+Fl_Input *ti_servidor=(Fl_Input *)0;
+
+static void cb_ti_servidor(Fl_Input*, void*) {
+  std::cout << "texto" << std::endl;
+}
+
+Fl_Light_Button *boton_chk=(Fl_Light_Button *)0;
+
+static void cb_boton_chk(Fl_Light_Button*, void*) {
+  std::cout << "Click" << std::endl;
+}
+
+Fl_Double_Window* make_window() {
+  Fl_Double_Window* w;
+  { Fl_Double_Window* o = new Fl_Double_Window(378, 220, "Ventana");
+    w = o;
+    { ti_servidor = new Fl_Input(68, 25, 103, 24, "servidor");
+      ti_servidor->box(FL_GTK_DOWN_BOX);
+      ti_servidor->callback((Fl_Callback*)cb_ti_servidor);
+      ti_servidor->when(FL_WHEN_ENTER_KEY_ALWAYS);
+    } // Fl_Input* ti_servidor
+    { boton_chk = new Fl_Light_Button(80, 68, 68, 22, "button");
+      boton_chk->box(FL_GTK_UP_BOX);
+      boton_chk->down_box(FL_GTK_DOWN_BOX);
+      boton_chk->selection_color((Fl_Color)79);
+      boton_chk->callback((Fl_Callback*)cb_boton_chk);
+      boton_chk->when(FL_WHEN_CHANGED);
+    } // Fl_Light_Button* boton_chk
+    o->end();
+  } // Fl_Double_Window* o
+  return w;
 }

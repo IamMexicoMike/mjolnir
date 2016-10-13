@@ -8,11 +8,30 @@
 #include <memory>
 #include <utility>
 #include <chrono>
+#include <queue>
+#include <mutex>
+
 #include "asio.hpp"
 #include "asio/steady_timer.hpp"
 
 using namespace asio::ip;
+using namespace std;
+extern asio::io_service iosvc;
 //using asio::ip::tcp;
+
+extern std::queue<std::string> queue_saliente;
+extern std::mutex mtx_saliente;
+extern std::mutex mtx_datos;
+
+/**Añade datos al contenedor de salida para que sean enviados por la red.
+Debe ser usado por la interfaz gráfica*/
+void empujar_queue_saliente(std::string s);
+
+/**Extrae de la queue saliente datos a enviar por la red.
+Usarlo dentro de la sesión TCP para enviar los datos*/
+std::string extraer_queue_saliente();
+
+void clasificar_metadata(const char* paquete);
 
 class cliente
 {
@@ -22,7 +41,7 @@ public:
     temporizador(io_service)
   {
     tcp::resolver resolvedor(io_service);
-    tcp::resolver::query query("turambar2.ddns.net", "1337");
+    tcp::resolver::query query("127.0.0.1", "1337"); //puedes meter dns aqui
     tcp::resolver::iterator iter = resolvedor.resolve(query);
     endpoint_ = iter->endpoint();
     conectar();
@@ -30,78 +49,16 @@ public:
   }
 
 private:
-  void conectar()
-  {
-    socket_.async_connect(endpoint_,
-      [this](std::error_code ec)
-      {
-        if(!ec)
-        {
-          leer();
-        }
-        else
-        {
-          std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << std::endl;
-          /*Puede ser un error 10061: Equipo destino denegó expresamente dicha conexión */
-          if(ec.value() == 10061)
-            conectar();
-
-          /*Error 10056: Se solicitó conexión en socket ya conectado*/
-          if(ec.value() == 10056)
-          {
-            std::error_code ec_cerrar;
-            socket_.close(ec_cerrar);
-            if(!ec_cerrar)
-              conectar();
-            else
-              std::cout << "Error cerrando y conectando: " << ec_cerrar.value() <<  ": " <<  ec_cerrar.message() << std::endl;
-          }
-          //...
-        }
-      });
-  } //conectar
-
-  void leer()
-  {
-    socket_.async_read_some(asio::buffer(rx_buf_, sz_buf),
-      [this](std::error_code ec, std::size_t bytes_leidos)
-      {
-        if(!ec)
-        {
-          //hacer algo con la información recibida
-          std::cout.write(rx_buf_, bytes_leidos);
-          leer();
-        }
-        else
-        {
-          /*Error 10054: Interrupción forzada por host remoto*/
-          std::cout << "Error leyendo" << ec.value() <<  ": " << ec.message() << std::endl;
-          if(ec.value() == 10054)
-            conectar();
-        }
-      });
-  }
-
-  void timer_queue()
-  {
-    asio::error_code ec;
-    temporizador.expires_from_now(std::chrono::milliseconds(25), ec);
-    temporizador.async_wait(
-      [this](std::error_code ec)
-      {
-        if(!ec)
-          /*checar alguna queue o enviar algun mensaje*/;
-        else
-          std::cout << "Error temporizador: " << ec.value() <<  ": " <<  ec.message() << std::endl;
-        timer_queue();
-      });
-  }
+  void conectar();
+  void leer();
+  void escribir(std::string str);
+  void timer_queue();
 
   tcp::socket socket_;
   tcp::endpoint endpoint_;
-  enum { sz_buf = 1024 };
+  enum { sz_buf = 128 };
   char rx_buf_[sz_buf];
-  char tx_buf_[sz_buf];
+  string tx_buf_;
   asio::steady_timer temporizador;
 };
 

@@ -13,7 +13,9 @@
 #include "elemento_diagrama.h"
 #include "utilidades.hpp"
 #include "redes.h"
+
 #include "gui.h"
+#include "cuenta_nueva.h"
 
 using namespace std;
 using namespace cv;
@@ -107,6 +109,7 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
     {
       b_dibujando_objeto = false;
       glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
+      empujar_queue_saliente(std::string("Creando con enter"));
     }
     break;
   case 103: //g de guardar
@@ -117,8 +120,8 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
     break;
   case 50: //debug
     cout << "valor global: " << glb::llave_objeto_highlight << endl;
-    //push_funptr(&foobar);
-    system("Pause");
+    //push_funptr(&foo_gui);
+    push_funptr(&ventana_cuenta_nueva);
     break;
   case 100: //d de debug
     cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
@@ -195,6 +198,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
       b_dibujando_objeto = false;
       glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
+      empujar_queue_saliente(std::string("Creando con mouse"));
 
       /**solicitamos las propiedades del nuevo objeto a crear*/
       /***/
@@ -318,8 +322,8 @@ int main()
 
     namedWindow("Mjolnir");
     setMouseCallback("Mjolnir", manejarInputMouse);
-    //std::thread t1(redes_main);
-    std::thread t2(main_gui);
+    std::thread hilo_redes(redes_main);
+    std::thread hilo_gui(main_gui);
     renderizarDiagrama(region);
 
     while (true)
@@ -342,7 +346,9 @@ int main()
       setMouseCallback("Mjolnir", manejarInputMouse);
     }
 
-    //t1.join();
-    t2.join();
+    hilo_gui.join();
+
+    iosvc.stop();
+    hilo_redes.join();
     return 0;
 }

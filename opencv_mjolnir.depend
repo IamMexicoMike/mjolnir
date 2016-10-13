@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1475900538 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
+1476392048 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -14,13 +14,16 @@
 	"utilidades.hpp"
 	"redes.h"
 	"gui.h"
+	"cuenta_nueva.h"
 
-1474405359 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
+1476394455 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
 	<cstdlib>
 	<iostream>
 	<memory>
 	<utility>
 	<chrono>
+	<queue>
+	<mutex>
 	"asio.hpp"
 	"asio/steady_timer.hpp"
 
@@ -49,7 +52,7 @@
 1475897921 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
 	<vector>
 
-1475900252 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+1475901038 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
 	"elemento_diagrama.h"
 	"utilidades.hpp"
 	<windows.h>
@@ -57,22 +60,39 @@
 	<fstream>
 	<sstream>
 
-1473204902 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
+1476383700 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
 	"redes.h"
 
 1475791468 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
 	"utilidades.hpp"
 	"elemento_diagrama.h"
 
-1475877304 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
+1476117635 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
 	"gui.h"
 	<iostream>
 	<FL/Fl_RGB_Image.H>
 
-1475778786 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
+1476125038 c:\users\propietario\documents\proyectos\mjolnir\include\gui.h
 	<queue>
 	<mutex>
 	<FL/Fl.H>
 	<FL/Fl_Window.H>
 	<FL/Fl_Box.H>
+	<FL/Fl.H>
+	<FL/Fl_Double_Window.H>
+	<FL/Fl_Input.H>
+	<iostream>
+	<FL/Fl_Light_Button.H>
+
+1476136875 c:\users\propietario\documents\proyectos\mjolnir\cuenta_nueva.h
+	<FL/Fl.H>
+	<FL/Fl_Double_Window.H>
+	<iostream>
+	<FL/Fl_Button.H>
+	<FL/Fl_Return_Button.H>
+	<FL/Fl_Group.H>
+	<FL/Fl_Round_Button.H>
+
+1476136875 source:c:\users\propietario\documents\proyectos\mjolnir\cuenta_nueva.cxx
+	"cuenta_nueva.h"
 
