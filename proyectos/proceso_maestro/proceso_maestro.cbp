@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lws2_32 -lwsock32" />
@@ -23,7 +24,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/estructuras.h" />
+		<Unit filename="include/socket_y_sesion.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/estructuras.cpp" />
+		<Unit filename="src/socket_y_sesion.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
