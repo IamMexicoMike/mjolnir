@@ -7,8 +7,6 @@
 using asio::ip::tcp;
 using namespace std;
 
-void procesar_metadata(const char* paquete);
-
 class sesion
   : public enable_shared_from_this<sesion>
 {
@@ -23,10 +21,13 @@ public:
 private:
   void hacer_lectura();
   void hacer_escritura(std::string str);
+  void procesar_lectura();
+  void enviar_archivo(string archivo);
 
   tcp::socket socket_;
-  enum { max_length = 128 };
-  char data_[max_length];
+  enum {longitud_maxima = 4096};
+  const int puerto_remoto_ftp_ = 1339;
+  char data_[longitud_maxima];
   std::string str_;
 };
 

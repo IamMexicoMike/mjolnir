@@ -108,8 +108,7 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
     if(b_dibujando_objeto)
     {
       b_dibujando_objeto = false;
-      glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto));
-      empujar_queue_saliente(std::string("Creando con enter"));
+      crear_objeto(puntoOrigenobjeto, puntoFinobjeto);
     }
     break;
   case 103: //g de guardar
@@ -122,6 +121,9 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
     cout << "valor global: " << glb::llave_objeto_highlight << endl;
     //push_funptr(&foo_gui);
     push_funptr(&ventana_cuenta_nueva);
+    break;
+  case 51:
+    empujar_queue_saliente("ftp dummyfile.txt"); //al parecer no puedes declarar variables aquí -fpermissive
     break;
   case 100: //d de debug
     cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
@@ -162,9 +164,7 @@ inline void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni s
   case 3014656: //suprimir, borrar objeto
     if(glb::llave_objeto_seleccionado > 0)
     {
-      glb::objetos.erase(glb::llave_objeto_seleccionado);
-      glb::llave_objeto_seleccionado = -1;
-      glb::llave_objeto_highlight = -1;
+      destruir_objeto(glb::llave_objeto_seleccionado);
       ubicacion::determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
     break;
@@ -197,8 +197,7 @@ inline void manejarInputMouse(int event, int x, int y, int flags, void*)
     if(b_dibujando_objeto)
     {
       b_dibujando_objeto = false;
-      glb::objetos.emplace(objeto::sid - 1, objeto(puntoOrigenobjeto, puntoFinobjeto)); //porque -1?
-      empujar_queue_saliente(std::string("Creando con mouse"));
+      crear_objeto(puntoOrigenobjeto, puntoFinobjeto);
 
       /**solicitamos las propiedades del nuevo objeto a crear*/
       /***/
@@ -323,7 +322,7 @@ int main()
     namedWindow("Mjolnir");
     setMouseCallback("Mjolnir", manejarInputMouse);
     std::thread hilo_redes(redes_main);
-    std::thread hilo_gui(main_gui);
+    //std::thread hilo_gui(main_gui);
     renderizarDiagrama(region);
 
     while (true)
@@ -346,7 +345,7 @@ int main()
       setMouseCallback("Mjolnir", manejarInputMouse);
     }
 
-    hilo_gui.join();
+    //hilo_gui.join();
 
     iosvc.stop();
     hilo_redes.join();

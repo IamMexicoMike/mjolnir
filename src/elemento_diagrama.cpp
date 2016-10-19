@@ -1,13 +1,40 @@
-#include "elemento_diagrama.h"
-#include "utilidades.hpp"
 #include <windows.h>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <mutex>
+#include <string>
+
+#include "elemento_diagrama.h"
+#include "utilidades.hpp"
+
+extern void empujar_queue_saliente(std::string s); /*No quiero incluir redes.h*/
+
+using namespace std;
+
+std::mutex mtx_objetos;
 
 int objeto::sid = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
 int relacion::sid = 1;
+
+void crear_objeto(cv::Point& p1, cv::Point& p2)
+{
+  std::lock_guard<mutex> lck(mtx_objetos);
+  string paq = "o" + to_string(p1.x);
+  glb::objetos.emplace(objeto::sid - 1, objeto(p1, p2)); //porque -1?
+  empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
+}
+
+void destruir_objeto(int id)
+{
+  std::lock_guard<mutex> lck(mtx_objetos);
+  glb::objetos.erase(glb::llave_objeto_seleccionado);
+  glb::llave_objeto_seleccionado = -1;
+  glb::llave_objeto_highlight = -1;
+  string paq = "mo" + to_string(id);
+  empujar_queue_saliente(paq);
+}
 
 flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor)
 {

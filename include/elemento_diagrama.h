@@ -4,11 +4,16 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <mutex>
 
 #include <opencv2/opencv.hpp>
 
 #include "utilidades.hpp"
 
+extern std::mutex mtx_objetos;
+
+void destruir_objeto(int id);
+void crear_objeto(cv::Point& p1, cv::Point& p2);
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);

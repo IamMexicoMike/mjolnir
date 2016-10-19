@@ -3,11 +3,8 @@
 
 #include <vector>
 #include <map>
-#include <mutex>
 
 #include <opencv2/opencv.hpp>
-
-extern std::mutex mtx_obj;
 
 class objeto;
 class relacion;

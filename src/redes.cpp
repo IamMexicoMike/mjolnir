@@ -1,4 +1,5 @@
 #include "redes.h"
+#include "peq_server_ftp.h"
 
 using namespace std;
 using namespace asio;
@@ -129,14 +130,17 @@ void redes_main()
   try
   {
     short puerto = 1337;
+    short puerto_rx_ftp = 1339;
 
-    cliente c(iosvc, "127.0.0.1", puerto);
+    cliente tu_cliente(iosvc, "127.0.0.1", puerto); //"127.0.0.1" no sé si excluya conexiones externas
+    aceptor_sockets_ftp tu_aceptor(puerto_rx_ftp);
 
     iosvc.run();
+    std::cout << "Saliendo de ciclo de iosvc\n";
   }
   catch (std::exception& e)
   {
-    std::cerr << "Exception: " << e.what() << "\n";
+    std::cerr << "Excepcion en redes_main: " << e.what() << "\n";
   }
 
 }

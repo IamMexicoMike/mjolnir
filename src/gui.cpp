@@ -39,9 +39,9 @@ void callback_fptrs(void*)
 
 int main_gui()
 {
-  Fl::add_timeout(0.01, callback_fptrs);
+  Fl::add_timeout(0.1, callback_fptrs);
   Fl_Window *window = new Fl_Window(300,280);
-  Fl_Box *box = new Fl_Box(20,40,260,100,"Venga Mike");
+  Fl_Box *box = new Fl_Box(20,40,260,100,"Canapes");
   box->box(FL_UP_BOX);
   box->labelsize(36);
   box->labelfont(FL_BOLD+FL_ITALIC);
