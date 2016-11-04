@@ -46,4 +46,36 @@ una escritura fallará.
 Esto lo debe determinar PM (Si pudiera hacerse en Pn sería genial pues distribuyes el peso
 de la computación). Si pudiera "desglosar" el tipo de transacciones realizables.
 
+---------------------------------------------------------------------------------
+
+
+Estoy reflexionando sobre lo asequible de la tarea de construir este sistema. Realmente
+me hace falta conseguir más colaboradores, el espacio para cometer errores de diseño es
+muy amplio, y no me considero un experto en muchos de los temas relevantes para hacerlo.
+Existen demasiadas ideas, demasiadas posibilidades. El lenguaje permite construcciones
+muy complejas. smart_ptrs, vector, map, tuple, iostreams, etc.
+Necesito encontrar una manera para capacitar a la gente a que pueda ayudarme a desarrollar.
+
+---------------------------------------------------------------------------------
+
+Tomando como referencia el curso de presupuesto, necesitas un plan de desarrollo de SW.
+No puedes seguir desarrollando de una manera campechana feature tras feature. Debes
+establecer metas concretas.
+S Específico
+M Medible
+A Asequible
+R Relevante
+T Timely
+
+"Fallar en planear es planear fallar"
+
+----------------------------------------------------------------------------------
+
+Para desencadenar eventos en la GUI diseñé un sistema de std::queue<int(*)()>
+Es un buffer FIFO de apuntadores a funciones. Cuando algún otro hilo desea que alguna
+ventana de la GUI emerja, le pasa a este buffer (a través de una función que usa un mutex)
+el apuntador a la función que quiera sea llamada (por el hilo de la GUI). De esta manera,
+la pertenencia de los recursos reservados por esta función es de la GUI, y no del hilo que
+la desencadenó. Esto evita que la interfaz sea irresponsiva si cerramos el hilo que
+desencadenó este evento (por ejemplo el diagrama).
 

@@ -23,10 +23,11 @@ public:
 
 private:
   void hacer_lectura();
-
   tcp::socket socket_;
   enum {longitud_maxima = 4096};
   char data_[longitud_maxima];
+  string buffer_total_;
+  string filename_;
 };
 
 class aceptor_sockets_ftp

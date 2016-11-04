@@ -29,18 +29,11 @@ namespace glb
     extern cv::Point desplazamientoOrigen;
 }
 
-namespace header
+//hmpgfgmg
+struct ubicacion
 {
-    const cv::Point HEADER0(5,20);
-    const cv::Point HEADER1(100,20);
-}
-
-//qué es esto
-class ubicacion
-{
-public:
-    enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
-    static std::pair<int, ubicacion::Flags> determinar_propiedades_ubicacion(cv::Point);
+  enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
+  static std::pair<int, ubicacion::Flags> determinar_propiedades_ubicacion(cv::Point);
 };
 
 

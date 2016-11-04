@@ -97,6 +97,138 @@ class movimiento
 
 };
 
+/*
+SMike
+Diapositivas en el centro en grande
+Bloat de chat arriba la derecha
+Chats abajo
+Video abajo a la derecha
+Se les corta el video y audio
+*/
 
+/*
+Presupuesto y proyecciones de rentabilidad
+
+*reportes claros a la dirección en tiempo
+*análisis con información correcta
+
+*Baja los FDIS a excel y usa tablas dinámicas, ventas por cliente, por concepto, lo cuadra con su estado de resultados
+*Cómo calculas un presupuesto? Qué busco? Dónde estoy? Tengo que solicitar financiamiento? Cuándo se tiene que hacer?
+*PAE Procedimiento administrativo de ejecución - básicamente el SAT te la atora
+* Un error común es a los ingresos y gastos agregarle un 5% y ya
+*Situaciones financieras normales: no tenemos liquidez, no somos rentables
+*"Los impuestos son una arga financiera por su pago y el gasto de su control"
+*Qué respondes si te preguntan cuál es tu margen de utilidad?
+*Se determina en un estado de resultados?
+*"el costo de ventas como basurero"?
+*Que el cliente recoja su mercancía y doy descuento. Si mi margen era del 20% "meto en problemas a la empresa"?
+*Utilidades decrecientes. Muchas veces no consideramos todos los factores
+*Reglas 2.7.2
+*Pago de gastos, pago de proveedores,  inversiones, impuestos, intereses, bancos
+*Impuestos sobre la utilidad (ISR, PTU, IVA), sobre el flujo, sobre la renta.
+*Cuál es el flujo de efectivo de la semana? : Saldo inicial del banco, ... , cartera vencida- pago de gastos, pago
+ de proveedores, pago
+*Cuál es el presupuesto de cobranzas de esta semana o mes?
+*Cuál es el margen de utilidad por producto?
+*Cuál es mi punto de equilibrio en ventas en dinero?
+*Cuál es la meta de ventas de este mes
+*Cuánto importan mis gastos fijos mensuales?
+
+Planeación.
+"Lo que no se puede medir no se puede mejorar"
+*Costo fiscal, costo contable, falta medir mermas, robos...
+*No podemos resolver problemas actuales con herramientas del pasado
+*Ataquemos el origen no el efecto
+*Establecer variables pertinentes
+*Operacionalizar objetivos, metas y estrategias, desarrollando un plan de utilidades
+*Buscar (obviamente) reducir costos, aumentar ventas, aumentar precio de venta
+*De igual modo, necesitas un plan de desarrollo de SW
+
+Test:
+Nuestra empresa maneja presupuestos?
+Manejamos flujos de efectivo presupuestados?
+Contamos con estados financieros mensuales confiables?
+Con qué periodicidad realizamos nuestras conciliaciones bancarias? diarias (correctamente)
+  Sus cuentas por cobrar no estarían actualizadas si no lo hicieran.
+Contamos con un sistema de costos? Gob te obliga a llevar una valuación de la mercancía por fecha, por producto...
+  Qué conceptos sí entran y cuáles no al costeo? Costo de ventas o de servicios es muy importante? Maru: costo de producción
+  Laurita: El costo de producción está dentro del costo de ventas.
+Conocemos nuestro margen de utilidad? Martín: "Sí pero no" -> Global pero no por artículo ni familia
+Manejamos tabuladores de sueldos? Sí manejamos
+Tenemos implementado un presupuesto de sueldos y compensaciones por departamento?
+Manejamos el indicador de rotación de personal? Sí. Cuesta. Capacitar, echar a perder, etc.
+Realizamos planeación estratégica para 2016? No.
+Conocemos nuestro break even o punto de equilibrio? Sí. Actualmente 180 toneladas (Maru)
+
+Cómo se hace un presupuesto de ventas?
+Gastos fijos / margen de utilidad? Investiga
+
+-Premisas de los presupuestos-
+Implican un cambio de pensamiento y cultura. (Ojo)
+Es un trabajo continuo
+Es una forma de vida empresarial
+Requiere del total apoyo de dirección
+Significa el mapa en el viaje que emprende la empresa
+El presupuesto es un trabajo en equipo
+
+Bonos por cobrar? suelen no existir, pero sí hay bonos por ventas
+Presupuesto maestro.
+1. Conocimiento de la empresa
+2. Exposición del plan o política (Manual del presupuesto -> bases de su elaboración)
+3. Coordinación para la ejecución de dicho plan. El gerente responsable sincroniza las actividades
+4. Fijación del período presupuestal. Considerando la naturaleza de las operaciones
+5. Dirección y vigilancia
+6. Respaldo directivo
+
+pto de operación
+Todo parte del presupuesto de ventas. Lo hace dirección y el director de ventas. Es el eje de los demás presupuestos
+Pto de producción
+Pto de compra
+Pto de pagos
+Pto de costo ventas
+pto de inversiones
+pto de costos fijos
+pto de costos variables
+
+pto financiero
+pto de financiamientos
+pto de inversiones
+flujo de caja
+
+estados financieros proyectados
+estoadosde posición financiera proyectado
+Estado de resultados proyectado
+
+Presupuesto de ventas:
+Los factores que lo afectan {
+  Específicos de ventas
+  De fuerzas económicas generales (precio barril petróleo eg)
+
+}
+Factores de ajuste, de cambio, corrientes de crecimiento
+de ajuste: Por causas fortuitas o de fuerza mayor influyen en la predeterminación de las ventas o proyectos
+de cambio: modificaciones que van a efectuarse y que influirán en las ventas:
+  eg. cambio de material, de productos, presentación, rediseños, etc.
+  cambio de producción. Cambio de instalaciones
+  cambio de mercados
+
+Pv = (V+F)*E*A
+V = Ventas del año anterior
+F = Factores específicos de ajuste
+
+Gravámenes adicionales para equilibrar el producto chino con el nacional
+
+Pto de producción.
+Especifica la cantidad de artículos a fabricar que se planea
+Requiere un presupuesto de ventas en unidades
+
+Definición del precio del producto
+Qué es el coeficiente de elasticidad precio-demanda?
+
+
+
+
+
+*/
 
 #endif // CUENTA_H

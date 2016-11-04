@@ -1,5 +1,6 @@
 #include "peq_server_ftp.h"
 #include <memory>
+#include <fstream>
 
 using namespace std;
 
@@ -18,19 +19,20 @@ void sesion_receptora::hacer_lectura()
     if (!ec)
     {
       cout << longitud << " bytes leidos:\n";
-      cout.write(data_, longitud);
-      cout << "\n\n";
+      buffer_total_.append(data_, longitud);
       hacer_lectura();
     }
     else
     {
-      /*y no volvemos a leer, si no, se cicla*/
-      cout << "Error sesión receptora: "<< ec.value() << ":" << ec.message()
-        << longitud << " bytes leidos" << endl;
-      if(ec.value() == 2)
+      if(ec.value()==2) //fin de archivo, osea fin de transmisión
       {
-        std::cout.write(data_, longitud);
+        ofstream ofs("archivo_rx", std::ios::binary);
+        ofs.write(&buffer_total_[0], buffer_total_.size());
       }
+      else
+        cout << "Error sesión receptora: "<< ec.value() << ":" << ec.message() << '\n';
+
+      /*y no volvemos a leer, si no, se cicla*/
     }
 
   });

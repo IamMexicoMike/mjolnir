@@ -1,9 +1,15 @@
 #include "gui.h"
 #include <iostream>
+#include <memory>
 #include <FL/Fl_RGB_Image.H>
+
+extern void empujar_queue_saliente(std::string s); //redes.cpp
+extern std::string extraer_queue_saliente();
 
 std::queue<int(*)()> queue_funptrs;
 std::mutex mtx_funptrs;
+
+std::atomic_bool b_gui_activa;
 
 void push_funptr(int(*funptr)())
 {
@@ -24,14 +30,14 @@ int (*extract_funptr())()
     return nullptr;
 }
 
-/**Este callback se llama cada 10ms y ejecuta funciones que el hilo del diagrama manda a ejecutar,
-en el hilo de la GUI*/
+/**Este callback se llama cada 10ms y ejecuta funciones que el hilo del diagrama (o el de redes)
+ mandan a ejecutar, en el hilo de la GUI*/
 void callback_fptrs(void*)
 {
   int (*pfun)() = extract_funptr();
   if(pfun != nullptr)
   {
-      pfun();
+    pfun();
   }
 
   Fl::repeat_timeout(0.01, callback_fptrs);
@@ -40,8 +46,8 @@ void callback_fptrs(void*)
 int main_gui()
 {
   Fl::add_timeout(0.1, callback_fptrs);
-  Fl_Window *window = new Fl_Window(300,280);
-  Fl_Box *box = new Fl_Box(20,40,260,100,"Canapes");
+  auto window = std::make_unique<Fl_Window>(300,280);
+  Fl_Box *box = new Fl_Box(20,40,260,100,"constexpr noexcept");
   box->box(FL_UP_BOX);
   box->labelsize(36);
   box->labelfont(FL_BOLD+FL_ITALIC);
@@ -50,14 +56,16 @@ int main_gui()
   window->show();
 
   //probando
-  Fl::background(24,250,122);
+  Fl::background(24,150,122);
 
-  return Fl::run();
+  auto rrr = Fl::run();
+  b_gui_activa = false; //avisar que salimos de la gui
+  return rrr;
 }
 
 int foo_gui()
 {
-  Fl_Window *window = new Fl_Window(300,300);
+  auto window = std::make_unique<Fl_Window>(300,300);
   Fl_Box *box = new Fl_Box(20,40,260,100,"Mike ftw");
   box->box(FL_UP_BOX);
   box->labelsize(36);
@@ -74,14 +82,18 @@ int foo_gui()
 
 Fl_Input *ti_servidor=(Fl_Input *)0;
 
-static void cb_ti_servidor(Fl_Input*, void*) {
-  std::cout << "texto" << std::endl;
+static void cb_ti_servidor(Fl_Input* i, void*) {
+  std::string s = i->value();
+  std::cout << s << std::endl;
+  empujar_queue_saliente(s);
 }
 
 Fl_Light_Button *boton_chk=(Fl_Light_Button *)0;
 
 static void cb_boton_chk(Fl_Light_Button*, void*) {
-  std::cout << "Click" << std::endl;
+  std::string s = "click";
+  std::cout << s << std::endl;
+  empujar_queue_saliente(s);
 }
 
 Fl_Double_Window* make_window() {

@@ -5,10 +5,13 @@
 
 #include <queue>
 #include <mutex>
+#include <atomic>
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
+
+extern std::atomic_bool b_gui_activa;
 
 extern std::queue<int(*)()> queue_funptrs;
 extern std::mutex mtx_funptrs;
