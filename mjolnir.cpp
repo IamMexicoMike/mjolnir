@@ -9,68 +9,96 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "datos.hpp"
-#include "elemento_diagrama.h"
+#include "elemento_diagrama.h" /**mjolnir no incluye su propio header?*/
 #include "redes.h"
 
 #include "gui.h"
 #include "cuenta_nueva.h"
 
+extern int paleta_colores();
+extern void reboot();
+
 using namespace std;
 using namespace cv;
 
-/* La forma más rápida de fracasar es no intentarlo */
-/* Querer es poder */
-/* El que busca encuentra */
+/* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
+
+const Point HEADER0(5,20);
+const Point HEADER1(100,20);
+
+const Scalar BLANCO(255,255,255);
+const Scalar GRIS(200,200,200);
+const Scalar AZUL_PALIDO(240,200,200);
+const Scalar Bckgnd(255,153,51);
+
+int ancho_region = 1000;
+int altura_region = 600;
+int ANCHO_MENU = 200;
 
 
-const cv::Point HEADER0(5,20);
-const cv::Point HEADER1(100,20);
-
-const cv::Scalar BLANCO(255,255,255); //no se pueden constexpresear
-const cv::Scalar GRIS(200,200,200);
-const cv::Scalar AZUL_PALIDO(240,200,200);
-
-constexpr int ANCHO_REGION = 1000;
-constexpr int ANCHO_MENU = 200;
-constexpr int ALTURA_REGION = 600;
-
-cv::Mat region(ALTURA_REGION, ANCHO_REGION, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-cv::Mat mat_panel = region.colRange(region.cols - 100, region.cols); //mn
-cv::Mat mat_header = region.colRange(0, region.cols - 100).rowRange(0,30); //mn
+Mat region;
+Mat mat_panel;
+Mat mat_header;
 
 bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
 bool botonMouseDerechoAbajo=false; //panning
-cv::Point puntoClickMouseDerecho(0,0); //panning
-cv::Point puntoInicioDesplazamiento(0,0); //panning
+Point puntoClickMouseDerecho(0,0); //panning
+Point puntoInicioDesplazamiento(0,0); //panning
 
 bool b_dibujando_flecha; //flechas temporales
-cv::Point puntoInicioFlecha(0,0); //flechas temporales
-cv::Point puntoTerminoFlecha(0,0); //flechas temporales
+Point puntoInicioFlecha(0,0); //flechas temporales
+Point puntoTerminoFlecha(0,0); //flechas temporales
 
 bool b_dibujando_circulo;           //completar esta interfaz
-cv::Point puntoOrigenCirculo(0,0);
+Point puntoOrigenCirculo(0,0);
 
 bool b_dibujando_objeto; //objeto temporal
-cv::Point puntoOrigenobjeto(0,0); //objeto temporal
-cv::Point puntoFinobjeto(0,0); //objeto temporal
+Point puntoOrigenobjeto(0,0); //objeto temporal
+Point puntoFinobjeto(0,0); //objeto temporal
 
-cv::Point puntoActualMouse(0,0); //evita llamar WINAPI, se actualiza en cada evento del mouse
+Point puntoActualMouse(0,0); //evita llamar WINAPI, se actualiza en cada evento del mouse
+
+void establecer_resolucion(int& horizontal, int& vertical)
+{
+   RECT escritorio;
+   const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
+
+   GetWindowRect(hEscritorio, &escritorio);// guarda el tamaño de la pantalla a la variable escritorio
+   //la esquina superior izquierda tendrá las coordenadas (0,0)
+   //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
+
+   horizontal = escritorio.right;
+   vertical = escritorio.bottom;
+}
+
+void inicializar_diagrama()
+{
+  establecer_resolucion(ancho_region, altura_region);
+  if(ancho_region < 10 || ancho_region > 10000 || altura_region < 10 || altura_region > 10000)
+  {
+    ancho_region = 1000; altura_region = 800;
+  }
+  region = Mat(altura_region, ancho_region, CV_8UC3, cv::Scalar(200,200,200));
+  mat_panel = Mat(region.colRange(region.cols - 100, region.cols)); //mn
+  mat_header = Mat(region.colRange(0, region.cols - 100).rowRange(0,30)); //mn
+}
 
 //demasiados magic numbers
 void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
 {
-  cv::Point& despl = glb::desplazamientoOrigen; //Alias, using sólo sirve para tipos y no para variables
+  Point& despl = glb::desplazamientoOrigen; //Alias, using sólo sirve para tipos y no para variables
 
-  std::chrono::time_point<std::chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
-  t_inicial = std::chrono::system_clock::now();
+  chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
+  t_inicial = chrono::system_clock::now();
 
-  /**Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
-  matriz = GRIS;
-  for(int i=15-(despl.x % 15); i<matriz.cols; i+=15) //"generamos" un efecto de desplazamiento de la cuadrícula
+  /*Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
+  matriz = Bckgnd;
+  const int szlado = 15;
+  for(int i=szlado-(despl.x%szlado); i<matriz.cols; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
     line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
-  for(int i=15-(despl.y % 15); i<matriz.rows; i+=15) //Mat::cols es int, no uint
+  for(int i=szlado-(despl.y%szlado); i<matriz.rows; i+=szlado) //Mat::cols es int, no uint
     line(matriz, Point(0,i), Point(matriz.cols,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
+  /*fin efecto cuadrícula*/
 
   if(b_dibujando_flecha) //dibujamos una flecha temporal
     arrowedLine(matriz, Point(puntoInicioFlecha.x - despl.x, puntoInicioFlecha.y - despl.y),
@@ -82,10 +110,6 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
     rectangle(matriz, Rect(puntoOrigenobjeto - despl, puntoFinobjeto - despl),
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
   }
-
-
-  //dibujamos todas als flechas - actualmente no hace nada
-  //for_each(flechas.begin(), flechas.end(), [&](flecha& f) {f.dibujarse(matriz, despl);});
 
   //dibujamos todos los objetos
   for(auto& rec : glb::objetos)
@@ -105,7 +129,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   // medimos tiempo
   t_final = std::chrono::system_clock::now();
-  std::chrono::duration<double> t_renderizar = t_final - t_inicial;
+  chrono::duration<double> t_renderizar = t_final - t_inicial;
   //cout << t_renderizar.count() << "s\n";
 
   imshow("Mjolnir", matriz); //actualizamos el diagrama
@@ -134,11 +158,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
   case TECLADO_FLECHA_IZQUIERDA:
     glb::desplazamientoOrigen.x -= DESPLAZAMIENTO;
     break;
-  case 114: //r (ojo, R tiene su propia clave
-    puntoOrigenobjeto = puntoActualMouse + glb::desplazamientoOrigen;
-    puntoFinobjeto = puntoOrigenobjeto;
-    b_dibujando_objeto = true;
-    break;
+
   case 13: //tecla enter
     if(b_dibujando_objeto)
     {
@@ -146,20 +166,35 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
       crear_objeto(puntoOrigenobjeto, puntoFinobjeto);
     }
     break;
-  case 103: //g de guardar
-    guardar_todo();
+
+  case 43: //+ ensanchamos el diagrama
+    if(region.cols < 2000)
+    {
+      region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
+      mat_panel = region.colRange(region.cols - 100, region.cols);
+      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
+    }
     break;
-  case 108: //l de load(cargar)
-    cargar_todo();
+  case 45: //- adelgazamos el diagrama
+    if(region.cols > 200)
+    {
+      region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
+      mat_panel = region.colRange(region.cols - 100, region.cols);
+      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
+    }
     break;
+
+  case 48:
+    reboot();
   case 50: //debug
     cout << "valor global: " << glb::llave_objeto_highlight << endl;
     push_funptr(&foo_gui);
     //push_funptr(&ventana_cuenta_nueva);
     break;
   case 51:
-    empujar_queue_saliente("ftp proceso_maestro.exe"); //al parecer no puedes declarar variables aquí -fpermissive
+    empujar_queue_saliente("ftp opencv_mjolnir.exe"); //al parecer no puedes declarar variables aquí -fpermissive
     break;
+
   case 100: //d de debug
     cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
     for(auto& ob : glb::objetos)
@@ -178,22 +213,20 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     }
     break;
 
-  case 43: //+ ensanchamos el diagrama
-    if(region.cols < 2000)
-    {
-      region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-      mat_panel = region.colRange(region.cols - 100, region.cols);
-      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-    }
+  case 103: //g de guardar
+    guardar_todo();
+    break;
+  case 108: //l de load(cargar)
+    cargar_todo();
+    break;
+  case 112: //p - paleta de colores
+    push_funptr(&paleta_colores);
     break;
 
-  case 45: //- adelgazamos el diagrama
-    if(region.cols > 200)
-    {
-      region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-      mat_panel = region.colRange(region.cols - 100, region.cols);
-      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-    }
+  case 114: //r (ojo, R tiene su propia clave
+    puntoOrigenobjeto = puntoActualMouse + glb::desplazamientoOrigen;
+    puntoFinobjeto = puntoOrigenobjeto;
+    b_dibujando_objeto = true;
     break;
 
   case 3014656: //suprimir, borrar objeto
@@ -315,15 +348,15 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
       //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
       if(glb::b_drag)
       {
-        cv::Point pt = puntoActualMouse + despl;
-        cv::Point dif = pt - glb::ptInicioArrastre;
+        Point pt = puntoActualMouse + despl;
+        Point dif = pt - glb::ptInicioArrastre;
         glb::objetos.at(glb::llave_objeto_seleccionado).arrastrar(dif);
         glb::ptInicioArrastre = pt;
       }
       else if(glb::b_resize)
       {
-        cv::Point pt = puntoActualMouse + despl;
-        cv::Point dif = pt - glb::ptInicioArrastre;
+        Point pt = puntoActualMouse + despl;
+        Point dif = pt - glb::ptInicioArrastre;
         glb::objetos.at(glb::llave_objeto_seleccionado).resizear(dif);
         glb::ptInicioArrastre = pt;
       }

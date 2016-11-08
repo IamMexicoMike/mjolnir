@@ -10,6 +10,7 @@
 #include <chrono>
 #include <queue>
 #include <mutex>
+#include <string> //to_string(short)
 
 #include "asio.hpp"
 #include "asio/steady_timer.hpp"
@@ -41,7 +42,7 @@ public:
     temporizador(io_service)
   {
     tcp::resolver resolvedor(io_service);
-    tcp::resolver::query query("127.0.0.1", "1337"); //puedes meter dns aqui
+    tcp::resolver::query query(huesped, to_string(puerto)); //puedes meter dns aqui
     tcp::resolver::iterator iter = resolvedor.resolve(query);
     endpoint_ = iter->endpoint();
     conectar();
@@ -51,6 +52,7 @@ public:
 private:
   void conectar();
   void leer();
+  void procesar_lectura();
   void escribir(std::string str);
   void timer_queue();
 

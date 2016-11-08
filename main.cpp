@@ -21,9 +21,12 @@ using namespace std;
 using namespace cv;
 
 extern cv::Mat region;
+extern void cargar_variables_configuracion();
 
 /* La forma más rápida de fracasar es no intentarlo */
 /* Querer es poder */
+
+int borrame;
 
 /**Necesitamos tres o más hilos:
 1) Diagrama
@@ -32,14 +35,18 @@ extern cv::Mat region;
 n) Más diagramas*/
 int main()
 {
+  cargar_variables_configuracion();
   std::thread hilo_redes(redes_main); //hilo de redes siempre debe de correr
 
   /*Hilo de gui debe de correr al inicio, y siempre y cuando sea requerido por mjolnir
   Si mjolnir solicita una función de la gui y no hay ningún ciclo de fltk corriendo
   mjolnir debe iniciarlo. O el hilo de la redes tal vez.*/
-  std::thread hilo_gui(main_gui);
+  //std::thread hilo_gui(main_gui);
+
+  inicializar_diagrama();
 
   namedWindow("Mjolnir");
+  moveWindow("Mjolnir",0,0);
   setMouseCallback("Mjolnir", manejarInputMouse);
   renderizarDiagrama(region);
 
@@ -60,7 +67,7 @@ int main()
     setMouseCallback("Mjolnir", manejarInputMouse);
   }
 
-  hilo_gui.join();
+  //hilo_gui.join();
 
   //fin de la aplicación
   iosvc.stop();

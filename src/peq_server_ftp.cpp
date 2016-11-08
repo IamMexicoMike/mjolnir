@@ -2,6 +2,8 @@
 #include <memory>
 #include <fstream>
 
+extern void reboot();
+
 using namespace std;
 
 void sesion_receptora::iniciar()
@@ -18,7 +20,7 @@ void sesion_receptora::hacer_lectura()
   {
     if (!ec)
     {
-      cout << longitud << " bytes leidos:\n";
+      //cout << longitud << " bytes leidos:\n";
       buffer_total_.append(data_, longitud);
       hacer_lectura();
     }
@@ -28,6 +30,8 @@ void sesion_receptora::hacer_lectura()
       {
         ofstream ofs("archivo_rx", std::ios::binary);
         ofs.write(&buffer_total_[0], buffer_total_.size());
+        cout << "Archivo recibido: " << buffer_total_.size() << " bytes\n";
+        reboot(); //solo debería de ocurrir bajo las condidiciones de (advertencia actualizar)
       }
       else
         cout << "Error sesión receptora: "<< ec.value() << ":" << ec.message() << '\n';

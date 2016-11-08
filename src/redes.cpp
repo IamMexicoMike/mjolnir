@@ -9,11 +9,10 @@ std::queue<std::string> queue_saliente;
 std::mutex mtx_saliente;
 std::mutex mtx_datos;
 
-void clasificar_metadata(const char* paquete)
-{
-  cout << "tamanio del paq: " << strlen(paquete) << " bytes " << endl;
-}
+string ip_servidor;
+short puerto_servidor; //inicializados a partir de config.txt
 
+extern string sversion;
 
 void empujar_queue_saliente(std::string s)
 {
@@ -35,6 +34,7 @@ std::string extraer_queue_saliente()
     return std::string{};
 }
 
+/**Función miembro que verifica cada 25ms si hay algo que debamos enviar al servidor*/
 void cliente::timer_queue()
 {
   asio::error_code ec;
@@ -65,11 +65,12 @@ void cliente::conectar()
   {
     if(!ec)
     {
+      escribir("version " + sversion);
       leer();
     }
     else
     {
-      std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << std::endl;
+      std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << '\n';
       /*Puede ser un error 10061: Equipo destino denegó expresamente dicha conexión */
       if(ec.value() == 10061)
         conectar();
@@ -96,9 +97,7 @@ void cliente::leer()
   {
     if(!ec)
     {
-      //hacer algo con la información recibida
-      clasificar_metadata(rx_buf_);
-      //std::cout.write(rx_buf_, bytes_leidos);
+      procesar_lectura();
       leer();
     }
     else
@@ -110,6 +109,25 @@ void cliente::leer()
     }
   });
 }
+
+void cliente::procesar_lectura()
+{
+  string lectura = rx_buf_;
+  if(lectura.substr(0,11) == "advertencia")
+  {
+    string advertencia = lectura.substr(12);
+    if(advertencia == "actualizar")
+    {
+      escribir("ftp opencv_mjolnir.exe");
+    }
+  }
+  else
+  {
+    cout << rx_buf_ << '\n';
+  }
+  memset(rx_buf_, '\0', sz_buf);
+}
+
 
 void cliente::escribir(std::string str)
 {
@@ -129,10 +147,9 @@ void redes_main()
 {
   try
   {
-    short puerto = 1337;
     short puerto_rx_ftp = 1339;
 
-    cliente tu_cliente(iosvc, "127.0.0.1", puerto); //"127.0.0.1" no sé si excluya conexiones externas
+    cliente tu_cliente(iosvc, ip_servidor, puerto_servidor); //"127.0.0.1" no sé si excluya conexiones externas
     aceptor_sockets_ftp tu_aceptor(puerto_rx_ftp);
 
     iosvc.run();

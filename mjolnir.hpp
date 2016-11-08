@@ -12,7 +12,7 @@ void renderizarDiagrama(cv::Mat& matriz);
 void manejarInputTeclado(cv::Mat& matriz, int k);
 void manejarInputMouse(int event, int x, int y, int flags, void*);
 
-//la idea es que haya un vector de unique_ptr<objeto> y ya
-std::vector<flecha> flechas;
+void establecer_resolucion(int& horizontal, int& vertical);
+void inicializar_diagrama();
 
 #endif // MJOLNIRHPP
