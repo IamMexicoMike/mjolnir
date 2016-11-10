@@ -2,80 +2,93 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
+	<File name="include\peq_server_ftp.h" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="830" topLine="30" />
+		</Cursor>
+	</File>
+	<File name="include\redes.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1573" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="src\redes.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3604" topLine="124" />
+		</Cursor>
+		<Folding>
+			<Collapse line="23" />
+			<Collapse line="132" />
+		</Folding>
+	</File>
 	<File name="src\utilidades.cpp" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="2004" topLine="34" />
 		</Cursor>
 	</File>
-	<File name="src\redes.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\peq_server_ftp.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3269" topLine="0" />
-		</Cursor>
-		<Folding>
-			<Collapse line="12" />
-			<Collapse line="18" />
-			<Collapse line="24" />
-			<Collapse line="38" />
-			<Collapse line="61" />
-			<Collapse line="92" />
-			<Collapse line="114" />
-		</Folding>
-	</File>
-	<File name="src\peq_server_ftp.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="782" topLine="21" />
+			<Cursor1 position="1411" topLine="45" />
 		</Cursor>
 	</File>
-	<File name="src\gui.cpp" open="1" top="1" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\gui.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="1389" topLine="38" />
 		</Cursor>
-		<Folding>
-			<Collapse line="98" />
-		</Folding>
+	</File>
+	<File name="include\elemento_diagrama.h" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3898" topLine="66" />
+		</Cursor>
+	</File>
+	<File name="src\elemento_diagrama.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="517" topLine="6" />
+		</Cursor>
 	</File>
 	<File name="src\cuenta.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="81" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="include\redes.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="paleta_colores.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1013" topLine="40" />
-		</Cursor>
-	</File>
-	<File name="include\peq_server_ftp.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="715" topLine="11" />
-		</Cursor>
-	</File>
-	<File name="include\gui.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="201" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="13958" topLine="151" />
+			<Cursor1 position="2285" topLine="48" />
 		</Cursor>
 		<Folding>
-			<Collapse line="28" />
-			<Collapse line="179" />
+			<Collapse line="17" />
+			<Collapse line="32" />
+			<Collapse line="39" />
 		</Folding>
 	</File>
-	<File name="src\elemento_diagrama.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="versionado.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="631" topLine="21" />
+			<Cursor1 position="293" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="mjolnir.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="399" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="mjolnir.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="829" topLine="25" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1807" topLine="66" />
+		</Cursor>
+	</File>
+	<File name="include\gui.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="189" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="include\utilidades.hpp" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="455" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include\elemento_diagrama.h" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2530" topLine="117" />
+			<Cursor1 position="1276" topLine="5" />
 		</Cursor>
 	</File>
 	<File name="include\cuenta.h" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -83,19 +96,19 @@
 			<Cursor1 position="10677" topLine="215" />
 		</Cursor>
 	</File>
-	<File name="datos.hpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="997" topLine="18" />
-		</Cursor>
-	</File>
 	<File name="cuenta_nueva.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="349" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="cuenta_nueva.cxx" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="cuenta_nueva.cxx" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="465" topLine="58" />
+			<Cursor1 position="465" topLine="10" />
+		</Cursor>
+	</File>
+	<File name="configuracion.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="488" topLine="5" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

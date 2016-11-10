@@ -35,6 +35,7 @@ int borrame;
 n) Más diagramas*/
 int main()
 {
+  //this_thread::sleep_for(chrono::seconds(1));
   cargar_variables_configuracion();
   std::thread hilo_redes(redes_main); //hilo de redes siempre debe de correr
 

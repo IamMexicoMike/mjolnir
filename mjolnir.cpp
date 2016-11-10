@@ -6,6 +6,7 @@
 #include <bitset> //borrame si no debuggeas
 #include <future>
 #include <thread>
+#include <atomic>
 
 #include <opencv2/opencv.hpp>
 
@@ -17,6 +18,7 @@
 
 extern int paleta_colores();
 extern void reboot();
+extern std::atomic<bool> flag_reboot;
 
 using namespace std;
 using namespace cv;
@@ -29,10 +31,10 @@ const Point HEADER1(100,20);
 const Scalar BLANCO(255,255,255);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
-const Scalar Bckgnd(255,153,51);
+const Scalar Bckgnd(46,169,230);
 
-int ancho_region = 1000;
-int altura_region = 600;
+int ancho_region = 1300;
+int altura_region = 900;
 int ANCHO_MENU = 200;
 
 
@@ -67,8 +69,8 @@ void establecer_resolucion(int& horizontal, int& vertical)
    //la esquina superior izquierda tendrá las coordenadas (0,0)
    //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
 
-   horizontal = escritorio.right;
-   vertical = escritorio.bottom;
+   horizontal = escritorio.right - 10;
+   vertical = escritorio.bottom - 60;
 }
 
 void inicializar_diagrama()
@@ -76,7 +78,7 @@ void inicializar_diagrama()
   establecer_resolucion(ancho_region, altura_region);
   if(ancho_region < 10 || ancho_region > 10000 || altura_region < 10 || altura_region > 10000)
   {
-    ancho_region = 1000; altura_region = 800;
+    ancho_region = 1000; altura_region = 600;
   }
   region = Mat(altura_region, ancho_region, CV_8UC3, cv::Scalar(200,200,200));
   mat_panel = Mat(region.colRange(region.cols - 100, region.cols)); //mn
@@ -93,7 +95,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   /*Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
   matriz = Bckgnd;
-  const int szlado = 15;
+  constexpr int szlado = 15;
   for(int i=szlado-(despl.x%szlado); i<matriz.cols; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
     line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
   for(int i=szlado-(despl.y%szlado); i<matriz.rows; i+=szlado) //Mat::cols es int, no uint
@@ -111,12 +113,15 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
   }
 
+
+
   //dibujamos todos los objetos
   for(auto& rec : glb::objetos)
     rec.second.dibujarse(matriz, despl);
   //dibujamos todas las relaciones
   for(auto& rel : glb::relaciones)
     rel.second.dibujarse(matriz, despl);
+
 
   mat_panel = AZUL_PALIDO;
   mat_header = BLANCO;
@@ -125,7 +130,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
     putText(matriz, std::string("Seleccionado: " + std::to_string(glb::llave_objeto_seleccionado)),
             HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0));
 
-  putText(matriz, "Ayuda: F1", HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0));
+  //putText(matriz, "Ayuda: F1", HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0));
 
   // medimos tiempo
   t_final = std::chrono::system_clock::now();
@@ -133,6 +138,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   //cout << t_renderizar.count() << "s\n";
 
   imshow("Mjolnir", matriz); //actualizamos el diagrama
+  if(flag_reboot == true)
+    reboot();
 }
 
 void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
@@ -218,6 +225,9 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     break;
   case 108: //l de load(cargar)
     cargar_todo();
+    break;
+  case 110: //m - cerrar redes
+    iosvc.stop();
     break;
   case 112: //p - paleta de colores
     push_funptr(&paleta_colores);

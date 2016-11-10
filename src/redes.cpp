@@ -1,5 +1,7 @@
 #include "redes.h"
-#include "peq_server_ftp.h"
+
+#include <future>
+#include <fstream>
 
 using namespace std;
 using namespace asio;
@@ -14,10 +16,23 @@ short puerto_servidor; //inicializados a partir de config.txt
 
 extern string sversion;
 
+void generar_cliente_ftp(string);
+
 void empujar_queue_saliente(std::string s)
 {
-  std::lock_guard<std::mutex> lck(mtx_saliente);
-  queue_saliente.emplace(s);
+  if(s.substr(0,3) == "ftp")
+  {
+    string archivo = s.substr(4);
+    //std::async(std::launch::async,generar_cliente_ftp, archivo);
+    std::thread t(generar_cliente_ftp, archivo);
+    t.detach();
+    cout << "se pretende escribir: ftp " << archivo << endl;
+  }
+  else
+  {
+    std::lock_guard<std::mutex> lck(mtx_saliente);
+    queue_saliente.emplace(s);
+  }
 }
 
 std::string extraer_queue_saliente()
@@ -34,6 +49,52 @@ std::string extraer_queue_saliente()
     return std::string{};
 }
 
+void generar_cliente_ftp(string archivo)
+{
+  io_service servicio_ftp;
+  asio::error_code ec;
+
+  ip::tcp::resolver resolutor(servicio_ftp);
+  ip::tcp::resolver::query consulta(ip_servidor, "1339");
+  ip::tcp::resolver::iterator iterador_endpoint = resolutor.resolve(consulta);
+
+  ip::tcp::socket socket_ftp(servicio_ftp);
+  asio::connect(socket_ftp, iterador_endpoint,ec);
+
+  string peticion = "ftp " + archivo;
+  asio::write(socket_ftp, asio::buffer(peticion, peticion.size()), ec);
+  if(ec)
+  {
+    cerr << "error cliente creando/enviando" << ec.value() << ec.message() << endl;
+    return;
+  }
+
+  string buffer_total;
+  buffer_total.reserve(4096*4096*4); // 4 MiB Mike
+  for(;;)
+  {
+    char buf[4096];
+
+    size_t len = socket_ftp.read_some(asio::buffer(buf), ec);
+    buffer_total.append(buf, len);
+    cout << "recibi " << len << " bytes\n";
+
+    if(ec == asio::error::eof)
+    {
+      ofstream ofs(archivo, std::ios::binary);
+      ofs.write(&buffer_total[0], buffer_total.size());
+      cout << archivo << " recibido " << buffer_total.size() << " bytes\n";
+      socket_ftp.close();
+      break;
+    }
+    else if(ec)
+    {
+      cerr << "error cliente recibiendo" << ec.value() << ec.message() << endl;
+      break;
+    }
+  }
+}
+
 /**Función miembro que verifica cada 25ms si hay algo que debamos enviar al servidor*/
 void cliente::timer_queue()
 {
@@ -43,17 +104,17 @@ void cliente::timer_queue()
   {
     if(!ec)
     {
-      /*checar alguna queue o enviar algun mensaje*/;
+      /*checamos el buzón de mensajes de salida y lo enviamos*/;
       string paq = extraer_queue_saliente();
       if(!paq.empty())
       {
-        //escrbirla
         escribir(paq);
       }
     }
 
     else
       std::cout << "Error temporizador: " << ec.value() <<  ": " <<  ec.message() << std::endl;
+
     timer_queue();
   });
 }
@@ -65,7 +126,7 @@ void cliente::conectar()
   {
     if(!ec)
     {
-      escribir("version " + sversion);
+      //escribir("version " + sversion);
       leer();
     }
     else
@@ -147,10 +208,7 @@ void redes_main()
 {
   try
   {
-    short puerto_rx_ftp = 1339;
-
     cliente tu_cliente(iosvc, ip_servidor, puerto_servidor); //"127.0.0.1" no sé si excluya conexiones externas
-    aceptor_sockets_ftp tu_aceptor(puerto_rx_ftp);
 
     iosvc.run();
     std::cout << "Saliendo de ciclo de iosvc\n";

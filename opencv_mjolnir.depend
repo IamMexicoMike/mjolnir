@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1478288033 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
+1478638443 source:c:\users\propietario\documents\proyectos\mjolnir\main.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -16,7 +16,7 @@
 	"gui.h"
 	"cuenta_nueva.h"
 
-1476390855 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
+1478564293 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
 	<cstdlib>
 	<iostream>
 	<memory>
@@ -24,6 +24,7 @@
 	<chrono>
 	<queue>
 	<mutex>
+	<string>
 	"asio.hpp"
 	"asio/steady_timer.hpp"
 
@@ -62,9 +63,10 @@
 	"elemento_diagrama.h"
 	"utilidades.hpp"
 
-1476899347 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
+1478739287 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
 	"redes.h"
-	"peq_server_ftp.h"
+	<future>
+	<fstream>
 
 1476471732 source:c:\users\propietario\documents\proyectos\mjolnir\src\utilidades.cpp
 	"utilidades.hpp"
@@ -101,18 +103,62 @@
 1476133275 source:c:\users\propietario\documents\proyectos\mjolnir\cuenta_nueva.cxx
 	"cuenta_nueva.h"
 
-1476980786 source:c:\users\propietario\documents\proyectos\mjolnir\src\peq_server_ftp.cpp
+1478646560 source:c:\users\propietario\documents\proyectos\mjolnir\src\peq_server_ftp.cpp
 	"peq_server_ftp.h"
 	<memory>
+	<atomic>
 	<fstream>
 
 1476980689 c:\users\propietario\documents\proyectos\mjolnir\include\peq_server_ftp.h
 	"asio.hpp"
 	<iostream>
 
-1478287637 c:\users\propietario\documents\proyectos\mjolnir\mjolnir.hpp
+1478295548 c:\users\propietario\documents\proyectos\mjolnir\mjolnir.hpp
 	<vector>
 	<map>
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
+
+1478648255 source:c:\users\propietario\documents\proyectos\mjolnir\mjolnir.cpp
+	<iostream>
+	<chrono>
+	<ctime>
+	<fstream>
+	<algorithm>
+	<bitset>
+	<future>
+	<thread>
+	<atomic>
+	<opencv2/opencv.hpp>
+	"elemento_diagrama.h"
+	"redes.h"
+	"gui.h"
+	"cuenta_nueva.h"
+
+1478302318 source:c:\users\propietario\documents\proyectos\mjolnir\paleta_colores.cpp
+	<FL/Fl.H>
+	<FL/Fl_Window.H>
+	<FL/Fl_Box.H>
+	<FL/Fl_Button.H>
+	<FL/fl_show_colormap.H>
+	<FL/Fl_Color_Chooser.H>
+	<FL/Fl_Image.H>
+	<FL/x.H>
+	<FL/fl_draw.H>
+	<stdlib.h>
+	<stdio.h>
+
+1478645477 source:c:\users\propietario\documents\proyectos\mjolnir\versionado.cpp
+	<fstream>
+	<chrono>
+	<thread>
+	<atomic>
+	<asio.hpp>
+	<iostream>
+
+1478563348 source:c:\users\propietario\documents\proyectos\mjolnir\configuracion.cpp
+	<iostream>
+	<fstream>
+	<sstream>
+	<string>
 
