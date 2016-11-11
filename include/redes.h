@@ -22,7 +22,12 @@ extern asio::io_service iosvc;
 
 extern std::queue<std::string> queue_saliente;
 extern std::mutex mtx_saliente;
-extern std::mutex mtx_datos;
+extern std::queue<std::string> queue_cntrl;
+extern std::mutex mtx_cntrl;
+
+/**Esto demostrará ser o no útil con el tiempo*/
+void empujar_queue_cntrl(std::string s);
+std::string extraer_queue_cntrl();
 
 /**Añade datos al contenedor de salida para que sean enviados por la red.
 Debe ser usado por la interfaz gráfica*/

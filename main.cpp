@@ -22,6 +22,7 @@ using namespace cv;
 
 extern cv::Mat region;
 extern void cargar_variables_configuracion();
+extern void procesar_queue_cntrl();
 
 /* La forma más rápida de fracasar es no intentarlo */
 /* Querer es poder */
@@ -66,6 +67,7 @@ int main()
 
     renderizarDiagrama(region);
     setMouseCallback("Mjolnir", manejarInputMouse);
+    procesar_queue_cntrl();
   }
 
   //hilo_gui.join();

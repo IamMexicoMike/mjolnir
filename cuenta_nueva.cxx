@@ -4,14 +4,13 @@
 /**
    mueve esto a un enum class de la clase cuenta
 */
-static const int idx_cuenta[] = {0,1,2,3,4,5}; 
+static const int idx_cuenta[] = {0,1,2,3,4,5};
 
 /**
    callback de seleccion de tipo de cuenta
 */
 static void tipo_cb(Fl_Button *b, void* p) {
   using namespace std;
-  static int tipo=-1;
   int i = *(int*)p;
   cout << i << endl;
 }

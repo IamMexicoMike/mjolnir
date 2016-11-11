@@ -9,21 +9,27 @@
 using namespace std;
 
 extern asio::io_service iosvc;
+extern string extraer_queue_cntrl();
+extern void empujar_queue_saliente(string);
+const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //definido DOS veces. que gcc no pinches mame.
+//NOTA: dos pendientes: la variable definida dos veces y actualizar el número de versión después de actualizar el .exe
 
 unsigned int version;
-string sversion;
-atomic<bool> flag_reboot;
 
 void reboot()
 {
-  cout << "rebooteando..\n";
-  this_thread::sleep_for(chrono::milliseconds(100));
-
-  system("move archivo_rx temp.exe"); //escribimos la version nueva
-
-  iosvc.stop();
-
+  using namespace std::chrono_literals;
+  empujar_queue_saliente(CODIGO_ABORTAR);
+  this_thread::sleep_for(1s);
   system("start rebooter.bat");
-
   exit(0);
+}
+
+void procesar_queue_cntrl()
+{
+  string comando = extraer_queue_cntrl();
+  if(comando.empty())
+    return;
+  if (comando == "reboot")
+    reboot();
 }

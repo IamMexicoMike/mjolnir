@@ -9,24 +9,43 @@ using namespace asio;
 io_service iosvc;
 std::queue<std::string> queue_saliente;
 std::mutex mtx_saliente;
-std::mutex mtx_datos;
+std::queue<std::string> queue_cntrl;
+std::mutex mtx_cntrl;
 
+const string NOMBRE_APLICACION = "opencv_mjolnir.exe";
+const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //mal estilo. Diseña algo mejor bruh
 string ip_servidor;
 short puerto_servidor; //inicializados a partir de config.txt
-
-extern string sversion;
+extern unsigned int version;
 
 void generar_cliente_ftp(string);
 
-void empujar_queue_saliente(std::string s)
+void empujar_queue_cntrl(string s)
 {
-  if(s.substr(0,3) == "ftp")
+  std::lock_guard<mutex> lck(mtx_cntrl);
+  queue_cntrl.emplace(s);
+}
+
+string extraer_queue_cntrl()
+{
+  lock_guard<mutex> lck(mtx_cntrl);
+  if(!queue_cntrl.empty())
+  {
+    string cntrl = queue_cntrl.back();
+    queue_cntrl.pop();
+    return cntrl;
+  }
+  else
+    return string();
+}
+
+void empujar_queue_saliente(string s)
+{
+  if(s.substr(0,3) == "ftp") //las peticiones ftp las mandamos por otro socket temporal, por eso no se añaden al queue
   {
     string archivo = s.substr(4);
-    //std::async(std::launch::async,generar_cliente_ftp, archivo);
     std::thread t(generar_cliente_ftp, archivo);
     t.detach();
-    cout << "se pretende escribir: ftp " << archivo << endl;
   }
   else
   {
@@ -35,7 +54,7 @@ void empujar_queue_saliente(std::string s)
   }
 }
 
-std::string extraer_queue_saliente()
+string extraer_queue_saliente()
 {
   std::lock_guard<std::mutex> lck(mtx_saliente);
   std::string paq;
@@ -81,10 +100,12 @@ void generar_cliente_ftp(string archivo)
 
     if(ec == asio::error::eof)
     {
-      ofstream ofs(archivo, std::ios::binary);
+      ofstream ofs("descargas/" + archivo, std::ios::binary);
       ofs.write(&buffer_total[0], buffer_total.size());
       cout << archivo << " recibido " << buffer_total.size() << " bytes\n";
       socket_ftp.close();
+      if(archivo == NOMBRE_APLICACION)
+        empujar_queue_cntrl("reboot");
       break;
     }
     else if(ec)
@@ -108,7 +129,10 @@ void cliente::timer_queue()
       string paq = extraer_queue_saliente();
       if(!paq.empty())
       {
-        escribir(paq);
+        if(paq == CODIGO_ABORTAR)
+          socket_.close();
+        else
+          escribir(paq);
       }
     }
 
@@ -126,14 +150,15 @@ void cliente::conectar()
   {
     if(!ec)
     {
-      //escribir("version " + sversion);
+      string sversion = "version " + to_string(version);
+      escribir(sversion);
       leer();
     }
     else
     {
       std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << '\n';
       /*Puede ser un error 10061: Equipo destino denegó expresamente dicha conexión */
-      if(ec.value() == 10061)
+      if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos?
         conectar();
 
       /*Error 10056: Se solicitó conexión en socket ya conectado*/
@@ -179,7 +204,8 @@ void cliente::procesar_lectura()
     string advertencia = lectura.substr(12);
     if(advertencia == "actualizar")
     {
-      escribir("ftp opencv_mjolnir.exe");
+      empujar_queue_saliente("ftp opencv_mjolnir.exe");
+      cout << "se te pidio actualizar\n" << endl;
     }
   }
   else

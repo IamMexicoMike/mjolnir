@@ -17,8 +17,6 @@
 #include "cuenta_nueva.h"
 
 extern int paleta_colores();
-extern void reboot();
-extern std::atomic<bool> flag_reboot;
 
 using namespace std;
 using namespace cv;
@@ -69,8 +67,8 @@ void establecer_resolucion(int& horizontal, int& vertical)
    //la esquina superior izquierda tendrá las coordenadas (0,0)
    //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
 
-   horizontal = escritorio.right - 10;
-   vertical = escritorio.bottom - 60;
+   horizontal = (escritorio.right - 10)/3;
+   vertical = (escritorio.bottom - 60)/3;
 }
 
 void inicializar_diagrama()
@@ -138,8 +136,6 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   //cout << t_renderizar.count() << "s\n";
 
   imshow("Mjolnir", matriz); //actualizamos el diagrama
-  if(flag_reboot == true)
-    reboot();
 }
 
 void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
@@ -192,7 +188,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     break;
 
   case 48:
-    reboot();
+    empujar_queue_cntrl("reboot");
   case 50: //debug
     cout << "valor global: " << glb::llave_objeto_highlight << endl;
     push_funptr(&foo_gui);

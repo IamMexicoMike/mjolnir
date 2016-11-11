@@ -6,7 +6,6 @@
 extern std::string ip_servidor;
 extern short puerto_servidor;
 extern unsigned int version;
-extern std::string sversion;
 
 using namespace std;
 
@@ -17,7 +16,6 @@ void cargar_variables_configuracion()
   ip_servidor = cargar_valor("servidor");
   puerto_servidor = (short)stoi(cargar_valor("puerto"));
   version = stoi(cargar_valor("version"));
-  sversion = to_string(version);
 }
 
 string cargar_valor(string arg)
