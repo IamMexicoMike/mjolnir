@@ -195,7 +195,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     //push_funptr(&ventana_cuenta_nueva);
     break;
   case 51:
-    empujar_queue_saliente("ftp opencv_mjolnir.exe"); //al parecer no puedes declarar variables aquí -fpermissive
+    empujar_queue_saliente("ftp " + NOMBRE_APLICACION); //al parecer no puedes declarar variables aquí -fpermissive
     break;
 
   case 100: //d de debug

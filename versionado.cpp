@@ -12,9 +12,6 @@ extern asio::io_service iosvc;
 extern string extraer_queue_cntrl();
 extern void empujar_queue_saliente(string);
 const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //definido DOS veces. que gcc no pinches mame.
-//NOTA: dos pendientes: la variable definida dos veces y actualizar el número de versión después de actualizar el .exe
-
-unsigned int version;
 
 void reboot()
 {

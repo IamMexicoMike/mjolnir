@@ -24,6 +24,9 @@ extern std::queue<std::string> queue_saliente;
 extern std::mutex mtx_saliente;
 extern std::queue<std::string> queue_cntrl;
 extern std::mutex mtx_cntrl;
+extern const string NOMBRE_APLICACION;
+extern const string CODIGO_ABORTAR;
+extern string version;
 
 /**Esto demostrará ser o no útil con el tiempo*/
 void empujar_queue_cntrl(std::string s);
@@ -42,12 +45,12 @@ void clasificar_metadata(const char* paquete);
 class cliente
 {
 public:
-  cliente(asio::io_service& io_service, std::string huesped, short puerto) :
+  cliente(asio::io_service& io_service, std::string huesped, std::string puerto) :
     socket_(io_service),
     temporizador(io_service)
   {
     tcp::resolver resolvedor(io_service);
-    tcp::resolver::query query(huesped, to_string(puerto)); //puedes meter dns aqui
+    tcp::resolver::query query(huesped, puerto); //puedes meter dns aqui
     tcp::resolver::iterator iter = resolvedor.resolve(query);
     endpoint_ = iter->endpoint();
     conectar();

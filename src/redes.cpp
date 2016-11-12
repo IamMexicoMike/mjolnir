@@ -6,17 +6,24 @@
 using namespace std;
 using namespace asio;
 
+extern void escribir_valor_configuracion(string, string);
+
 io_service iosvc;
 std::queue<std::string> queue_saliente;
 std::mutex mtx_saliente;
 std::queue<std::string> queue_cntrl;
 std::mutex mtx_cntrl;
 
+#ifdef _WIN64
 const string NOMBRE_APLICACION = "opencv_mjolnir.exe";
+#else
+const string NOMBRE_APLICACION = "opencv_mjolnir32.exe";
+#endif // _WIN64
+
 const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //mal estilo. Diseña algo mejor bruh
 string ip_servidor;
-short puerto_servidor; //inicializados a partir de config.txt
-extern unsigned int version;
+string puerto_servidor; //inicializados a partir de config.txt
+string version;
 
 void generar_cliente_ftp(string);
 
@@ -104,8 +111,18 @@ void generar_cliente_ftp(string archivo)
       ofs.write(&buffer_total[0], buffer_total.size());
       cout << archivo << " recibido " << buffer_total.size() << " bytes\n";
       socket_ftp.close();
+      if(buffer_total.size() == 0)
+      {
+        cerr << "ERR: el archvo " << archivo << " está vacío\n";
+        break;
+      }
+
       if(archivo == NOMBRE_APLICACION)
+      {
+        escribir_valor_configuracion("version", version);
         empujar_queue_cntrl("reboot");
+      }
+
       break;
     }
     else if(ec)
@@ -150,8 +167,7 @@ void cliente::conectar()
   {
     if(!ec)
     {
-      string sversion = "version " + to_string(version);
-      escribir(sversion);
+      escribir("version " + version);
       leer();
     }
     else
@@ -199,13 +215,13 @@ void cliente::leer()
 void cliente::procesar_lectura()
 {
   string lectura = rx_buf_;
-  if(lectura.substr(0,11) == "advertencia")
+  if(lectura.substr(0,7) == "version")
   {
-    string advertencia = lectura.substr(12);
-    if(advertencia == "actualizar")
+    string version_serv = lectura.substr(8);
+    if(version_serv != version)
     {
-      empujar_queue_saliente("ftp opencv_mjolnir.exe");
-      cout << "se te pidio actualizar\n" << endl;
+      version = version_serv;
+      empujar_queue_saliente("ftp " + NOMBRE_APLICACION);
     }
   }
   else

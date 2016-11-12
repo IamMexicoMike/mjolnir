@@ -16,7 +16,7 @@
 	"gui.h"
 	"cuenta_nueva.h"
 
-1478748570 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
+1478983527 c:\users\propietario\documents\proyectos\mjolnir\include\redes.h
 	<cstdlib>
 	<iostream>
 	<memory>
@@ -63,7 +63,7 @@
 	"elemento_diagrama.h"
 	"utilidades.hpp"
 
-1478815508 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
+1478897901 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
 	"redes.h"
 	<future>
 	<fstream>
@@ -119,7 +119,7 @@
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
 
-1478813675 source:c:\users\propietario\documents\proyectos\mjolnir\mjolnir.cpp
+1478900951 source:c:\users\propietario\documents\proyectos\mjolnir\mjolnir.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -148,7 +148,7 @@
 	<stdlib.h>
 	<stdio.h>
 
-1478816491 source:c:\users\propietario\documents\proyectos\mjolnir\versionado.cpp
+1478980382 source:c:\users\propietario\documents\proyectos\mjolnir\versionado.cpp
 	<fstream>
 	<chrono>
 	<thread>
@@ -156,9 +156,11 @@
 	<asio.hpp>
 	<iostream>
 
-1478750673 source:c:\users\propietario\documents\proyectos\mjolnir\configuracion.cpp
+1478984493 source:c:\users\propietario\documents\proyectos\mjolnir\configuracion.cpp
 	<iostream>
 	<fstream>
 	<sstream>
 	<string>
+	<vector>
+	<mutex>
 
