@@ -11,7 +11,7 @@ using namespace std;
 extern asio::io_service iosvc;
 extern string extraer_queue_cntrl();
 extern void empujar_queue_saliente(string);
-const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //definido DOS veces. que gcc no pinches mame.
+extern const string CODIGO_ABORTAR; //definido DOS veces.
 
 void reboot()
 {

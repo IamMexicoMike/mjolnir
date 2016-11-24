@@ -21,7 +21,8 @@ int relacion::sid = 1;
 void crear_objeto(cv::Point& p1, cv::Point& p2)
 {
   std::lock_guard<mutex> lck(mtx_objetos);
-  string paq = "o" + to_string(p1.x);
+  char k = 0xfe;
+  string paq = k + to_string(p1.x);
   glb::objetos.emplace(objeto::sid - 1, objeto(p1, p2)); //porque -1?
   empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }
@@ -45,28 +46,31 @@ flecha::flecha(int llave_origen, int llave_destino, std::map<int, objeto>& conte
 }
 
 
-void flecha::dibujarse(cv::Mat& m, cv::Point despl) //deberíamos inlinear?
+void flecha::dibujarse(cv::Mat& m) //deberíamos inlinear?
 {
-    arrowedLine(m, cv::Point(inicio_.x - despl.x, inicio_.y - despl.y), //despl es desplazamientoOrigen
-                cv::Point(fin_.x - despl.x, fin_.y - despl.y), cv::Scalar(205,155,25), 2, CV_AA);
+    arrowedLine(m, transformar(inicio_), transformar(fin_), cv::Scalar(205,155,25), 2, CV_AA);
 }
 
 //-----------------------------------------------------------------------------------------------------------------
 
-void objeto::dibujarse(cv::Mat& m, cv::Point despl)
+void objeto::dibujarse(cv::Mat& m)
 {
-    cv::rectangle(m, cv::Rect(inicio_ - despl, fin_ - despl), color_, 2, CV_AA);
-    cv::rectangle(m, cv::Rect(cv::Point(centro_.x - despl.x - 4, centro_.y - despl.y - 4), cv::Size(8,8)),
-                  cv::Scalar(150, 165, 250), 1, CV_AA);
+  cv::Point iniciodespl, findespl;
+  iniciodespl = transformar(inicio_); findespl = transformar(fin_);
+  cv::rectangle(m, cv::Rect(iniciodespl, findespl), color_, 2, CV_AA);
+  //cv::rectangle(m, cv::Rect(cv::Point(centro_.x - despl.x - 4, centro_.y - despl.y - 4), cv::Size(8,8)),cv::Scalar(150, 165, 250), 1, CV_AA);
 
-    if(b_seleccionado_)
-        cv::rectangle(m, cv::Rect(inicio_ - despl, fin_ - despl), COLOR_SELECCION, 3, CV_AA); //selección
 
-    if(b_highlighteado_)
-        cv::rectangle(m, cv::Rect(inicio_ - despl, fin_ - despl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
+  //fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
+
+  if(b_seleccionado_)
+    cv::rectangle(m, cv::Rect(iniciodespl, findespl), COLOR_SELECCION, 3, CV_AA); //selección
+
+  if(b_highlighteado_)
+    cv::rectangle(m, cv::Rect(iniciodespl, findespl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
 }
 
-bool objeto::pertenece_a_area(const cv::Point pt)
+bool objeto::pertenece_a_area(const cv::Point pt) //pt debe ser absoluto, obtenido mediante p = g(p')
 {
     return !((pt.x > inicio_.x && pt.x > fin_.x) || (pt.x < inicio_.x && pt.x < fin_.x) ||
         (pt.y > inicio_.y && pt.y > fin_.y) || (pt.y < inicio_.y && pt.y < fin_.y));
@@ -74,7 +78,7 @@ bool objeto::pertenece_a_area(const cv::Point pt)
 
 bool objeto::es_esquina(const cv::Point pt)
 {
-  return (pt.x <= fin_.x && pt.x > fin_.x-5 && pt.y <= fin_.y && pt.y > fin_.y-5);
+  return (pt.x <= fin_.x && pt.x > fin_.x-5 && pt.y <= fin_.y && pt.y > fin_.y-5); //XXXXXXXXXXXXXXXXXXXXX -5
 }
 
 void objeto::imprimir_datos()
@@ -83,7 +87,7 @@ void objeto::imprimir_datos()
 }
 
 //se llama continuamente cuando haces drag, no sólo una vez
-void objeto::arrastrar(const cv::Point pt) //no es realmente un punto, sino una diferencia entre dos puntos
+void objeto::arrastrar(const cv::Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
 {
     fin_ += pt;
     inicio_ += pt;
@@ -166,10 +170,9 @@ void relacion::recibir_notificacion(int id, Notificacion noti)
     }
 }
 
-void relacion::dibujarse(cv::Mat& m, cv::Point despl)
+void relacion::dibujarse(cv::Mat& m)
 {
-    line(m, cv::Point(pt1_.x - despl.x, pt1_.y - despl.y), //despl es desplazamientoOrigen
-                cv::Point(pt2_.x - despl.x, pt2_.y - despl.y), cv::Scalar(205,155,125), 2, CV_AA);
+    line(m, transformar(pt1_), transformar(pt2_), cv::Scalar(205,155,125), 2, CV_AA);
 }
 
 std::ostream& operator<<(std::ostream& os, relacion& r)
@@ -180,6 +183,7 @@ std::ostream& operator<<(std::ostream& os, relacion& r)
 
 //rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
+//BORRAR - probablemente
 void guardar_todo()
 {
   using namespace std;
@@ -198,6 +202,7 @@ void guardar_todo()
   }
 }
 
+//BORRAR - probablemente
 void cargar_todo()
 {
   using namespace std;

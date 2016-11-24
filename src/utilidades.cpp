@@ -8,7 +8,6 @@ bool glb::b_resize=false;
 
 cv::Point glb::ptInicioArrastre(0,0);
 cv::Point glb::ptFinArrastre(0,0);
-cv::Point glb::desplazamientoOrigen(0,0);
 
 std::map<int, relacion> glb::relaciones;
 std::map<int, objeto> glb::objetos;
@@ -21,7 +20,7 @@ std::pair<int, ubicacion::Flags> ubicacion::determinar_propiedades_ubicacion(cv:
   auto encontrarIdHighlight = [&]() -> int
   {
     for(auto& ob : glb::objetos)
-      if(ob.second.pertenece_a_area(p))
+      if(ob.second.pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
         return ob.first;
     return -1;
   };

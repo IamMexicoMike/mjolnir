@@ -147,7 +147,10 @@ void cliente::timer_queue()
       if(!paq.empty())
       {
         if(paq == CODIGO_ABORTAR)
+        {
+          cout << "paq==CODIGO_ABORTAR -> cerrando socket\n";
           socket_.close();
+        }
         else
           escribir(paq);
       }
@@ -167,6 +170,8 @@ void cliente::conectar()
   {
     if(!ec)
     {
+      cout << "conectado a " << socket_.remote_endpoint().address().to_string() <<
+                         ":" << socket_.remote_endpoint().port() << '\n';
       escribir("version " + version);
       leer();
     }
@@ -199,13 +204,14 @@ void cliente::leer()
   {
     if(!ec)
     {
+      std::cout << "lectura exitosa...\n";
       procesar_lectura();
       leer();
     }
     else
     {
       /*Error 10054: Interrupción forzada por host remoto*/
-      std::cout << "Error leyendo" << ec.value() <<  ": " << ec.message() << std::endl;
+      std::cout << "Error leyendo " << ec.value() <<  ": " << ec.message() << std::endl;
       if(ec.value() == 10054)
         conectar();
     }

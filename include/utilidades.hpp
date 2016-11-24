@@ -19,14 +19,6 @@ namespace glb
     extern cv::Point ptFinArrastre;
     extern std::map<int, relacion> relaciones;
     extern std::map<int, objeto> objetos;
-    /*Esta es de las variables más importantes del diagrama. Todos los "widgets" necesitan conocer su valor
-    * para ser dibujados. Ejemplo:
-    * arrowedLine(matriz, Point(400-desplazamientoOrigen.x,400-desplazamientoOrigen.y),
-    * Point(500-desplazamientoOrigen.x,100-desplazamientoOrigen.y), Scalar(205,155,25), 2, CV_AA);
-    * Esta sintaxis genera un efecto visual de desplazamiento sobre la matriz. Realmente los objetos tienen una posición absoluta,
-    * pero los redibujamos con una posición relativa diferente (a la matriz de despliegue (región))
-    */
-    extern cv::Point desplazamientoOrigen;
 }
 
 //hmpgfgmg

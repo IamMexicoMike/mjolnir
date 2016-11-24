@@ -11,6 +11,8 @@
 #include "utilidades.hpp"
 
 extern std::mutex mtx_objetos;
+extern cv::Point transformar(cv::Point&);
+extern cv::Point transformacion_inversa(cv::Point&);
 
 void destruir_objeto(int id);
 void crear_objeto(cv::Point& p1, cv::Point& p2);
@@ -54,7 +56,7 @@ public:
     flecha(int llave_origen, int llave_destino, std::map<int, objeto>& contenedor);
 
 
-    void dibujarse(cv::Mat& m, cv::Point despl);
+    void dibujarse(cv::Mat& m);
     void seleccionar(bool val){b_seleccionado_ = val;}
 
 private:
@@ -93,8 +95,8 @@ public:
 
   virtual ~objeto(); //si el objeto es destruido avisa a sus relaciones y luego las destruye
 
-  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);}
-  cv::Point centro() const {return centro_;} /**añadiste const*/
+  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
+  cv::Point centro() const {return centro_;} //absoluto
   int id() const {return id_;}
 
   std::vector<int>& get_relaciones() {return relaciones_;}
@@ -104,7 +106,7 @@ public:
 
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
-  virtual void dibujarse(cv::Mat& m, cv::Point despl);
+  virtual void dibujarse(cv::Mat& m);
   void arrastrar(const cv::Point pt);
   void resizear(const cv::Point pt);
 
@@ -158,7 +160,7 @@ public:
   int id(){return id_;}
   void recibir_notificacion(int id, Notificacion noti); //el id del objeto que emitió la notificiación y el tipo de esta
   void notificar(int id, Notificacion noti); //necesita pensarse profundamente. Es como un mensajero. a quién? a los dos?
-  void dibujarse(cv::Mat& m, cv::Point despl);
+  void dibujarse(cv::Mat& m);
 
   std::pair<int,int> get_objetos(){return ids_;}
 
@@ -170,6 +172,27 @@ private:
   cv::Point pt1_, pt2_;
   bool b_seleccionado_;
   cv::Scalar _color;
+};
+
+
+class zona
+{
+public:
+  zona(std::initializer_list<cv::Point> ps, const cv::Scalar& c, std::string n) :
+    puntos_(ps), color_(c), nombre_(n) {}
+  const cv::Scalar color() const {return color_;}
+  std::string nombre() const {return nombre_;}
+  std::vector<cv::Point> puntos_desplazados()
+  {
+    std::vector<cv::Point> poff; //p'
+    for(auto& p : puntos_)
+      poff.emplace_back(transformar(p)); //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    return poff;
+  }
+private:
+  std::vector<cv::Point> puntos_;
+  const cv::Scalar color_;
+  std::string nombre_;
 };
 
 void guardar_todo();
