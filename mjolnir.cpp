@@ -25,6 +25,7 @@ using namespace cv;
 
 const Point HEADER0(5,20);
 const Point HEADER1(100,20);
+const Point HEADER2(300,20);
 
 const Scalar BLANCO(255,255,255);
 const Scalar GRIS(200,200,200);
@@ -98,6 +99,52 @@ cv::Point transformacion_inversa(cv::Point& pp)
   return p;
 }
 
+void efecto_cuadricula(cv::Mat& matriz)
+{
+  static vector<chrono::duration<double>> tiempos(100);
+  static int cnt;
+  int h = matriz.cols;
+  int v = matriz.rows;
+  Point pt1, pt2; //probablemente esto ayude a que la caché esté caliente con este valor durante estos ciclos
+  chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
+  t_inicial = chrono::system_clock::now();
+
+  if(zoom<=8)
+  {
+    const int szlado = 100/zoom;
+    for(int i=szlado-(despl.x/zoom)%szlado; i<h; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
+    {
+      pt1.x=i, pt1.y=0; //Esto lo hacemos con la intención de que no se creen Puntos temporales en cada iteración
+      pt2.x=i, pt2.y=v; //y que de esta manera las llamadas a malloc(si es que existen) desaparezcan
+      line(matriz, pt1, pt2, BLANCO, 1, 4, 0);
+      //line(matriz, Point(i,0), Point(i,v), BLANCO, 1, 4, 0); //cuadrícula, vertical
+    }
+
+    for(int i=szlado-(despl.y/zoom)%szlado; i<v; i+=szlado) //Mat::cols es int, no uint
+    {
+      pt1.x=0, pt1.y=i;
+      pt2.x=h, pt2.y=i;
+      line(matriz, pt1, pt2, BLANCO, 1, 4, 0);
+      //line(matriz, Point(0,i), Point(h,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
+    }
+  }
+  t_final = std::chrono::system_clock::now();
+  chrono::duration<double> t_renderizar = t_final - t_inicial;
+  tiempos[cnt] = t_renderizar;
+  cnt++;
+  if(cnt==100)
+  {
+    cnt--;
+    chrono::duration<double> promedio;
+    for(int i=0; i<cnt; ++i)
+      promedio+=tiempos[i];
+    promedio = promedio/cnt;
+    cnt=0;
+    //cout << "Promedio cuadricula: " << promedio.count() << "s\n";
+  }
+
+}
+
 void establecer_resolucion(int& horizontal, int& vertical)
 {
    RECT escritorio;
@@ -108,7 +155,7 @@ void establecer_resolucion(int& horizontal, int& vertical)
    //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
 
    horizontal = (escritorio.right - 10);
-   vertical = (escritorio.bottom - 60);
+   vertical = (escritorio.bottom - 60) -200;
    dxy = cv::Point(horizontal/2, vertical/2);
 }
 
@@ -130,6 +177,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
 
+  Point pabs = transformacion_inversa(puntoActualMouse);
+
   /*Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
   matriz = Bckgnd;
 
@@ -139,18 +188,18 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
     fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
   }
 
-  //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  constexpr int szlado = 20;
-  for(int i=szlado-(despl.x%szlado); i<matriz.cols; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
-    line(matriz, Point(i,0), Point(i,matriz.rows), BLANCO, 1, 4, 0); //cuadrícula, vertical
-  for(int i=szlado-(despl.y%szlado); i<matriz.rows; i+=szlado) //Mat::cols es int, no uint
-    line(matriz, Point(0,i), Point(matriz.cols,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
-  /*fin efecto cuadrícula*/
+  efecto_cuadricula(matriz);
 
   for(auto& z : zonas)
   {
     vector<Point> ps = z.puntos_desplazados();
-    putText(matriz, z.nombre(), ps[0], FONT_HERSHEY_COMPLEX, 2, Scalar(0,0,0), 2, CV_AA);
+    int sz = 4/zoom;
+    if(sz==0)
+      sz=1;
+    int ancho=4-zoom;
+    if(ancho<0)
+      ancho = 1;
+    putText(matriz, z.nombre(), ps[0], FONT_HERSHEY_COMPLEX, sz, Scalar(0,0,0), ancho, CV_AA);
   }
 
 
@@ -165,8 +214,6 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
   }
 
-
-
   //dibujamos todos los objetos
   for(auto& rec : glb::objetos)
     rec.second.dibujarse(matriz);
@@ -174,15 +221,17 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   for(auto& rel : glb::relaciones)
     rel.second.dibujarse(matriz);
 
-
   mat_panel = AZUL_PALIDO;
   mat_header = BLANCO;
 
   if(glb::llave_objeto_seleccionado > 0)
     putText(matriz, std::string("Seleccionado: " + std::to_string(glb::llave_objeto_seleccionado)),
-            HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0));
+            HEADER2, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
-  //putText(matriz, "Problemo!", Point(300,300), FONT_HERSHEY_DUPLEX, 5, Scalar(230,100,0));
+  string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
+  putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
+  //putText(matriz, sdespl, HEADER1, FONT_HERSHEY_SIMPLEX, 1, Scalar(230,100,0), 1, CV_AA);
+
 
   // medimos tiempo
   t_final = std::chrono::system_clock::now();
@@ -224,24 +273,12 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     }
     break;
 
-  case 43: //+ zoom in //ensanchamos el diagrama //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    /*if(region.cols < 2000)
-    {
-      region = cv::Mat(region.rows, region.cols+15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-      mat_panel = region.colRange(region.cols - 100, region.cols);
-      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-    }*/
+  case 43: //+ zoom in
     if(zoom!=1)
       zoom = zoom/2;
     break;
-  case 45: //- zoom out //adelgazamos el diagrama //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    /*if(region.cols > 200)
-    {
-      region = cv::Mat(region.rows, region.cols-15, CV_8UC3, cv::Scalar(200,200,200)); //debe tener un scope global
-      mat_panel = region.colRange(region.cols - 100, region.cols);
-      mat_header = region.colRange(0, region.cols - 100).rowRange(0,30);
-    }*/
-    if(zoom!=8)
+  case 45: //- zoom out
+    if(zoom!=64)
       zoom = zoom*2;
     break;
 
@@ -312,6 +349,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
   puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
   //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
+  cout << event << " " << flags << endl;
 
   if(event == CV_EVENT_RBUTTONDOWN) //panning
   {
@@ -401,9 +439,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
   {
     if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
     {
-      despl = puntoInicioDesplazamiento + zoom*(puntoClickMouseDerecho - puntoActualMouse);//XXXXXXXXXXXX!!!???
-      //despl.x = puntoInicioDesplazamiento.x + puntoClickMouseDerecho.x - x;
-      //despl.y = puntoInicioDesplazamiento.y + puntoClickMouseDerecho.y - y;
+      despl = puntoInicioDesplazamiento + zoom*(puntoClickMouseDerecho - puntoActualMouse);
     }
 
     if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Resizing. Moviendo el cursor con click izquierdo apretado.

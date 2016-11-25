@@ -186,7 +186,7 @@ public:
   {
     std::vector<cv::Point> poff; //p'
     for(auto& p : puntos_)
-      poff.emplace_back(transformar(p)); //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      poff.emplace_back(transformar(p));
     return poff;
   }
 private:
