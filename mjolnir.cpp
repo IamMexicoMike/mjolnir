@@ -39,6 +39,8 @@ int ANCHO_MENU = 200;
 
 class zona;
 extern vector<zona> zonas;
+extern vector<zona> superzonas;
+extern void dibujar_zonas(Mat&);
 
 Mat region;
 Mat mat_panel;
@@ -103,9 +105,9 @@ void efecto_cuadricula(cv::Mat& matriz)
   t_inicial = chrono::system_clock::now();
 
 
-  if(zoom<=16)
+  if(zoom<=32)
   {
-    const int szlado = 400/zoom;
+    const int szlado = 800/zoom;
     //cout << "szlado == " << szlado << '\n';
     for(int i=szlado-(despl.x/zoom)%szlado; i<h; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
     {
@@ -174,8 +176,15 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   Point pabs = transformacion_inversa(puntoActualMouse);
 
-  /*Esto es para el "efecto cuadrícula", que simula una matriz infinita*/
   matriz = Bckgnd;
+
+  for(auto& zz : superzonas)
+  {
+    vector<Point> ps = zz.puntos_desplazados();
+    fillConvexPoly(matriz, ps.data(), ps.size(), zz.color());
+  }
+
+  efecto_cuadricula(matriz);
 
   for(auto& z : zonas)
   {
@@ -183,21 +192,26 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
     fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
   }
 
-  efecto_cuadricula(matriz);
-
-  if(zoom<=32)
-    for(auto& z : zonas)
+  if(zoom<=64)
+  {
+    int sz = 4/zoom;
+    if(sz==0)
+      sz=1;
+    int ancho=4-zoom;
+    if(ancho<0)
+      ancho = 1;
+    for(auto it=zonas.begin(); it!=zonas.end(); ++it)
     {
-      Point pc = z.centro();
+      Point pc = it->centro();
       Point pt = transformar(pc);
-      int sz = 4/zoom;
-      if(sz==0)
-        sz=1;
-      int ancho=4-zoom;
-      if(ancho<0)
-        ancho = 1;
-      putText(matriz, z.nombre(), pt, FONT_HERSHEY_SIMPLEX, sz, Scalar(0,0,0), ancho, CV_AA);
+      putText(matriz, it->nombre(), pt, FONT_HERSHEY_PLAIN, sz, Scalar(0,0,0), ancho, CV_AA);
     }
+    for(auto& zz : superzonas)
+    {
+      auto aaa = zz.puntos_desplazados();
+      putText(matriz, zz.nombre(), aaa[0], FONT_HERSHEY_PLAIN, sz, Scalar(0,0,0), ancho, CV_AA);
+    }
+  }
 
 
   if(b_dibujando_flecha) //dibujamos una flecha temporal
@@ -227,7 +241,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
   putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
-  //putText(matriz, sdespl, HEADER1, FONT_HERSHEY_SIMPLEX, 1, Scalar(230,100,0), 1, CV_AA);
+  //string sprueba = "kanban urdido";
+  //putText(matriz, sprueba, HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
 
   // medimos tiempo
