@@ -174,27 +174,6 @@ private:
   cv::Scalar _color;
 };
 
-
-class zona
-{
-public:
-  zona(std::initializer_list<cv::Point> ps, const cv::Scalar& c, std::string n) :
-    puntos_(ps), color_(c), nombre_(n) {}
-  const cv::Scalar color() const {return color_;}
-  std::string nombre() const {return nombre_;}
-  std::vector<cv::Point> puntos_desplazados()
-  {
-    std::vector<cv::Point> poff; //p'
-    for(auto& p : puntos_)
-      poff.emplace_back(transformar(p));
-    return poff;
-  }
-private:
-  std::vector<cv::Point> puntos_;
-  const cv::Scalar color_;
-  std::string nombre_;
-};
-
 void guardar_todo();
 void cargar_todo();
 

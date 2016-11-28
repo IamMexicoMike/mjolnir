@@ -12,6 +12,7 @@
 
 #include "elemento_diagrama.h" /**mjolnir no incluye su propio header?*/
 #include "redes.h"
+#include "zonas.hpp"
 
 #include "gui.h"
 #include "cuenta_nueva.h"
@@ -36,11 +37,8 @@ int ancho_region; //w = 2dx
 int altura_region; //h = 2dy
 int ANCHO_MENU = 200;
 
-zona z1({Point(30,30), Point(30,3000), Point(500,3000), Point(500,30)}, Scalar(255,0,200), "Z1");
-zona z2({Point(-3000,300), Point(-2000,1000), Point(-2000,300)}, Scalar(155,125,25), "Z2");
-zona z3({Point(-1000,-2000), Point(-1000,-1000), Point(0,-600), Point(0,-2000)}, Scalar(155,125,25), "Almacen 2");
-
-vector<zona> zonas({z1, z2, z3});
+class zona;
+extern vector<zona> zonas;
 
 Mat region;
 Mat mat_panel;
@@ -78,11 +76,6 @@ dx = w/2, es decir el ancho de diagrama entre dos.
 d = desplazamiento del origen
 z es el factor zoom */
 
-cv::Point operator/(cv::Point p, const int d)
-{
-  return cv::Point(p.x / d, p.y / d);
-}
-
 /**transforma los puntos absolutos a puntos relativos renderizables
 p' = f(p) = dx + (p - dx - d)/z*/
 cv::Point transformar(cv::Point& p)
@@ -109,9 +102,11 @@ void efecto_cuadricula(cv::Mat& matriz)
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
 
-  if(zoom<=8)
+
+  if(zoom<=16)
   {
-    const int szlado = 100/zoom;
+    const int szlado = 400/zoom;
+    //cout << "szlado == " << szlado << '\n';
     for(int i=szlado-(despl.x/zoom)%szlado; i<h; i+=szlado) //"generamos" un efecto de desplazamiento de la cuadrícula
     {
       pt1.x=i, pt1.y=0; //Esto lo hacemos con la intención de que no se creen Puntos temporales en cada iteración
@@ -140,7 +135,7 @@ void efecto_cuadricula(cv::Mat& matriz)
       promedio+=tiempos[i];
     promedio = promedio/cnt;
     cnt=0;
-    //cout << "Promedio cuadricula: " << promedio.count() << "s\n";
+    cout << "Promedio cuadricula: " << promedio.count() << "s\n";
   }
 
 }
@@ -155,7 +150,7 @@ void establecer_resolucion(int& horizontal, int& vertical)
    //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
 
    horizontal = (escritorio.right - 10);
-   vertical = (escritorio.bottom - 60) -200;
+   vertical = (escritorio.bottom - 60);
    dxy = cv::Point(horizontal/2, vertical/2);
 }
 
@@ -190,17 +185,19 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   efecto_cuadricula(matriz);
 
-  for(auto& z : zonas)
-  {
-    vector<Point> ps = z.puntos_desplazados();
-    int sz = 4/zoom;
-    if(sz==0)
-      sz=1;
-    int ancho=4-zoom;
-    if(ancho<0)
-      ancho = 1;
-    putText(matriz, z.nombre(), ps[0], FONT_HERSHEY_COMPLEX, sz, Scalar(0,0,0), ancho, CV_AA);
-  }
+  if(zoom<=32)
+    for(auto& z : zonas)
+    {
+      Point pc = z.centro();
+      Point pt = transformar(pc);
+      int sz = 4/zoom;
+      if(sz==0)
+        sz=1;
+      int ancho=4-zoom;
+      if(ancho<0)
+        ancho = 1;
+      putText(matriz, z.nombre(), pt, FONT_HERSHEY_SIMPLEX, sz, Scalar(0,0,0), ancho, CV_AA);
+    }
 
 
   if(b_dibujando_flecha) //dibujamos una flecha temporal
@@ -278,7 +275,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
       zoom = zoom/2;
     break;
   case 45: //- zoom out
-    if(zoom!=64)
+    if(zoom!=1024) //64 es razonable
       zoom = zoom*2;
     break;
 
@@ -349,7 +346,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
   puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
   //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
-  cout << event << " " << flags << endl;
+  //cout << event << " " << flags << endl;
 
   if(event == CV_EVENT_RBUTTONDOWN) //panning
   {
