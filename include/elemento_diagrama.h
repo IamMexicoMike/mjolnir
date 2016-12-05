@@ -88,7 +88,8 @@ public:
     inicio_(inicio), fin_(fin),
     centro_(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2),
     b_seleccionado_(false), b_highlighteado_(false), b_esquina_(false),
-    color_(cv::Scalar(100, 65, 150))
+    area_(std::abs((fin_.x - inicio_.x)*(fin.y - inicio_.y))),
+    color_(cv::Scalar(100,65,150))
     {
       std::cout << "soy el constructor de objetos[" << id_ << "]\n";
     }
@@ -98,6 +99,7 @@ public:
   std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
   cv::Point centro() const {return centro_;} //absoluto
   int id() const {return id_;}
+  unsigned int area() const {return area_;}
 
   std::vector<int>& get_relaciones() {return relaciones_;}
   cv::Point anadir_relacion(int id_relacion){relaciones_.emplace_back(id_relacion); return centro_;};
@@ -109,6 +111,7 @@ public:
   virtual void dibujarse(cv::Mat& m);
   void arrastrar(const cv::Point pt);
   void resizear(const cv::Point pt);
+  bool operator<(const objeto& o2){return (this->area() < o2.area());}
 
   void imprimir_datos(); //debug
 
@@ -130,6 +133,7 @@ private:
   bool b_seleccionado_;
   bool b_highlighteado_;   //se usa para objeto::dibujarse
   bool b_esquina_;
+  unsigned int area_;
   cv::Scalar color_;
   std::vector<int> relaciones_; //las relaciones (conexiones) que este objeto tiene con otros
 };

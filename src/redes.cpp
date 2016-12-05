@@ -7,6 +7,7 @@ using namespace std;
 using namespace asio;
 
 extern void escribir_valor_configuracion(string, string);
+extern void establecer_mensaje(std::string);
 
 io_service iosvc;
 std::queue<std::string> queue_saliente;
@@ -80,6 +81,9 @@ void generar_cliente_ftp(string archivo)
   io_service servicio_ftp;
   asio::error_code ec;
 
+  if(archivo == NOMBRE_APLICACION)
+    establecer_mensaje("Actualizando...");
+
   ip::tcp::resolver resolutor(servicio_ftp);
   ip::tcp::resolver::query consulta(ip_servidor, "1339");
   ip::tcp::resolver::iterator iterador_endpoint = resolutor.resolve(consulta);
@@ -91,6 +95,7 @@ void generar_cliente_ftp(string archivo)
   asio::write(socket_ftp, asio::buffer(peticion, peticion.size()), ec);
   if(ec)
   {
+    establecer_mensaje("Error FTP");
     cerr << "error cliente creando/enviando" << ec.value() << ec.message() << endl;
     return;
   }
@@ -114,12 +119,14 @@ void generar_cliente_ftp(string archivo)
       if(buffer_total.size() == 0)
       {
         cerr << "ERR: el archvo " << archivo << " está vacío\n";
+        establecer_mensaje("Error: Archivo vacio");
         break;
       }
 
       if(archivo == NOMBRE_APLICACION)
       {
         escribir_valor_configuracion("version", version);
+        establecer_mensaje("Reiniciando");
         empujar_queue_cntrl("reboot");
       }
 

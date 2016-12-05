@@ -107,7 +107,7 @@ void objeto::notificar(Notificacion noti)
   using namespace std;
 
   if(!relaciones_.empty())
-    for(auto id_rel : relaciones_) //para toda relación del objeto...
+    for(auto& id_rel : relaciones_) //para toda relación del objeto...
     {
       try
       {
@@ -131,7 +131,7 @@ objeto::~objeto() //luego lo optimizas
 {
     std::cout << "soy el destructor de objetos[" << id_ << "]\n";
     notificar(Notificacion::Destruccion); //notifica a todas sus relaciones que será destruido
-    for(auto id : relaciones_)
+    for(auto& id : relaciones_)
         glb::relaciones.erase(id); //y luego las borra
 }
 
@@ -142,8 +142,6 @@ std::ostream& operator<<(std::ostream& os, objeto& o)
 }
 
 //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-
-
 
 void relacion::notificar(int id, Notificacion noti)
 {

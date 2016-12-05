@@ -24,6 +24,8 @@ extern cv::Mat region;
 extern void cargar_variables_configuracion();
 extern void procesar_queue_cntrl();
 
+extern void mostrar_gif(string);
+
 /* La forma más rápida de fracasar es no intentarlo */
 /* Querer es poder */
 
@@ -44,6 +46,8 @@ int main()
   Si mjolnir solicita una función de la gui y no hay ningún ciclo de fltk corriendo
   mjolnir debe iniciarlo. O el hilo de la redes tal vez.*/
   //std::thread hilo_gui(main_gui);
+  thread hilogif(mostrar_gif, "catfail1.mp4");
+  hilogif.detach();
 
   inicializar_diagrama();
 

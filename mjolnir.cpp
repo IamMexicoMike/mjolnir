@@ -7,6 +7,7 @@
 #include <future>
 #include <thread>
 #include <atomic>
+#include <mutex>
 
 #include <opencv2/opencv.hpp>
 
@@ -24,27 +25,28 @@ using namespace cv;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
 
-const Point HEADER0(5,20);
-const Point HEADER1(100,20);
-const Point HEADER2(300,20);
-
 const Scalar BLANCO(255,255,255);
+const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
 const Scalar Bckgnd(46,169,230);
 
 int ancho_region; //w = 2dx
 int altura_region; //h = 2dy
-int ANCHO_MENU = 200;
 
 class zona;
 extern vector<zona> zonas;
 extern vector<zona> superzonas;
-extern void dibujar_zonas(Mat&);
+extern void rellenar_zona_telares();
 
 Mat region;
 Mat mat_panel;
 Mat mat_header;
+
+const Point HEADER0(5,20);
+const Point HEADER1(100,20);
+const Point HEADER2(300,20);
+Point HEADER_MSG;
 
 bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
 bool botonMouseDerechoAbajo=false; //panning
@@ -64,9 +66,26 @@ Point puntoFinobjeto(0,0); //objeto temporal
 
 Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
 
-Point despl; //originalmente glb::desplazamientoOrigen
+Point despl(10000,10000); //originalmente glb::desplazamientoOrigen
+
 Point dxy; // (w/2, h/2)
-int zoom(1);
+int zoom(32);
+
+std::string mensaje_derecho_superior;
+std::mutex mtx_mensaje_derecho_superior;
+
+std::string obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
+{
+  lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
+  string s = mensaje_derecho_superior;
+  return s;
+}
+
+void establecer_mensaje(std::string m) /*Mensaje informativo en esquina superior derecha del diagrama*/
+{
+  lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
+  mensaje_derecho_superior = m;
+}
 
 /**
 La manera en la que se renderiza el diagrama es tomando los puntos absolutos (coordenadas) de los objetos o elementos a dibujar,
@@ -137,7 +156,7 @@ void efecto_cuadricula(cv::Mat& matriz)
       promedio+=tiempos[i];
     promedio = promedio/cnt;
     cnt=0;
-    cout << "Promedio cuadricula: " << promedio.count() << "s\n";
+    //cout << "Promedio cuadricula: " << promedio.count() << "s\n";
   }
 
 }
@@ -164,8 +183,12 @@ void inicializar_diagrama()
     ancho_region = 1000; altura_region = 600;
   }
   region = Mat(altura_region, ancho_region, CV_8UC3, cv::Scalar(200,200,200));
-  mat_panel = Mat(region.colRange(region.cols - 100, region.cols)); //mn
-  mat_header = Mat(region.colRange(0, region.cols - 100).rowRange(0,30)); //mn
+  const int margen = region.cols - 200;
+  mat_panel = Mat(region.colRange(margen, region.cols)); //mn
+  mat_header = Mat(region.colRange(0, margen).rowRange(0,30)); //mn
+  HEADER_MSG = Point(margen-200, HEADER0.y);
+
+  rellenar_zona_telares();
 }
 
 //demasiados magic numbers
@@ -178,15 +201,23 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   matriz = Bckgnd;
 
-  for(auto& zz : superzonas)
+  for(auto& zz : superzonas) //relleno de superzonas
   {
     vector<Point> ps = zz.puntos_desplazados();
     fillConvexPoly(matriz, ps.data(), ps.size(), zz.color());
+    //polylines(matriz, ps.data(), ps.size(), 1, true, BLANCO);
+    for(auto itr = ps.begin(); itr!=ps.end(); ++itr)
+    {
+      if(itr!=ps.begin())
+        line(matriz,*itr,*(itr-1),CAFE);
+      else
+        line(matriz,*itr,*(ps.end()-1),CAFE);
+    }
   }
 
   efecto_cuadricula(matriz);
 
-  for(auto& z : zonas)
+  for(auto& z : zonas) //relleno de zonas
   {
     vector<Point> ps = z.puntos_desplazados();
     fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
@@ -241,6 +272,9 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
   putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
+
+  putText(matriz, obtener_mensaje(), HEADER_MSG, FONT_HERSHEY_PLAIN, 1, Scalar(100,0,255), 1, CV_AA);
+
   //string sprueba = "kanban urdido";
   //putText(matriz, sprueba, HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
@@ -257,7 +291,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
 {
   //cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
-  constexpr int DESPLAZAMIENTO = 150;
+  constexpr int DESPLAZAMIENTO = 1500;
   constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
   constexpr int TECLADO_FLECHA_ABAJO = 2621440;
   constexpr int TECLADO_FLECHA_IZQUIERDA = 2424832;
@@ -302,7 +336,13 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     //push_funptr(&ventana_cuenta_nueva);
     break;
   case 51:
-    empujar_queue_saliente("ftp " + NOMBRE_APLICACION); //al parecer no puedes declarar variables aquí -fpermissive
+    establecer_mensaje("Cincuenta y uno");
+    break;
+  case 52:
+    establecer_mensaje("Arbitrario");
+    break;
+  case 53:
+    establecer_mensaje("");
     break;
 
   case 100: //d de debug
@@ -488,5 +528,9 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
       puntoFinobjeto = transformacion_inversa(puntoActualMouse);
 
   } //CV_EVENT_MOUSEMOVE
+  if(event==CV_EVENT_LBUTTONDBLCLK)
+  {
+    cout << "DBL CLICK\n";
+  }
 
 } //manejarInputMouse
