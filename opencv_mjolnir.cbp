@@ -11,7 +11,6 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-Wshadow" />
 					<Add option="-Wredundant-decls" />
@@ -20,6 +19,7 @@
 					<Add option="-Wunreachable-code" />
 					<Add option="-Wmissing-include-dirs" />
 					<Add option="-std=c++11" />
+					<Add option="-g" />
 					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls" />
 					<Add directory="include" />
 				</Compiler>
@@ -38,20 +38,22 @@
 		<Unit filename="configuracion.cpp" />
 		<Unit filename="cuenta_nueva.cxx" />
 		<Unit filename="cuenta_nueva.h" />
+		<Unit filename="gifs.cpp" />
 		<Unit filename="include/cuenta.h" />
 		<Unit filename="include/elemento_diagrama.h" />
 		<Unit filename="include/gui.h" />
+		<Unit filename="include/mjolnir.hpp" />
 		<Unit filename="include/redes.h" />
-		<Unit filename="include/utilidades.hpp" />
+		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
-		<Unit filename="mjolnir.cpp" />
-		<Unit filename="mjolnir.hpp" />
 		<Unit filename="paleta_colores.cpp" />
+		<Unit filename="sistema_de_archivos.cpp" />
 		<Unit filename="src/cuenta.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />
 		<Unit filename="src/gui.cpp" />
+		<Unit filename="src/mjolnir.cpp" />
 		<Unit filename="src/redes.cpp" />
-		<Unit filename="src/utilidades.cpp" />
+		<Unit filename="src/zonas.cpp" />
 		<Unit filename="versionado.cpp" />
 		<Extensions>
 			<code_completion />

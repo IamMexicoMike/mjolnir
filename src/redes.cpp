@@ -39,7 +39,7 @@ string extraer_queue_cntrl()
   lock_guard<mutex> lck(mtx_cntrl);
   if(!queue_cntrl.empty())
   {
-    string cntrl = queue_cntrl.back();
+    string cntrl = queue_cntrl.front();
     queue_cntrl.pop();
     return cntrl;
   }
@@ -58,7 +58,7 @@ void empujar_queue_saliente(string s)
   else
   {
     std::lock_guard<std::mutex> lck(mtx_saliente);
-    queue_saliente.emplace(s);
+    queue_saliente.push(s);
   }
 }
 
@@ -68,7 +68,7 @@ string extraer_queue_saliente()
   std::string paq;
   if(!queue_saliente.empty())
   {
-    paq = queue_saliente.back();
+    paq = queue_saliente.front();
     queue_saliente.pop();
     return paq;
   }
@@ -149,18 +149,21 @@ void cliente::timer_queue()
   {
     if(!ec)
     {
-      /*checamos el buzón de mensajes de salida y lo enviamos*/;
-      string paq = extraer_queue_saliente();
-      if(!paq.empty())
-      {
-        if(paq == CODIGO_ABORTAR)
+      /*checamos el buzón de mensajes de salida y lo enviamos*/
+      string paq;
+      do {
+        paq = extraer_queue_saliente();
+        if(!paq.empty())
         {
-          cout << "paq==CODIGO_ABORTAR -> cerrando socket\n";
-          socket_.close();
+          if(paq == CODIGO_ABORTAR)
+          {
+            cout << "paq==CODIGO_ABORTAR -> cerrando socket\n";
+            socket_.close();
+          }
+          else
+            escribir(paq);
         }
-        else
-          escribir(paq);
-      }
+      } while(!paq.empty());
     }
 
     else
@@ -217,9 +220,8 @@ void cliente::leer()
     }
     else
     {
-      /*Error 10054: Interrupción forzada por host remoto*/
       std::cout << "Error leyendo " << ec.value() <<  ": " << ec.message() << std::endl;
-      if(ec.value() == 10054)
+      if(ec.value() == 10054) /*Error 10054: Interrupción forzada por host remoto*/
         conectar();
     }
   });
@@ -253,7 +255,7 @@ void cliente::escribir(std::string str)
   {
     if (!ec)
     {
-      cout << "Se escribio " << tx_buf_ << " con " << len << " bytes" << endl;
+      //cout << "Se escribio " << tx_buf_ << " con " << len << " bytes" << endl;
       /*procesar escritura exitosa*/
     }
   });

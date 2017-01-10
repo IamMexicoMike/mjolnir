@@ -5,11 +5,13 @@
 #include <vector>
 #include <mutex>
 
-extern std::string ip_servidor;
-extern std::string puerto_servidor;
-extern std::string version;
+using namespace std;
 
-std::mutex mtx_config;
+extern string ip_servidor;
+extern string puerto_servidor;
+extern string version;
+
+mutex mtx_config;
 
 using namespace std;
 
@@ -25,7 +27,7 @@ string cargar_valor(string arg)
       return valor;
     }
   }
-  return std::string();
+  return string();
 }
 
 void cargar_variables_configuracion()

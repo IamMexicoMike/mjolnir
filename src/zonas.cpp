@@ -3,14 +3,17 @@
 #define offset_rasuradox 40000
 #define offset_rasuradoy -13000
 #define MACRO_RASURADO(x1,y1,x2,y2,x3,y3,x4,y4) {Point(offset_rasuradox + (x1),offset_rasuradoy + (y1)), Point(offset_rasuradox + (x2),offset_rasuradoy + (y2)), Point(offset_rasuradox + (x3),offset_rasuradoy + (y3)), Point(offset_rasuradox + (x4),offset_rasuradoy + (y4))}
-
-cv::Point operator/(cv::Point p, const int d)
-{
-  return cv::Point(p.x/d, p.y/d);
-}
+#define offset_planta1x
 
 using namespace std;
 using namespace cv;
+
+Point operator/(Point p, const int d)
+{
+  return Point(p.x/d, p.y/d);
+}
+
+extern const Scalar Bckgnd(46,169,230);
 
 const Scalar COLOR_ZONA(125,189,200);
 const Scalar COLOR_AREA(145,209,220);
@@ -22,9 +25,9 @@ const Scalar COLOR_ENGOMADO(250,150,150);
 const Scalar COLOR_METAL(200,200,200);
 const Scalar COLOR_URDIDO(220,210,250);
 const Scalar COLOR_SALIDA(255,255,255);
-extern const Scalar Bckgnd(46,169,230);
-constexpr int offset_telares=40000;
-constexpr int offset_acabado=offset_telares+60000;
+
+const int offset_telares=40000;
+const int offset_acabado=offset_telares+60000;
 const Scalar COLOR_MAQUINILLA(51,255,255);
 const Scalar COLOR_JACQUARD(102,0,204);
 const Scalar COLOR_TALLER(102,102,0);
@@ -42,7 +45,8 @@ vector<zona> superzonas(
   zona({Point(0,0), Point(40000,0), Point(40000,27500), Point(0,27500)}, COLOR_ZONA, "SALON DE URDIDO Y ENGOMADO"),
   zona({Point(offset_telares,0), Point(offset_telares + 60000,0), Point(offset_telares + 60000,27500), Point(offset_telares,27500)}, COLOR_ZONA, ""/*SALON DE TELARES*/),
   zona({Point(offset_acabado,0), Point(offset_acabado + 34400,0), Point(offset_acabado + 40000,5800), Point(offset_acabado + 40000,27500), Point(offset_acabado,27500)}, COLOR_ZONA, ""/*"SALON DE ACABADO"*/),
-  zona({Point(offset_rasuradox,offset_rasuradoy),Point(offset_rasuradox + 81655, offset_rasuradoy),Point(offset_rasuradox+86000,offset_rasuradoy+4500), Point(offset_rasuradox+86000,offset_rasuradoy+13000),Point(offset_rasuradox,offset_rasuradoy+13000)}, COLOR_ZONA, "SALON DE CORTE, RASURADO Y ALMACEN CRUDO")
+  zona({Point(offset_rasuradox,offset_rasuradoy),Point(offset_rasuradox + 81655, offset_rasuradoy),Point(offset_rasuradox+86000,offset_rasuradoy+4500), Point(offset_rasuradox+86000,offset_rasuradoy+13000),Point(offset_rasuradox,offset_rasuradoy+13000)}, COLOR_ZONA, "SALON DE CORTE, RASURADO Y ALMACEN CRUDO"),
+
 });
 
 vector<zona> zonas(
@@ -102,15 +106,17 @@ vector<zona> zonas(
   zona(MACRO_RASURADO(46000,6000,51000,6000,51000,12000,46000,12000), COLOR_RASURADO, "R1"),
   zona(MACRO_RASURADO(26000,10000,42000,10000,42000,12000,26000,12000), COLOR_RASURADO, "MESA DE CORTE"),
   //zona(MACRO_RASURADO(38000,3500,48000,3500,48000,5500,38000,5500), COLOR_AREA, "ALMACEN RASURADO"),
+
 });
 
-
-void dibujar_zonas(Mat& matriz)
+void anexar_zonas()
 {
-
+  for(auto& z : zonas)
+    crear_objeto(z);
+  zonas.clear();
 }
 
-void rellenar_zona_telares() //está de la chingada esta función
+void rellenar_zona_telares() //está de lujo esta función
 {
   for(int j=1; j<5; ++j)
     for(int i=1; i<8; ++i)
@@ -120,12 +126,38 @@ void rellenar_zona_telares() //está de la chingada esta función
         c = COLOR_MAQUINILLA;
       else
         c = COLOR_JACQUARD;
-      zonas.emplace_back(zona({Point(1000*i + 7000*(i-1) + 3000 + offset_telares, 1000*j + 5000*(j-1) + (j/3)*2500),
+
+
+      zona z({Point(1000*i + 7000*(i-1) + 3000 + offset_telares, 1000*j + 5000*(j-1) + (j/3)*2500),
                                Point(1000*i + 7000*(i) + 3000 + offset_telares, 1000*j + 5000*(j-1) + (j/3)*2500),
                                Point(1000*i + 7000*(i) + 3000 + offset_telares, 1000*j + 5000*(j) + (j/3)*2500),
                                Point(1000*i + 7000*(i-1) + 3000 + offset_telares, 1000*j + 5000*(j) + (j/3)*2500)},
-                               c, to_string(j*10 + i)));
+                               c, to_string(j*10 + i));
+      crear_objeto(z);
     }
 }
 
+void zona::dibujarse(cv::Mat& m)
+{
+  vector<Point> ps = puntos_desplazados();
+  fillConvexPoly(m, ps.data(), ps.size(), color());
+  if(b_seleccionado_)
+    polylines(m, ps, true, COLOR_SELECCION, 3, CV_AA); //selección
 
+  if(b_highlighteado_)
+    polylines(m, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
+}
+
+//se llama continuamente cuando haces drag, no sólo una vez
+void zona::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
+{
+    for(auto p : puntos_)
+      p += pt;
+}
+
+bool zona::pertenece_a_area(const cv::Point pt)
+{
+  if(pointPolygonTest(puntos_, pt, false) > 0)
+    return true;
+  return false;
+}

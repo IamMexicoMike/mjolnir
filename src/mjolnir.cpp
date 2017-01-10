@@ -11,12 +11,13 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "elemento_diagrama.h" /**mjolnir no incluye su propio header?*/
+#include "elemento_diagrama.h" /**mjolnir no incluye su propio header?!*/
+#include "mjolnir.hpp"
 #include "redes.h"
 #include "zonas.hpp"
 
 #include "gui.h"
-#include "cuenta_nueva.h"
+#include "../cuenta_nueva.h"
 
 extern int paleta_colores();
 
@@ -24,6 +25,7 @@ using namespace std;
 using namespace cv;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
+/* no intentarlo es 100% probabilidad de fracaso */
 
 const Scalar BLANCO(255,255,255);
 const Scalar CAFE(0,51,102);
@@ -35,9 +37,9 @@ int ancho_region; //w = 2dx
 int altura_region; //h = 2dy
 
 class zona;
-extern vector<zona> zonas;
 extern vector<zona> superzonas;
 extern void rellenar_zona_telares();
+extern void anexar_zonas();;
 
 Mat region;
 Mat mat_panel;
@@ -66,22 +68,33 @@ Point puntoFinobjeto(0,0); //objeto temporal
 
 Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
 
-Point despl(10000,10000); //originalmente glb::desplazamientoOrigen
+Point despl(10000,10000); //originalmente desplazamientoOrigen
+
+vector<unique_ptr<objeto>>::iterator itr_seleccionado = objetos.end();
+vector<unique_ptr<objeto>>::iterator itr_highlight = objetos.end();
+bool b_drag=false;
+bool b_resize=false;
+Point ptInicioArrastre(0,0);
+Point ptFinArrastre(0,0);
+vector<unique_ptr<objeto>> objetos;
 
 Point dxy; // (w/2, h/2)
 int zoom(32);
+bool b_dibujar_nombres=false; //es en funcion del zoom
+int tamanio_texto;
+int ancho_texto;
 
-std::string mensaje_derecho_superior;
-std::mutex mtx_mensaje_derecho_superior;
+string mensaje_derecho_superior;
+mutex mtx_mensaje_derecho_superior;
 
-std::string obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
+string obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
 {
   lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
   string s = mensaje_derecho_superior;
   return s;
 }
 
-void establecer_mensaje(std::string m) /*Mensaje informativo en esquina superior derecha del diagrama*/
+void establecer_mensaje(string m) /*Mensaje informativo en esquina superior derecha del diagrama*/
 {
   lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
   mensaje_derecho_superior = m;
@@ -105,6 +118,8 @@ cv::Point transformar(cv::Point& p)
   return pp;
 }
 
+/*magia*/
+
 /**transforma un punto relativo a un punto absoluto
 p = g(p') = z*(p' - dx) + dx + d */
 cv::Point transformacion_inversa(cv::Point& pp)
@@ -122,7 +137,6 @@ void efecto_cuadricula(cv::Mat& matriz)
   Point pt1, pt2; //probablemente esto ayude a que la caché esté caliente con este valor durante estos ciclos
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
-
 
   if(zoom<=32)
   {
@@ -144,7 +158,7 @@ void efecto_cuadricula(cv::Mat& matriz)
       //line(matriz, Point(0,i), Point(h,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
     }
   }
-  t_final = std::chrono::system_clock::now();
+  t_final = chrono::system_clock::now();
   chrono::duration<double> t_renderizar = t_final - t_inicial;
   tiempos[cnt] = t_renderizar;
   cnt++;
@@ -189,6 +203,7 @@ void inicializar_diagrama()
   HEADER_MSG = Point(margen-200, HEADER0.y);
 
   rellenar_zona_telares();
+  anexar_zonas();
 }
 
 //demasiados magic numbers
@@ -205,45 +220,51 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   {
     vector<Point> ps = zz.puntos_desplazados();
     fillConvexPoly(matriz, ps.data(), ps.size(), zz.color());
+  }
+
+  //efecto_cuadricula(matriz);
+
+  if(zoom<=64)
+  {
+    tamanio_texto = 4/zoom;
+    if(tamanio_texto==0)
+      tamanio_texto=1;
+    ancho_texto=4-zoom;
+    if(ancho_texto<0)
+      ancho_texto = 1;
+
+    b_dibujar_nombres = true;
+  }
+  else
+    b_dibujar_nombres = false;
+
+
+  //dibujamos todos los objetos
+  for(auto& p : objetos)
+  {
+    p->dibujarse(matriz);
+    if(b_dibujar_nombres) {
+      Point entiende_esto = p->centro();
+      Point pt = transformar(entiende_esto);
+      putText(matriz, p->nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
+    }
+  }
+
+
+  for(auto& zz : superzonas) //contorno y nombre de superzonas
+  {
+    auto ps = zz.puntos_desplazados();
     //polylines(matriz, ps.data(), ps.size(), 1, true, BLANCO);
     for(auto itr = ps.begin(); itr!=ps.end(); ++itr)
     {
       if(itr!=ps.begin())
-        line(matriz,*itr,*(itr-1),CAFE);
+        line(matriz,*itr,*(itr-1),BLANCO);
       else
-        line(matriz,*itr,*(ps.end()-1),CAFE);
+        line(matriz,*itr,*(ps.end()-1),BLANCO);
     }
+    if(b_dibujar_nombres)
+      putText(matriz, zz.nombre(), ps[0], FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
   }
-
-  efecto_cuadricula(matriz);
-
-  for(auto& z : zonas) //relleno de zonas
-  {
-    vector<Point> ps = z.puntos_desplazados();
-    fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
-  }
-
-  if(zoom<=64)
-  {
-    int sz = 4/zoom;
-    if(sz==0)
-      sz=1;
-    int ancho=4-zoom;
-    if(ancho<0)
-      ancho = 1;
-    for(auto it=zonas.begin(); it!=zonas.end(); ++it)
-    {
-      Point pc = it->centro();
-      Point pt = transformar(pc);
-      putText(matriz, it->nombre(), pt, FONT_HERSHEY_PLAIN, sz, Scalar(0,0,0), ancho, CV_AA);
-    }
-    for(auto& zz : superzonas)
-    {
-      auto aaa = zz.puntos_desplazados();
-      putText(matriz, zz.nombre(), aaa[0], FONT_HERSHEY_PLAIN, sz, Scalar(0,0,0), ancho, CV_AA);
-    }
-  }
-
 
   if(b_dibujando_flecha) //dibujamos una flecha temporal
     arrowedLine(matriz, transformar(puntoInicioFlecha),
@@ -251,23 +272,14 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
                 COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
   if(b_dibujando_objeto) //dibujamos un rectángulo temporal
-  {
     rectangle(matriz, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
-  }
-
-  //dibujamos todos los objetos
-  for(auto& rec : glb::objetos)
-    rec.second.dibujarse(matriz);
-  //dibujamos todas las relaciones
-  for(auto& rel : glb::relaciones)
-    rel.second.dibujarse(matriz);
 
   mat_panel = AZUL_PALIDO;
   mat_header = BLANCO;
 
-  if(glb::llave_objeto_seleccionado > 0)
-    putText(matriz, std::string("Seleccionado: " + std::to_string(glb::llave_objeto_seleccionado)),
+  if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
+    putText(matriz, string("Seleccionado: " + to_string((*itr_seleccionado)->id() )),
             HEADER2, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
@@ -280,7 +292,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
 
   // medimos tiempo
-  t_final = std::chrono::system_clock::now();
+  t_final = chrono::system_clock::now();
   chrono::duration<double> t_renderizar = t_final - t_inicial;
   //cout << t_renderizar.count() << "s\n";
 
@@ -315,7 +327,8 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     if(b_dibujando_objeto)
     {
       b_dibujando_objeto = false;
-      crear_objeto(puntoOrigenobjeto, puntoFinobjeto); //deben ser p y no p'
+      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
+      crear_objeto(r); //deben ser p y no p'
     }
     break;
 
@@ -331,7 +344,6 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
   case 48:
     //empujar_queue_cntrl("reboot");
   case 50: //debug
-    cout << "valor global: " << glb::llave_objeto_highlight << endl;
     push_funptr(&foo_gui);
     //push_funptr(&ventana_cuenta_nueva);
     break;
@@ -346,28 +358,33 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     break;
 
   case 100: //d de debug
-    cout << "obj sel: " << glb::llave_objeto_seleccionado << " obj hgl: " << glb::llave_objeto_highlight << endl;
-    for(auto& ob : glb::objetos)
-      cout << ob.first << "," << ob.second.id() << " | " << endl;
-    for(auto& rel : glb::relaciones)
-      cout << rel.first << "," << rel.second.id() << " | " << endl;
-    cout << "\ntodas las relaciones:" << endl;
-    for(auto& rel : glb::relaciones)
-      cout << "relacion " << rel.second.id() << ": "
-           << rel.second.get_objetos().first << ',' << rel.second.get_objetos().second << endl;
-    if(glb::llave_objeto_seleccionado > 0)
-    {
-      cout << "relaciones del objeto " << glb::llave_objeto_seleccionado << ":" << endl;
-      for(auto id : glb::objetos.at(glb::llave_objeto_seleccionado).get_relaciones())
-        cout << id << endl;
+    cout << "\nDEBUG:\n";
+    cout << "objetos.size() == " << objetos.size() << '\n';
+    if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
+      cout << "seleccionado=" << (*itr_seleccionado)->id();
+    if(itr_highlight>=objetos.begin() && itr_highlight!=objetos.end())
+      cout << "\thighlighteado=" << (*itr_highlight)->id() << '\n';
+    cout << '\n';
+    for(auto& p : objetos) {
+      cout << p->id() << " : ";
+      p->imprimir_datos();
+      cout << '\n';
     }
     break;
 
+  case 101:
+    cout << "\tobjetos.begin()\tobjetos.end()\titr_highlight\titr_seleccion\n";
+    cout << '\t' << &*objetos.begin() << '\t' << &*objetos.end() << '\t' << &*itr_highlight << '\t' << &*itr_seleccionado << '\n';
+    for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
+    {
+      cout << &*itr << '\t' << (*itr)->id() << '\n';
+    }
+
   case 103: //g de guardar
-    guardar_todo();
+
     break;
   case 108: //l de load(cargar)
-    cargar_todo();
+
     break;
   case 110: //m - cerrar redes
     iosvc.stop();
@@ -382,16 +399,33 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     b_dibujando_objeto = true;
     break;
 
-  case 3014656: //suprimir, borrar objeto
-    if(glb::llave_objeto_seleccionado > 0)
+  case 115: //s - simulacion
+  {
+    Point p = transformacion_inversa(puntoActualMouse);
+    for(int i=0; i<100; ++i)
     {
-      destruir_objeto(glb::llave_objeto_seleccionado);
-      ubicacion::determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
+      for(int j=0; j<100; ++j)
+      {
+        Point p1(p.x + i*(-10000), p.y + j*(-10000));
+        Point p2(p.x + i*(-10000)-5000, p.y + j*(-10000)-5000);
+        rectangulo r(p1,p2);
+        crear_objeto(r);
+      }
+    }
+  }
+    determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
+    break;
+
+  case 3014656: //suprimir, borrar objeto
+    if(itr_seleccionado != objetos.end())
+    {
+      destruir_objeto_seleccionado();
+      determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
     break;
 
   }
-    //cout << glb::desplazamientoOrigen << endl;
+    //cout << desplazamientoOrigen << endl;
 }
 
 /**Este callback se invoca cada vez que hay un evento de mouse en la ventana a la cual se attacheó el callback.
@@ -419,7 +453,8 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     if(b_dibujando_objeto)
     {
       b_dibujando_objeto = false;
-      crear_objeto(puntoOrigenobjeto, puntoFinobjeto);
+      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
+      crear_objeto(r);
 
       /**solicitamos las propiedades del nuevo objeto a crear*/
       /***/
@@ -429,15 +464,15 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     else
     {
       botonMouseIzquierdoAbajo = true;
-      auto props = ubicacion::determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+      auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
-      if(props.first > 0 ) //props.first es el id
+      if(itr!=objetos.end())
       {
-        if(glb::llave_objeto_seleccionado > 0) //si había otro brother seleccionado antes...
-          glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //des-seleccionamos al anterior
+        if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
+          (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
 
-        glb::objetos.at(props.first).seleccionar(true); //seleccionamos al brother
-        glb::llave_objeto_seleccionado = props.first; //actualizamos al seleccionado
+        (*itr)->seleccionar(true); //seleccionamos al brother
+        itr_seleccionado = itr; //actualizamos al seleccionado
 
         if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
         {
@@ -447,25 +482,25 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
         }
         else //de lo contrario, arrastramos o resizeamos. Usamos las mismas variables
         {
-          glb::ptInicioArrastre = transformacion_inversa(puntoActualMouse);
-          glb::ptFinArrastre = glb::ptInicioArrastre;
+          ptInicioArrastre = transformacion_inversa(puntoActualMouse);
+          ptFinArrastre = ptInicioArrastre;
           b_dibujando_flecha = false;
-          if(glb::objetos.at(props.first).es_esquina(transformacion_inversa(puntoActualMouse)))
+          /*if((*itr)->es_esquina(transformacion_inversa(puntoActualMouse)))
           {
-            glb::b_resize = true;
+            b_resize = true;
           }
-          else
+          else*/
           {
-            glb::b_drag = true;
+            b_drag = true;
           }
         }
         //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
       }
 
-      else if(glb::llave_objeto_seleccionado > 0) //no caimos en nadie, pero había un brother seleccionado
+      else if(itr_seleccionado!=objetos.end()) //no caimos en nadie, pero había un brother seleccionado
       {
-        glb::objetos.at(glb::llave_objeto_seleccionado).seleccionar(false); //lo des-seleccionamos
-        glb::llave_objeto_seleccionado=-1; //y reseteamos el id de selección
+        (*itr_seleccionado)->seleccionar(false); //lo des-seleccionamos
+        itr_seleccionado=objetos.end(); //y reseteamos el id de selección
       }
     }
   }
@@ -473,16 +508,18 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
   if(event == CV_EVENT_LBUTTONUP)
   {
     botonMouseIzquierdoAbajo = false;
-    glb::b_drag = false; //terminan las condiciones de arrastre y resize
-    glb::b_resize = false;
+    b_drag = false; //terminan las condiciones de arrastre y resize
+    b_resize = false;
 
     if(b_dibujando_flecha) //esto se va a revampear
     {
       //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + despl));
-      auto props = ubicacion::determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
-      if(props.first > 0 && props.first != glb::llave_objeto_seleccionado)
-        glb::relaciones.emplace(relacion::sid - 1, relacion(glb::llave_objeto_seleccionado, props.first));
-
+      auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+      if(itr_seleccionado!=objetos.end() && itr != itr_seleccionado)
+      {
+        /**Se dibujó una flecha de un objeto a otro, originalmente se entablaba relación*/
+        cout << "interaccion?\tentre " << (*itr)->id() << " y " << (*itr_seleccionado)->id() << "\n";
+      }
       b_dibujando_flecha = false;
     }
   }
@@ -497,32 +534,32 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     if(botonMouseIzquierdoAbajo) //Flechas. Dragging. Resizing. Moviendo el cursor con click izquierdo apretado.
     {
       //propiedades ubicacion, highlightear destino de flecha, posible drag n drop
-      if(glb::b_drag)
+      if(b_drag)
       {
         Point pt = transformacion_inversa(puntoActualMouse);
-        Point dif = pt - glb::ptInicioArrastre;
-        glb::objetos.at(glb::llave_objeto_seleccionado).arrastrar(dif);
-        glb::ptInicioArrastre = pt;
+        Point dif = pt - ptInicioArrastre;
+        (*itr_seleccionado)->arrastrar(dif);
+        ptInicioArrastre = pt;
       }
-      else if(glb::b_resize)
+      /*else if(b_resize)
       {
         Point pt = transformacion_inversa(puntoActualMouse);
-        Point dif = pt - glb::ptInicioArrastre;
-        glb::objetos.at(glb::llave_objeto_seleccionado).resizear(dif);
-        glb::ptInicioArrastre = pt;
-      }
+        Point dif = pt - ptInicioArrastre;
+        (*itr_seleccionado)->resizear(dif);
+        ptInicioArrastre = pt;
+      }*/
       //...
 
       if(b_dibujando_flecha)  //dibujando flecha temporal
       {
-        /*props se va a usar después para tener feedback con el highlight*/
-        /*auto props = */ubicacion::determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse)); //para highlightear el destino
+        /*itr se va a usar después para tener feedback con el highlight*/
+        /*auto itr = */determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse)); //para highlightear el destino
         puntoTerminoFlecha = transformacion_inversa(puntoActualMouse); //la flecha es temporal, no se añade sino hasta que LBUTTONUP
       }
     }
 
     if(!botonMouseDerechoAbajo && !botonMouseIzquierdoAbajo)
-      ubicacion::determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+      determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
     if(b_dibujando_objeto)
       puntoFinobjeto = transformacion_inversa(puntoActualMouse);
@@ -534,3 +571,42 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
   }
 
 } //manejarInputMouse
+
+/**Debe determinar propiedades del punto en función de la dimensión en la que está.
+ No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
+vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point p)
+{
+  /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
+  auto encontrarItrHighlight = [&]() -> vector<unique_ptr<objeto>>::iterator
+  {
+    for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
+      if((*itr)->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
+        return itr;
+    return objetos.end();
+  };
+
+  vector<unique_ptr<objeto>>::iterator itr = encontrarItrHighlight(); //obtenemos un apuntador al objeto que es dueño de esa área
+
+  if(itr == itr_highlight) //no hacemos cambios, seguimos hovereando dentro del area del mismo objeto
+    return itr;
+
+  /*Segundo caso: Había algo highlighteado pero ya no*/
+  if(itr==objetos.end())
+  {
+    if(itr_highlight>objetos.begin() && itr_highlight!=objetos.end()) //al inicio del programa vale 0
+      (*itr_highlight)->highlightear(false);//des-highlighteamos el anterior
+    itr_highlight = objetos.end();
+    return itr;
+  }
+
+  /*Tercer caso: hay algo highlighteable*/
+  (*itr)->highlightear(true); //highlighteamos al nuevo
+
+  /*Si es que había otro highlighteado antes lo deshighlighteamos*/
+  if(itr_highlight!=objetos.end())
+    (*itr_highlight)->highlightear(false);
+
+  itr_highlight = itr; //actualizamos la llave highlight
+
+  return itr;
+}

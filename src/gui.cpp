@@ -22,7 +22,7 @@ int (*extract_funptr())()
   std::lock_guard<std::mutex> lck(mtx_funptrs);
   if(!queue_funptrs.empty())
   {
-    int (*funptr)() = queue_funptrs.back();
+    int (*funptr)() = queue_funptrs.front();
     queue_funptrs.pop();
     return funptr;
   }

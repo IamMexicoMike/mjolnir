@@ -11,7 +11,6 @@
 
 #include "mjolnir.hpp"
 #include "elemento_diagrama.h"
-#include "utilidades.hpp"
 #include "redes.h"
 
 #include "gui.h"
@@ -46,19 +45,20 @@ int main()
   Si mjolnir solicita una función de la gui y no hay ningún ciclo de fltk corriendo
   mjolnir debe iniciarlo. O el hilo de la redes tal vez.*/
   //std::thread hilo_gui(main_gui);
-  thread hilogif(mostrar_gif, "catfail1.mp4");
-  hilogif.detach();
+  //thread hilogif(mostrar_gif, "catfail1.mp4");
+  //hilogif.detach();
 
   inicializar_diagrama();
 
   namedWindow("Mjolnir");
+  //moveWindow("Mjolnir",1380,0);
   moveWindow("Mjolnir",0,0);
   setMouseCallback("Mjolnir", manejarInputMouse);
   renderizarDiagrama(region);
 
   while (true)
   {
-    int k = waitKey(15);
+    int k = waitKey(30);
 
     if(k == 27) //tecla ESC
     {
