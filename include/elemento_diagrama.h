@@ -8,12 +8,11 @@
 #include <opencv2/opencv.hpp>
 #include "mjolnir.hpp"
 
+void ordenar_objetos();
 void destruir_objeto(int id);
 void destruir_objeto_seleccionado();
 
 extern std::mutex mtx_objetos;
-extern cv::Point transformar(cv::Point&);
-extern cv::Point transformacion_inversa(cv::Point&);
 extern void empujar_queue_saliente(std::string s); /*No quiero incluir redes.h*/
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
@@ -38,16 +37,15 @@ public:
   std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
+  bool operator<(const objeto& o2) const {return (this->area() < o2.area());}
+  void dibujar_nombre(cv::Mat&) const;
 
-  virtual void dibujarse(cv::Mat& m)=0;
+  virtual void dibujarse(cv::Mat& m) const=0;
   virtual void arrastrar(const cv::Point pt)=0;
-  virtual bool pertenece_a_area(const cv::Point pt)=0;
+  virtual bool pertenece_a_area(const cv::Point pt) const=0;
   //virtual bool es_esquina(const cv::Point pt);
   //void resizear(const cv::Point pt);
-
-  bool operator<(const objeto& o2){return (this->area() < o2.area());}
-
-  void imprimir_datos(); //debug
+  virtual void imprimir_datos() const=0; //debug
 
   static int sid;
 
@@ -73,10 +71,12 @@ public:
     centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
     area_ = std::abs((fin_.x - inicio_.x)*(fin.y - inicio_.y)); //base por altura
   }
-  virtual void dibujarse(cv::Mat&) override;
+   std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
+
+  virtual void dibujarse(cv::Mat&) const override;
   virtual void arrastrar(const cv::Point pt) override;
-  virtual bool pertenece_a_area(const cv::Point) override;
-  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
+  virtual bool pertenece_a_area(const cv::Point) const override;
+  virtual void imprimir_datos() const override;
 };
 
 

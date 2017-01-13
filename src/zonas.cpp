@@ -1,21 +1,27 @@
 #include "zonas.hpp"
 
-#define offset_rasuradox 40000
-#define offset_rasuradoy -13000
-#define MACRO_RASURADO(x1,y1,x2,y2,x3,y3,x4,y4) {Point(offset_rasuradox + (x1),offset_rasuradoy + (y1)), Point(offset_rasuradox + (x2),offset_rasuradoy + (y2)), Point(offset_rasuradox + (x3),offset_rasuradoy + (y3)), Point(offset_rasuradox + (x4),offset_rasuradoy + (y4))}
-#define offset_planta1x
+#define ofrasx 40
+#define ofrasy -13
+#define ofex 40
+#define ofax ofex+60
+#define P1(x,y) Point(x*100,y*100)
+#define PTEL(x,y) Point(100*(x+ofex),100*(y))
+#define PACA(x,y) Point(100*(x+ofax),100*(y))
+#define PRAS(x,y) Point(100*(x+ofrasx),100*(y+ofrasy))
+#define MACRO_RASURADO(x1,y1,x2,y2,x3,y3,x4,y4) {PRAS(x1,y1), PRAS(x2,y2), PRAS(x3,y3), PRAS(x4,y4)}
+#define offset_planta2x -2000
+#define offset_planta2y -10000
+#define P2(x,y) Point(offset_planta2x + x*100, offset_planta2y + y*100)
+
 
 using namespace std;
 using namespace cv;
 
-Point operator/(Point p, const int d)
-{
-  return Point(p.x/d, p.y/d);
-}
-
 extern const Scalar Bckgnd(46,169,230);
 
+const Scalar CAFE(0,51,102);
 const Scalar COLOR_ZONA(125,189,200);
+const Scalar COLOR_ZONA2(145,210,220);
 const Scalar COLOR_AREA(145,209,220);
 const Scalar COLOR_MAQ(102,255,255);
 const Scalar AZUL_PALIDO(240,200,200);
@@ -25,9 +31,7 @@ const Scalar COLOR_ENGOMADO(250,150,150);
 const Scalar COLOR_METAL(200,200,200);
 const Scalar COLOR_URDIDO(220,210,250);
 const Scalar COLOR_SALIDA(255,255,255);
-
-const int offset_telares=40000;
-const int offset_acabado=offset_telares+60000;
+const Scalar COLOR_PT(25,120,255);
 const Scalar COLOR_MAQUINILLA(51,255,255);
 const Scalar COLOR_JACQUARD(102,0,204);
 const Scalar COLOR_TALLER(102,102,0);
@@ -39,74 +43,102 @@ const Scalar COLOR_TABLERO(15,225,25);
 const Scalar COLOR_RACK(100,100,100);
 const Scalar AMARILLO(0,255,255);
 const Scalar COLOR_RASURADO(233,124,60);
+const Scalar COLORES[] = {Scalar(200,50,50), Scalar(50,200,50), Scalar(50,50,200), Scalar(200,50,200), Scalar(200,200,50),
+                          Scalar(50,200,200), Scalar(250,200,150), Scalar(150,250,200), Scalar(200,150,250)};
 
 vector<zona> superzonas(
 {
-  zona({Point(0,0), Point(40000,0), Point(40000,27500), Point(0,27500)}, COLOR_ZONA, "SALON DE URDIDO Y ENGOMADO"),
-  zona({Point(offset_telares,0), Point(offset_telares + 60000,0), Point(offset_telares + 60000,27500), Point(offset_telares,27500)}, COLOR_ZONA, ""/*SALON DE TELARES*/),
-  zona({Point(offset_acabado,0), Point(offset_acabado + 34400,0), Point(offset_acabado + 40000,5800), Point(offset_acabado + 40000,27500), Point(offset_acabado,27500)}, COLOR_ZONA, ""/*"SALON DE ACABADO"*/),
-  zona({Point(offset_rasuradox,offset_rasuradoy),Point(offset_rasuradox + 81655, offset_rasuradoy),Point(offset_rasuradox+86000,offset_rasuradoy+4500), Point(offset_rasuradox+86000,offset_rasuradoy+13000),Point(offset_rasuradox,offset_rasuradoy+13000)}, COLOR_ZONA, "SALON DE CORTE, RASURADO Y ALMACEN CRUDO"),
-
+  zona({P1(0,0), P1(40,0), P1(40,27.5), P1(0,27.5)}, COLOR_ZONA, "SALON DE URDIDO Y ENGOMADO"),
+  zona({P1(0,-13), P1(40,-13), P1(40,0), P1(0,0)}, COLOR_ZONA, "Puerto1"),
+  zona({PTEL(0,0), PTEL(60,0), PTEL(60,27.5), PTEL(0,27.5)}, COLOR_ZONA, ""/*SALON DE TELARES*/),
+  zona({PACA(0,0), PACA(34.4,0), PACA(40,5.8), PACA(40,27.5), PACA(0,27.5)}, COLOR_ZONA, ""/*"SALON DE ACABADO"*/),
+  zona({PRAS(0,0),PRAS(81.655,0),PRAS(86,4.5), PRAS(86,13),PRAS(0,13)}, COLOR_ZONA, "SALON DE CORTE, RASURADO Y ALMACEN CRUDO"),
+  zona({P2(0,0), P2(7.6,0), P2(7.6,-1.10), P2(129.44,-1.10), P2(130,-6), P2(133.5,-11), P2(142.5,-11), P2(136.5,7), P2(147,43), P2(150,47.28), P2(142.4,51.68), P2(23,51.68), P2(23,64.23), P2(17,64.23), P2(17,76.63), P2(7,76.63), P2(7,106.63), P2(-3,106.63), P2(-3,76.63), P2(0,76.63)}, COLOR_ZONA, "Planta 2"),
+  zona({P2(7.6,1.9), P2(127.48,1.9), P2(127.48,22.9), P2(7.6,22.9)}, COLOR_ZONA, "AREA DE PRODUCCION"),
+  zona({P2(7.6,27.1), P2(127.48,27.1), P2(127.48,46.76), P2(7.6,46.76)}, COLOR_ZONA, ""),
 });
 
 vector<zona> zonas(
 {
-  zona({Point(1000,0), Point(5700,0), Point(5700,4000), Point(1000,4000)}, Scalar(200,200,200), "Comedor"),
-  zona({Point(5700,0), Point(11000,0),  Point(11000,4000), Point(5700,4000)}, Scalar(100,100,200), "Caldera"),
-  zona({Point(11000,0), Point(15800,0), Point(15800,3200), Point(11000,3200)}, Scalar(155,125,225), "Coccion"),
-  zona({Point(15800,0), Point(22800,0), Point(22800,1000), Point(15800,1000)}, COLOR_TABLERO, "Tableros"),
-  zona({Point(22800,0), Point(26300,0), Point(26300,300), Point(22800,300)}, COLOR_SALIDA, ""),
-  zona({Point(26300,0), Point(31300,0), Point(31300,5200), Point(26300,5200)}, AZUL_PALIDO, "Supervision"),
-  zona({Point(31300,0),Point(35000,0), Point(35000,5200),  Point(31300,5200)}, COLOR_WC, "W.C."),
-  zona({Point(35000,0), Point(40000,0), Point(40000,5200), Point(35000,5200)}, AZUL_PALIDO, "Jefatura"),
-  zona({Point(1000,6000), Point(13200,6000), Point(13200,9300), Point(1000,9300)}, COLOR_ENGOMADO, "BANCADA DE JULIOS"),
-  zona({Point(13500,4900), Point(25000,4900), Point(25000,10400), Point(13500,10400)}, COLOR_ENGOMADO, "AREA DE ENGOMADO"),
-  zona({Point(28000,6000), Point(38000,6000), Point(38000,8800), Point(28000,8800)}, COLOR_AREA, "ALMACEN JULIOS VACIOS"),
-  zona({Point(1000,12000), Point(29700,12000), Point(29700,16600), Point(1000,16600)}, COLOR_ENGOMADO, "AREA DE FILETAS Y URDIDO 1"),
-  zona({Point(32000,12000), Point(38000,12000), Point(38000,16600), Point(32000,16600)}, COLOR_AREA, "KANBAN URDIDO"),
-  zona({Point(4000,17000), Point(32700,17000), Point(32700,21500), Point(4000,21500)}, COLOR_ENGOMADO, "AREA DE FILETAS Y URDIDO 2"),
-  zona({Point(34000,17000), Point(39500,17000), Point(39500,25000), Point(34000,25000)}, COLOR_AREA, "KANBAN URDIDO"),
-  zona({Point(400,22000), Point(9800,22000), Point(9800,27500), Point(400,27500)}, COLOR_AREA, "ALMACEN VARIOS"),
-  zona({Point(10000,22000), Point(19800,22000), Point(19800,27500), Point(10000,27500)}, COLOR_AREA, "KANBAN MERMA"),
-  zona({Point(20000,24000), Point(25000,24000), Point(25000,27500), Point(20000,27500)}, COLOR_MAQ, "CONERA2"),
-  zona({Point(25200,24000), Point(30200,24000), Point(30200,27500), Point(25200,27500)}, COLOR_MAQ, "CONERA1"),
-  zona({Point(0,8000), Point(300,8000), Point(300,14000), Point(0,14000)}, COLOR_SALIDA, ""),
-  zona({Point(39700,12500), Point(40000,12500), Point(40000,15000), Point(39700,15000)}, COLOR_SALIDA, ""),
+  zona({P1(1,0), P1(5.7,0), P1(5.7,4), P1(1,4)}, Scalar(200,200,200), "Comedor"),
+  zona({P1(5.7,0), P1(11,0),  P1(11,4), P1(5.7,4)}, Scalar(100,100,200), "Caldera"),
+  zona({P1(11,0), P1(15.8,0), P1(15.8,3.2), P1(11,3.2)}, Scalar(155,125,225), "Coccion"),
+  zona({P1(15.8,0), P1(22.8,0), P1(22.8,1), P1(15.8,1)}, COLOR_TABLERO, "Tableros"),
+  zona({P1(22.8,0), P1(26.3,0), P1(26.3,.3), P1(22.8,.3)}, COLOR_SALIDA, ""),
+  zona({P1(26.3,0), P1(31.3,0), P1(31.3,5.2), P1(26.3,5.2)}, AZUL_PALIDO, "Supervision"),
+  zona({P1(31.3,0),P1(35,0), P1(35,5.2),  P1(31.3,5.2)}, COLOR_WC, "W.C."),
+  zona({P1(35,0), P1(40,0), P1(40,5.2), P1(35,5.2)}, AZUL_PALIDO, "Jefatura"),
+  zona({P1(1,6), P1(13.2,6), P1(13.2,9.3), P1(1,9.3)}, COLOR_ENGOMADO, "BANCADA DE JULIOS"),
+  zona({P1(13.5,4.9), P1(25,4.9), P1(25,10.4), P1(13.5,10.4)}, COLOR_ENGOMADO, "AREA DE ENGOMADO"),
+  zona({P1(28,6), P1(38,6), P1(38,8.8), P1(28,8.8)}, COLOR_AREA, "ALMACEN JULIOS VACIOS"),
+  zona({P1(1,12), P1(29.7,12), P1(29.7,16.6), P1(1,16.6)}, COLOR_ENGOMADO, "AREA DE FILETAS Y URDIDO 1"),
+  zona({P1(32,12), P1(38,12), P1(38,16.6), P1(32,16.6)}, COLOR_AREA, "KANBAN URDIDO"),
+  zona({P1(4,17), P1(32.7,17), P1(32.7,21.5), P1(4,21.5)}, COLOR_ENGOMADO, "AREA DE FILETAS Y URDIDO 2"),
+  zona({P1(34,17), P1(39.5,17), P1(39.5,25), P1(34,25)}, COLOR_AREA, "KANBAN URDIDO"),
+  zona({P1(.4,22), P1(9.8,22), P1(9.8,27.5), P1(.4,27.5)}, COLOR_AREA, "ALMACEN VARIOS"),
+  zona({P1(10,22), P1(19.8,22), P1(19.8,27.5), P1(10,27.5)}, COLOR_AREA, "KANBAN MERMA"),
+  zona({P1(20,24), P1(25,24), P1(25,27.5), P1(20,27.5)}, COLOR_MAQ, "CONERA2"),
+  zona({P1(25.2,24), P1(30.2,24), P1(30.2,27.5), P1(25.2,27.5)}, COLOR_MAQ, "CONERA1"),
+  zona({P1(0,8), P1(.3,8), P1(.3,14), P1(0,14)}, COLOR_SALIDA, ""),
+  zona({P1(39.7,12.5), P1(40,12.5), P1(40,15), P1(39.7,15)}, COLOR_SALIDA, ""),
   //////////////////////////////////////////////////////////////////////////////////////////////////////
-  zona({Point(offset_telares,12500), Point(offset_telares+500,12500), Point(offset_telares+500,15000), Point(offset_telares,15000)}, COLOR_SALIDA, ""),
-  zona({Point(offset_telares + 59500,12500), Point(offset_telares + 60000,12500), Point(offset_telares + 60000,15000), Point(offset_telares + 59500,15000)}, COLOR_SALIDA, ""),
+  zona({P1(1,-12), P1(39,-12), P1(39,-1), P1(1,-1)}, COLOR_ZONA2, "Muelle1"),
   //////////////////////////////////////////////////////////////////////////////////////////////////////
-  zona({Point(offset_acabado,0), Point(offset_acabado+3700,0), Point(offset_acabado+3700,9500), Point(offset_acabado,9500)}, COLOR_TALLER, "TALLER HERRERIA"),
-  zona({Point(offset_acabado+3700,0), Point(offset_acabado+7700,0), Point(offset_acabado+7700,500), Point(offset_acabado+3700,500)}, COLOR_SALIDA, ""),
-  zona({Point(offset_acabado+7700,0), Point(offset_acabado+12400,0), Point(offset_acabado+12400,4700), Point(offset_acabado+7700,4700)}, COLOR_OFICINA, "OFICINAS"),
-  zona({Point(offset_acabado+12400,0), Point(offset_acabado+21400,0), Point(offset_acabado+21400,6700), Point(offset_acabado+12400,6700)}, COLOR_TENIDORA, "TENIDORA THIES"),
-  zona({Point(offset_acabado+23400,0), Point(offset_acabado+26600,0), Point(offset_acabado+26600,6700), Point(offset_acabado+23400,6700)}, COLOR_TENIDORA, "JET 250"),
-  zona({Point(offset_acabado+26800,0), Point(offset_acabado+34400,0), Point(offset_acabado+34400,6700), Point(offset_acabado+26800,6700)}, COLOR_TENIDORA, "JET 750"),
-  zona({Point(offset_acabado+28000,9000), Point(offset_acabado+35200,9000), Point(offset_acabado+35200,14000), Point(offset_acabado+28000,14000)}, COLOR_TENIDORA, "JET 500"),
-  zona({Point(offset_acabado+4000,5000), Point(offset_acabado+12000,5000), Point(offset_acabado+12000,14000), Point(offset_acabado+4000,14000)}, COLOR_AREA, "ALMACEN CRUDO"),
-  zona({Point(offset_acabado+14000,19800), Point(offset_acabado+37400,19800), Point(offset_acabado+37400,25000), Point(offset_acabado+14000,25000)}, COLOR_RAMA, "RAMA"),
-  zona({Point(offset_acabado+14000,15100), Point(offset_acabado+30300,15100), Point(offset_acabado+30300,18800), Point(offset_acabado+14000,18800)}, COLOR_TUMBLER, "TUMBLER"),
-  zona({Point(offset_acabado+14000,8000), Point(offset_acabado+19000,8000), Point(offset_acabado+20000,10000), Point(offset_acabado+22000,10000), Point(offset_acabado+22000,12000), Point(offset_acabado+20000,12000), Point(offset_acabado+19000,14000), Point(offset_acabado+14000,14000)}, COLOR_CORINO, "CORINO"), //segun mariano su h vale 7.0, le puse 6.0
-  zona({Point(offset_acabado+22000,13000), Point(offset_acabado+25000,13000), Point(offset_acabado+25000,14000), Point(offset_acabado+22000,14000)}, COLOR_TABLERO, ""),
-  zona({Point(offset_acabado+30000,26500), Point(offset_acabado+37000,26500), Point(offset_acabado+37000,27500), Point(offset_acabado+30000,27500)}, COLOR_TABLERO, "Tableros de control"),
-  zona({Point(offset_acabado+500,20000), Point(offset_acabado+12000,20000), Point(offset_acabado+12000,27000), Point(offset_acabado+500,27000)}, COLOR_AREA, "CARGAS DE TENIDO"),
-  zona({Point(offset_acabado+1000,15000), Point(offset_acabado+6000,15000), Point(offset_acabado+6000,19000), Point(offset_acabado+1000,19000)}, COLOR_MAQ, "PLEGADORA"),
-  zona({Point(offset_acabado,12500), Point(offset_acabado+500,12500), Point(offset_acabado+500,15000), Point(offset_acabado,15000)}, COLOR_SALIDA, ""),
-  zona({Point(offset_acabado+39500,12500), Point(offset_acabado+40000,12500), Point(offset_acabado+40000,15000), Point(offset_acabado+39500,15000)}, COLOR_SALIDA, ""),
+  zona({PTEL(0,12.5), PTEL(.5,12.5), PTEL(.5,15), PTEL(0,15)}, COLOR_SALIDA, ""),
+  zona({PTEL(0 + 59.5,12.5), PTEL(60,12.5), PTEL(60,15), PTEL(59.5,15)}, COLOR_SALIDA, ""),
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  zona({PACA(0,0), PACA(3.7,0), PACA(3.7,9.5), PACA(0,9.5)}, COLOR_TALLER, "TALLER HERRERIA"),
+  zona({PACA(3.7,0), PACA(7.7,0), PACA(7.7,.5), PACA(3.7,.5)}, COLOR_SALIDA, ""),
+  zona({PACA(7.7,0), PACA(12.4,0), PACA(12.4,4.7), PACA(7.7,4.7)}, COLOR_OFICINA, "OFICINAS"),
+  zona({PACA(12.4,0), PACA(21.4,0), PACA(21.4,6.7), PACA(12.4,6.7)}, COLOR_TENIDORA, "TENIDORA THIES"),
+  zona({PACA(23.4,0), PACA(26.6,0), PACA(26.6,6.7), PACA(23.4,6.7)}, COLOR_TENIDORA, "JET 250"),
+  zona({PACA(26.8,0), PACA(34.4,0), PACA(34.4,6.7), PACA(26.8,6.7)}, COLOR_TENIDORA, "JET 750"),
+  zona({PACA(28,9), PACA(35.2,9), PACA(35.2,14), PACA(28,14)}, COLOR_TENIDORA, "JET 500"),
+  zona({PACA(4,5), PACA(12,5), PACA(12,14), PACA(4,14)}, COLOR_AREA, "ALMACEN CRUDO"),
+  zona({PACA(14,19.8), PACA(37.4,19.8), PACA(37.4,25), PACA(14,25)}, COLOR_RAMA, "RAMA"),
+  zona({PACA(14,15.1), PACA(30.3,15.1), PACA(30.3,18.8), PACA(14,18.8)}, COLOR_TUMBLER, "TUMBLER"),
+  zona({PACA(14,8), PACA(19,8), PACA(20,10), PACA(22,10), PACA(22,12), PACA(20,12), PACA(19,14), PACA(14,14)}, COLOR_CORINO, "CORINO"), //segun mariano su h vale 7.0, le puse 6.0
+  zona({PACA(22,13), PACA(25,13), PACA(25,14), PACA(22,14)}, COLOR_TABLERO, ""),
+  zona({PACA(30,26.5), PACA(37,26.5), PACA(37,27.5), PACA(30,27.5)}, COLOR_TABLERO, "Tableros de control"),
+  zona({PACA(.5,20), PACA(12,20), PACA(12,27), PACA(.5,27)}, COLOR_AREA, "CARGAS DE TENIDO"),
+  zona({PACA(1,15), PACA(6,15), PACA(6,19), PACA(1,19)}, COLOR_MAQ, "PLEGADORA"),
+  zona({PACA(0,12.5), PACA(.5,12.5), PACA(.5,15), PACA(0,15)}, COLOR_SALIDA, ""),
+  zona({PACA(39.5,12.5), PACA(40,12.5), PACA(40,15), PACA(39.5,15)}, COLOR_SALIDA, ""),
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
-  zona(MACRO_RASURADO(0,0,9200,0,9200,2450,0,2450), COLOR_OFICINA, "OFICINA COMPRAS"),
-  zona(MACRO_RASURADO(0,2450,300,2450,300,6290,0,6290), COLOR_SALIDA, ""),
-  zona(MACRO_RASURADO(0,6290,5570,6290,5570,13000,0,13000), COLOR_OFICINA, ""),
-  zona(MACRO_RASURADO(7000,6000,13000,6000,13000,8000,7000,8000), COLOR_AREA, "ALMACEN CRUDO/HILO"),
-  zona(MACRO_RASURADO(7000,10000,13000,10000,13000,13000,7000,13000), COLOR_AREA, "ALMACEN ACEITES"),
-  zona(MACRO_RASURADO(58300,3500,63700,3500,63700,13000,58300,13000), AMARILLO, "Lab. Desarrollo"),
-  zona(MACRO_RASURADO(38300,3500,58300,3500,58300,5500,38300,5500), COLOR_AREA, "ALMACEN RASURADO"),
-  zona(MACRO_RASURADO(18000,3500,48000,3500,48000,5500,18000,5500), COLOR_AREA, "ALMACEN CRUDO/RASURADO"),
-  zona(MACRO_RASURADO(52000,6000,57000,6000,57000,12000,52000,12000), COLOR_RASURADO, "R2"),
-  zona(MACRO_RASURADO(46000,6000,51000,6000,51000,12000,46000,12000), COLOR_RASURADO, "R1"),
-  zona(MACRO_RASURADO(26000,10000,42000,10000,42000,12000,26000,12000), COLOR_RASURADO, "MESA DE CORTE"),
+  zona(MACRO_RASURADO(0,0,9.2,0,9.2,2.45,0,2.45), COLOR_OFICINA, "OFICINA COMPRAS"),
+  zona(MACRO_RASURADO(0,2.45,.3,2.45,.3,6.29,0,6.29), COLOR_SALIDA, ""),
+  zona(MACRO_RASURADO(0,6.29,5.57,6.29,5.57,13,0,13), COLOR_OFICINA, ""),
+  zona(MACRO_RASURADO(7,6,13,6,13,8,7,8), COLOR_AREA, "ALMACEN CRUDO/HILO"),
+  zona(MACRO_RASURADO(7,10,13,10,13,13,7,13), COLOR_AREA, "ALMACEN ACEITES"),
+  zona(MACRO_RASURADO(58.3,3.5,63.7,3.5,63.7,13,58.3,13), AMARILLO, "Lab. Desarrollo"),
+  zona(MACRO_RASURADO(18,3.5,38,3.5,38,5.5,18,5.5), COLOR_AREA, "ALMACEN CRUDO/RASURADO"),
+  zona(MACRO_RASURADO(38.3,3.5,58.3,3.5,58.3,5.5,38.3,5.5), COLOR_AREA, "ALMACEN RASURADO"),
+  zona(MACRO_RASURADO(52,6,57,6,57,12,52,12), COLOR_RASURADO, "Rasuradora2"),
+  zona(MACRO_RASURADO(46,6,51,6,51,12,46,12), COLOR_RASURADO, "Rasuradora1"),
+  zona(MACRO_RASURADO(26,10,42,10,42,12,26,12), COLOR_RASURADO, "MESA DE CORTE"),
   //zona(MACRO_RASURADO(38000,3500,48000,3500,48000,5500,38000,5500), COLOR_AREA, "ALMACEN RASURADO"),
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  zona({P2(0,0), P2(7.6,0), P2(7.6,17.9), P2(0,17.9)},COLORES[0], "Corte"),
+  zona({P2(0,17.9), P2(7.6,17.9), P2(7.6,27.2), P2(0,27.2)},COLOR_TALLER, "Residuos"),
+  zona({P2(7.6,1.9), P2(12.6,1.9), P2(12.6,7), P2(7.6,7)},COLORES[1], "Especialidades"),
+  zona({P2(7.6,7), P2(12.6,7), P2(12.6,13), P2(7.6,13)},COLORES[3], "Mantenimiento"),
+  zona({P2(7.6,13), P2(12.6,13), P2(12.6,17.9), P2(7.6,17.9)},COLORES[2], "Etiquetas"),
+  zona({P2(12.6,1.9), P2(20,1.9), P2(20,22.9), P2(7.6,22.9), P2(7.6,17.9), P2(12.6,17.9)},COLORES[4], "Corte longitudinal"),
+  zona({P2(20,1.9), P2(28.33,1.9), P2(28.33,22.9), P2(20,22.9) }, COLOR_MAQ, "Costura longitudinal"),
+  zona({P2(28.33,1.9), P2(36.66,1.9), P2(36.66,22.9), P2(28.33,22.9) }, COLORES[7], "Corte transversal"),
+  zona({P2(36.66,1.9), P2(45,1.9), P2(45,22.9), P2(36.66,22.9) }, COLORES[5], "Empaque"),
+  zona({P2(45,1.9), P2(60,1.9), P2(60,5), P2(45,5) }, COLORES[1], "Desarrollo de muestras"),
+  zona({P2(60,1.9), P2(60,5), P2(45,5), P2(45,22.9), P2(95,22.9), P2(95,14), P2(93,14), P2(93,1.9)}, COLORES[8], "Costura"),
+  zona({P2(95,14), P2(110,14), P2(110,22.9), P2(95,22.9) }, COLORES[5], "Plotters"),
+  zona({P2(93,1.9), P2(110,1.9), P2(110,11), P2(93,11) }, COLORES[6], "Transfer"),
+  zona({P2(116,18), P2(125,18), P2(125,22.9), P2(116,22.9) }, COLOR_OFICINA, "Ofc. Calidad"),
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  zona({P2(0,46.7),P2(7.6,46.7),P2(7.6,67),P2(0,67)}, COLOR_ZONA2, "Muelle2"),
+  zona({P2(0,27.2),P2(7.6,27.2), P2(7.6,46.7), P2(0,46.7),}, COLORES[7], "Recepcion de rollos"),
+  zona({P2(7.6,27.2),P2(38,27.2), P2(38,46.7), P2(7.6,46.7),}, COLOR_TUMBLER, "Embarques"),
+  zona({P2(38,27.2),P2(127.4,27.2), P2(127.4,46.7), P2(38,46.7),}, COLOR_PT, "P.T."),
 });
 
 void anexar_zonas()
@@ -116,7 +148,7 @@ void anexar_zonas()
   zonas.clear();
 }
 
-void rellenar_zona_telares() //está de lujo esta función
+void rellenar_zona_telares() //está de lujo esta función. bien hechiza
 {
   for(int j=1; j<5; ++j)
     for(int i=1; i<8; ++i)
@@ -128,16 +160,16 @@ void rellenar_zona_telares() //está de lujo esta función
         c = COLOR_JACQUARD;
 
 
-      zona z({Point(1000*i + 7000*(i-1) + 3000 + offset_telares, 1000*j + 5000*(j-1) + (j/3)*2500),
-                               Point(1000*i + 7000*(i) + 3000 + offset_telares, 1000*j + 5000*(j-1) + (j/3)*2500),
-                               Point(1000*i + 7000*(i) + 3000 + offset_telares, 1000*j + 5000*(j) + (j/3)*2500),
-                               Point(1000*i + 7000*(i-1) + 3000 + offset_telares, 1000*j + 5000*(j) + (j/3)*2500)},
-                               c, to_string(j*10 + i));
+      zona z({Point(100*i + 700*(i-1) + 300 + ofex*100, 100*j + 500*(j-1) + (j/3)*250),
+                               Point(100*i + 700*(i) + 300 + ofex*100, 100*j + 500*(j-1) + (j/3)*250),
+                               Point(100*i + 700*(i) + 300 + ofex*100, 100*j + 500*(j) + (j/3)*250),
+                               Point(100*i + 700*(i-1) + 300 + ofex*100, 100*j + 500*(j) + (j/3)*250)},
+                               c, 'T' + to_string(j*10 + i));
       crear_objeto(z);
     }
 }
 
-void zona::dibujarse(cv::Mat& m)
+void zona::dibujarse(cv::Mat& m) const
 {
   vector<Point> ps = puntos_desplazados();
   fillConvexPoly(m, ps.data(), ps.size(), color());
@@ -145,19 +177,29 @@ void zona::dibujarse(cv::Mat& m)
     polylines(m, ps, true, COLOR_SELECCION, 3, CV_AA); //selección
 
   if(b_highlighteado_)
-    polylines(m, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
+    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA); //highlight
 }
 
-//se llama continuamente cuando haces drag, no sólo una vez
 void zona::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
 {
     for(auto p : puntos_)
       p += pt;
 }
 
-bool zona::pertenece_a_area(const cv::Point pt)
+bool zona::pertenece_a_area(const cv::Point pt) const
 {
   if(pointPolygonTest(puntos_, pt, false) > 0)
     return true;
   return false;
 }
+
+void zona::imprimir_datos() const
+{
+  cout << nombre() << " : " << id() << '\t';
+  for(auto p : puntos_)
+    cout << p;
+  cout << '\n';
+}
+
+#undef P2
+#undef P1

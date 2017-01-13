@@ -34,13 +34,13 @@
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
 
-1484085674 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
+1480716469 c:\users\propietario\documents\proyectos\mjolnir\include\elemento_diagrama.h
 	<vector>
+	<map>
 	<memory>
 	<mutex>
-	<typeinfo>
 	<opencv2/opencv.hpp>
-	"mjolnir.hpp"
+	"utilidades.hpp"
 
 1480016227 c:\users\propietario\documents\proyectos\mjolnir\include\utilidades.hpp
 	<vector>
@@ -53,7 +53,7 @@
 1477675653 c:\users\propietario\documents\proyectos\mjolnir\include\cuenta.h
 	<vector>
 
-1484079476 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+1480718140 source:c:\users\propietario\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
 	<windows.h>
 	<iostream>
 	<fstream>
@@ -61,8 +61,9 @@
 	<mutex>
 	<string>
 	"elemento_diagrama.h"
+	"utilidades.hpp"
 
-1483771278 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
+1480709747 source:c:\users\propietario\documents\proyectos\mjolnir\src\redes.cpp
 	"redes.h"
 	<future>
 	<fstream>
@@ -71,7 +72,7 @@
 	"utilidades.hpp"
 	"elemento_diagrama.h"
 
-1483768728 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
+1478049888 source:c:\users\propietario\documents\proyectos\mjolnir\src\gui.cpp
 	"gui.h"
 	<iostream>
 	<memory>
@@ -157,7 +158,7 @@
 	<asio.hpp>
 	<iostream>
 
-1483732264 source:c:\users\propietario\documents\proyectos\mjolnir\configuracion.cpp
+1478984493 source:c:\users\propietario\documents\proyectos\mjolnir\configuracion.cpp
 	<iostream>
 	<fstream>
 	<sstream>
@@ -165,13 +166,12 @@
 	<vector>
 	<mutex>
 
-1484084967 c:\users\propietario\documents\proyectos\mjolnir\include\zonas.hpp
+1480362780 c:\users\propietario\documents\proyectos\mjolnir\include\zonas.hpp
 	<initializer_list>
 	<vector>
 	<opencv2/opencv.hpp>
-	"elemento_diagrama.h"
 
-1484085002 source:c:\users\propietario\documents\proyectos\mjolnir\src\zonas.cpp
+1480568886 source:c:\users\propietario\documents\proyectos\mjolnir\src\zonas.cpp
 	"zonas.hpp"
 
 1480708596 source:c:\users\propietario\documents\proyectos\mjolnir\gifs.cpp
@@ -210,7 +210,7 @@
 	<fstream>
 	<vector>
 
-1483817817 source:c:\users\turambar\documents\proyectos\mjolnir\main.cpp
+1484270243 source:c:\users\turambar\documents\proyectos\mjolnir\main.cpp
 	<iostream>
 	<chrono>
 	<ctime>
@@ -231,7 +231,7 @@
 	<map>
 	<opencv2/opencv.hpp>
 
-1484085674 c:\users\turambar\documents\proyectos\mjolnir\include\elemento_diagrama.h
+1484268566 c:\users\turambar\documents\proyectos\mjolnir\include\elemento_diagrama.h
 	<vector>
 	<memory>
 	<mutex>
@@ -287,11 +287,12 @@
 	"gui.h"
 	"cuenta_nueva.h"
 
-1484084967 c:\users\turambar\documents\proyectos\mjolnir\include\zonas.hpp
+1484270083 c:\users\turambar\documents\proyectos\mjolnir\include\zonas.hpp
 	<initializer_list>
 	<vector>
 	<opencv2/opencv.hpp>
 	"elemento_diagrama.h"
+	"mjolnir.hpp"
 
 1478302318 source:c:\users\turambar\documents\proyectos\mjolnir\paleta_colores.cpp
 	<FL/Fl.H>
@@ -316,13 +317,14 @@
 1477679253 c:\users\turambar\documents\proyectos\mjolnir\include\cuenta.h
 	<vector>
 
-1484079476 source:c:\users\turambar\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
+1484270705 source:c:\users\turambar\documents\proyectos\mjolnir\src\elemento_diagrama.cpp
 	<windows.h>
 	<iostream>
 	<fstream>
 	<sstream>
 	<mutex>
 	<string>
+	<algorithm>
 	"elemento_diagrama.h"
 
 1483768728 source:c:\users\turambar\documents\proyectos\mjolnir\src\gui.cpp
@@ -340,7 +342,7 @@
 	"utilidades.hpp"
 	"elemento_diagrama.h"
 
-1484085002 source:c:\users\turambar\documents\proyectos\mjolnir\src\zonas.cpp
+1484267615 source:c:\users\turambar\documents\proyectos\mjolnir\src\zonas.cpp
 	"zonas.hpp"
 
 1479850138 source:c:\users\turambar\documents\proyectos\mjolnir\versionado.cpp
@@ -351,36 +353,12 @@
 	<asio.hpp>
 	<iostream>
 
-1483853336 c:\users\turambar\documents\proyectos\mjolnir\include\mjolnir.hpp
+1484158469 c:\users\turambar\documents\proyectos\mjolnir\include\mjolnir.hpp
 	<vector>
 	<memory>
 	<opencv2/opencv.hpp>
 
-1484077872 source:c:\users\turambar\documents\proyectos\mjolnir\src\mjolnir.cpp
-	<iostream>
-	<chrono>
-	<ctime>
-	<fstream>
-	<algorithm>
-	<bitset>
-	<future>
-	<thread>
-	<atomic>
-	<mutex>
-	<opencv2/opencv.hpp>
-	"elemento_diagrama.h"
-	"mjolnir.hpp"
-	"redes.h"
-	"zonas.hpp"
-	"gui.h"
-	"../cuenta_nueva.h"
-
-1483853336 c:\users\propietario\documents\proyectos\mjolnir\include\mjolnir.hpp
-	<vector>
-	<memory>
-	<opencv2/opencv.hpp>
-
-1484077872 source:c:\users\propietario\documents\proyectos\mjolnir\src\mjolnir.cpp
+1484272484 source:c:\users\turambar\documents\proyectos\mjolnir\src\mjolnir.cpp
 	<iostream>
 	<chrono>
 	<ctime>

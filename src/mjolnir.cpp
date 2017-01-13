@@ -68,7 +68,7 @@ Point puntoFinobjeto(0,0); //objeto temporal
 
 Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
 
-Point despl(10000,10000); //originalmente desplazamientoOrigen
+Point despl(4000,1300); //originalmente desplazamientoOrigen
 
 vector<unique_ptr<objeto>>::iterator itr_seleccionado = objetos.end();
 vector<unique_ptr<objeto>>::iterator itr_highlight = objetos.end();
@@ -86,6 +86,11 @@ int ancho_texto;
 
 string mensaje_derecho_superior;
 mutex mtx_mensaje_derecho_superior;
+
+Point operator/(Point p, const int d)
+{
+  return Point(p.x/d, p.y/d);
+}
 
 string obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
 {
@@ -112,7 +117,7 @@ z es el factor zoom */
 
 /**transforma los puntos absolutos a puntos relativos renderizables
 p' = f(p) = dx + (p - dx - d)/z*/
-cv::Point transformar(cv::Point& p)
+Point transformar(const cv::Point p)
 {
   Point pp = dxy + (p - dxy - despl)/zoom; //dxy es la mitad del tamaño del diagrama
   return pp;
@@ -122,7 +127,7 @@ cv::Point transformar(cv::Point& p)
 
 /**transforma un punto relativo a un punto absoluto
 p = g(p') = z*(p' - dx) + dx + d */
-cv::Point transformacion_inversa(cv::Point& pp)
+Point transformacion_inversa(const cv::Point pp)
 {
   Point p = zoom*(pp - dxy) + dxy + despl;
   return p;
@@ -202,8 +207,8 @@ void inicializar_diagrama()
   mat_header = Mat(region.colRange(0, margen).rowRange(0,30)); //mn
   HEADER_MSG = Point(margen-200, HEADER0.y);
 
-  rellenar_zona_telares();
   anexar_zonas();
+  rellenar_zona_telares();
 }
 
 //demasiados magic numbers
@@ -224,7 +229,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   //efecto_cuadricula(matriz);
 
-  if(zoom<=64)
+  if(zoom<=8)
   {
     tamanio_texto = 4/zoom;
     if(tamanio_texto==0)
@@ -243,11 +248,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   for(auto& p : objetos)
   {
     p->dibujarse(matriz);
-    if(b_dibujar_nombres) {
-      Point entiende_esto = p->centro();
-      Point pt = transformar(entiende_esto);
-      putText(matriz, p->nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
-    }
+    if(b_dibujar_nombres)
+      p->dibujar_nombre(matriz);
   }
 
 
@@ -255,13 +257,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   {
     auto ps = zz.puntos_desplazados();
     //polylines(matriz, ps.data(), ps.size(), 1, true, BLANCO);
-    for(auto itr = ps.begin(); itr!=ps.end(); ++itr)
-    {
-      if(itr!=ps.begin())
-        line(matriz,*itr,*(itr-1),BLANCO);
-      else
-        line(matriz,*itr,*(ps.end()-1),BLANCO);
-    }
+    polylines(matriz, ps, true, BLANCO, 1, CV_AA); //selección
     if(b_dibujar_nombres)
       putText(matriz, zz.nombre(), ps[0], FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
   }
@@ -279,7 +275,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   mat_header = BLANCO;
 
   if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
-    putText(matriz, string("Seleccionado: " + to_string((*itr_seleccionado)->id() )),
+    putText(matriz, string("Seleccionado: " + (*itr_seleccionado)->nombre() + ", area=" + to_string((*itr_seleccionado)->area())),
             HEADER2, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
@@ -299,9 +295,10 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   imshow("Mjolnir", matriz); //actualizamos el diagrama
 }
 
+//falta agregar los equivalentes con bloq mayus activadas
 void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
 {
-  //cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
+  cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
   constexpr int DESPLAZAMIENTO = 1500;
   constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
@@ -386,8 +383,12 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
   case 108: //l de load(cargar)
 
     break;
-  case 110: //m - cerrar redes
-    iosvc.stop();
+  //case 110: //n - cerrar redes
+    //iosvc.stop();
+    //break;
+  case 111: //o - ordenar
+    ordenar_objetos();
+    establecer_mensaje("objetos ordenados");
     break;
   case 112: //p - paleta de colores
     push_funptr(&paleta_colores);
@@ -417,7 +418,7 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     break;
 
   case 3014656: //suprimir, borrar objeto
-    if(itr_seleccionado != objetos.end())
+    if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
     {
       destruir_objeto_seleccionado();
       determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
@@ -468,7 +469,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
       if(itr!=objetos.end())
       {
-        if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
+        if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
           (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
 
         (*itr)->seleccionar(true); //seleccionamos al brother
@@ -593,7 +594,7 @@ vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point 
   /*Segundo caso: Había algo highlighteado pero ya no*/
   if(itr==objetos.end())
   {
-    if(itr_highlight>objetos.begin() && itr_highlight!=objetos.end()) //al inicio del programa vale 0
+    if(itr_highlight>=objetos.begin() && itr_highlight!=objetos.end()) //al inicio del programa vale 0
       (*itr_highlight)->highlightear(false);//des-highlighteamos el anterior
     itr_highlight = objetos.end();
     return itr;

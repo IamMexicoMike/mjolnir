@@ -51,8 +51,7 @@ int main()
   inicializar_diagrama();
 
   namedWindow("Mjolnir");
-  //moveWindow("Mjolnir",1380,0);
-  moveWindow("Mjolnir",0,0);
+  moveWindow("Mjolnir",1380,0);
   setMouseCallback("Mjolnir", manejarInputMouse);
   renderizarDiagrama(region);
 

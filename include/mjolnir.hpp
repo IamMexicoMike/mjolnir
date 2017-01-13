@@ -26,4 +26,8 @@ void manejarInputMouse(int event, int x, int y, int flags, void*);
 void establecer_resolucion(int& horizontal, int& vertical);
 void inicializar_diagrama();
 
+extern cv::Point operator/(cv::Point p, const int d);
+extern cv::Point transformar(const cv::Point p);
+extern cv::Point transformacion_inversa(const cv::Point pp);
+
 #endif // MJOLNIRHPP
