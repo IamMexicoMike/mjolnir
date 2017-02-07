@@ -13,16 +13,17 @@
 
 #include "elemento_diagrama.h" /**mjolnir no incluye su propio header?!*/
 #include "mjolnir.hpp"
-#include "redes.h"
 #include "zonas.hpp"
 
 #include "gui.h"
 #include "../cuenta_nueva.h"
 
-extern int paleta_colores();
-
 using namespace std;
 using namespace cv;
+
+extern int paleta_colores();
+extern void procesar_queue_cntrl();
+extern const char* nombreDiagrama;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
 /* no intentarlo es 100% probabilidad de fracaso */
@@ -33,21 +34,11 @@ const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
 const Scalar Bckgnd(46,169,230);
 
-int ancho_region; //w = 2dx
-int altura_region; //h = 2dy
-
 class zona;
 extern vector<zona> superzonas;
-extern void rellenar_zona_telares();
-extern void anexar_zonas();;
 
 Mat region;
-Mat mat_panel;
 Mat mat_header;
-
-const Point HEADER0(5,20);
-const Point HEADER1(100,20);
-const Point HEADER2(300,20);
 Point HEADER_MSG;
 
 bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
@@ -78,6 +69,8 @@ Point ptInicioArrastre(0,0);
 Point ptFinArrastre(0,0);
 vector<unique_ptr<objeto>> objetos;
 
+int ancho_region; //w = 2dx
+int altura_region; //h = 2dy
 Point dxy; // (w/2, h/2)
 int zoom(32);
 bool b_dibujar_nombres=false; //es en funcion del zoom
@@ -180,36 +173,6 @@ void efecto_cuadricula(cv::Mat& matriz)
 
 }
 
-void establecer_resolucion(int& horizontal, int& vertical)
-{
-   RECT escritorio;
-   const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
-
-   GetWindowRect(hEscritorio, &escritorio);// guarda el tamaño de la pantalla a la variable escritorio
-   //la esquina superior izquierda tendrá las coordenadas (0,0)
-   //La esquina inferior derecha tendrá coordenadas (horizontal,vertical)
-
-   horizontal = (escritorio.right - 10);
-   vertical = (escritorio.bottom - 60);
-   dxy = cv::Point(horizontal/2, vertical/2);
-}
-
-void inicializar_diagrama()
-{
-  establecer_resolucion(ancho_region, altura_region);
-  if(ancho_region < 10 || ancho_region > 10000 || altura_region < 10 || altura_region > 10000)
-  {
-    ancho_region = 1000; altura_region = 600;
-  }
-  region = Mat(altura_region, ancho_region, CV_8UC3, cv::Scalar(200,200,200));
-  const int margen = region.cols - 200;
-  mat_panel = Mat(region.colRange(margen, region.cols)); //mn
-  mat_header = Mat(region.colRange(0, margen).rowRange(0,30)); //mn
-  HEADER_MSG = Point(margen-200, HEADER0.y);
-
-  anexar_zonas();
-  rellenar_zona_telares();
-}
 
 //demasiados magic numbers
 void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
@@ -271,12 +234,11 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
     rectangle(matriz, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
 
-  mat_panel = AZUL_PALIDO;
   mat_header = BLANCO;
 
   if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
-    putText(matriz, string("Seleccionado: " + (*itr_seleccionado)->nombre() + ", area=" + to_string((*itr_seleccionado)->area())),
-            HEADER2, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
+    putText(matriz, string("" + (*itr_seleccionado)->nombre()),
+            HEADER2, FONT_HERSHEY_PLAIN, 1, COLOR_SELECCION, 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
   putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
@@ -291,12 +253,14 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   t_final = chrono::system_clock::now();
   chrono::duration<double> t_renderizar = t_final - t_inicial;
   //cout << t_renderizar.count() << "s\n";
+  //static VideoCapture cap(0);
+  //cap >> region;
 
-  imshow("Mjolnir", matriz); //actualizamos el diagrama
+  //imshow("Mjolnir"); //actualizamos el diagrama
 }
 
 //falta agregar los equivalentes con bloq mayus activadas
-void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, ni alt por mencionar algunas
+void manejarInputTeclado(Mat& matriz, int k)
 {
   cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
@@ -429,9 +393,6 @@ void manejarInputTeclado(Mat& matriz, int k) //k no incluye ni ctrl, ni shift, n
     //cout << desplazamientoOrigen << endl;
 }
 
-/**Este callback se invoca cada vez que hay un evento de mouse en la ventana a la cual se attacheó el callback.
-  Podrías tener varias ventanas con diferentes funciones que manejen el mouse
-  La lógica de este callback debe estar encapsulada, y debe ser legible*/
 void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
   puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
@@ -469,7 +430,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
       if(itr!=objetos.end())
       {
-        if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
+        if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
           (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
 
         (*itr)->seleccionar(true); //seleccionamos al brother
@@ -573,6 +534,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
 } //manejarInputMouse
 
+
 /**Debe determinar propiedades del punto en función de la dimensión en la que está.
  No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
 vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point p)
@@ -611,3 +573,142 @@ vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point 
 
   return itr;
 }
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  switch(msg)
+  {
+  case WM_CREATE:
+    break;
+
+  case WM_TIMER:
+    //convertimos la matriz a un bitmap
+    renderizarDiagrama(region); //actualizamos el contenido de la matriz
+    imshow(nombreDiagrama, region);
+    procesar_queue_cntrl();
+    break;
+
+  case WM_KEYDOWN:
+    {
+      bitset<32> bs = (int)wParam;
+        cout << bs << '\n';
+        return 0;
+    }
+
+
+  case WM_RBUTTONDOWN:
+    {
+
+    }
+    break;
+
+  case WM_RBUTTONUP:
+
+    break;
+
+  case WM_LBUTTONDOWN:
+
+    break; ///LBUTTONDOWN
+
+  case WM_LBUTTONUP:
+
+    break;
+
+  case WM_MOUSEMOVE:
+
+    break;
+
+  case WM_RBUTTONDBLCLK:
+
+    break;
+
+  case WM_CLOSE:
+    DestroyWindow(hwnd);
+    break;
+
+  case WM_DESTROY:
+    PostQuitMessage(0);
+    break;
+  }
+  return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void matrizAControl(HWND& hwnd, Mat& img)
+{
+  if (img.empty())
+    return;
+
+  int bpp = 8 * img.elemSize();
+  assert((bpp == 8 || bpp == 24 || bpp == 32));
+
+  //Get DC of your win control
+  HDC hdc = GetDC(hwnd);
+
+  // This is the rectangle where the control is defined
+  // and where the image will appear
+  RECT rr;
+  GetWindowRect(hwnd, &rr);
+  //rr.top AND rr.left are always 0
+  int rectWidth = rr.right;
+  int rectHeight = rr.bottom;
+
+  /// DWORD ALIGNMENT AND CONTINOUS MEMORY
+  /// The image must be padded 4bytes and must be continuous
+
+  int padding = 0;
+  //32 bit image is always DWORD aligned because each pixel requires 4 bytes
+  if (bpp < 32)
+    padding = 4 - (img.cols % 4);
+
+  if(padding==4)
+    padding = 0;
+
+  cv::Mat tmpImg;
+  if (padding > 0 || img.isContinuous() == false)
+  {
+    // Adding needed columns on the right (max 3 px)
+    cv::copyMakeBorder(img, tmpImg, 0, 0, 0, padding, cv::BORDER_CONSTANT, 0);
+  }
+  else
+  {
+    tmpImg = img;
+  }
+
+  /// PREPARE BITMAP HEADER
+  /// The header defines format and shape of the source bitmap in memory
+
+  // extra memory space for palette -> 256*4
+  uchar buffer[sizeof(BITMAPINFO) + 256*4];
+  BITMAPINFO* bmi = (BITMAPINFO*)buffer;
+  BITMAPINFOHEADER* bmih = &(bmi->bmiHeader);
+  memset(bmih, 0, sizeof(*bmih));
+  bmih->biSize = sizeof(BITMAPINFOHEADER);
+  bmih->biWidth = tmpImg.cols;
+  bmih->biHeight = -tmpImg.rows;// DIB are bottom ->top -
+  bmih->biPlanes = 1;
+  bmih->biBitCount = bpp;
+  bmih->biCompression = BI_RGB;
+
+  if (bpp == 8)
+  {
+    RGBQUAD* palette = bmi->bmiColors;
+    for (int i = 0; i < 256; i++)
+    {
+      palette[i].rgbBlue = palette[i].rgbGreen = palette[i].rgbRed = (BYTE)i;
+      palette[i].rgbReserved = 0;
+    }
+  }
+  /// Draw to DC
+    // tranfer memory block
+    // NOTE: the padding border will be shown here. Anyway it will be max 3px width
+
+    SetDIBitsToDevice(hdc,
+      //destination rectangle
+      0, 0, rectWidth, rectHeight,
+      0, 0, 0, tmpImg.rows,
+      tmpImg.data, bmi, DIB_RGB_COLORS);
+
+
+  DeleteDC(hdc);
+}
+

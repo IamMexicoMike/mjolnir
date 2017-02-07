@@ -1,0 +1,32 @@
+#include "recurso.h"
+#include "afxres.h"
+
+IDI_MJOLNIR ICON "Mjolnir2.ico"
+//IDB_HOPE BITMAP "hope.bmp"
+
+
+IDR_MYMENU MENU
+BEGIN
+    POPUP "Archivo"
+    BEGIN
+        MENUITEM "Salir", ID_FILE_EXIT
+    END
+
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Accion1", ID_ACCION1
+        MENUITEM "Accion2", 0, GRAYED
+    END
+END
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 239, 66
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "My About Box"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,174,18,50,14
+    PUSHBUTTON      "&Cancelar",IDCANCEL,174,35,50,14
+    GROUPBOX        "Acerca de este programa...",IDC_STATIC,7,7,225,52
+    CTEXT           "Ejemplo para usar los dialog boxesr\n\r\npor theForger",
+                    IDC_STATIC,16,18,144,33
+END
