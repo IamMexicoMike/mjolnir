@@ -27,13 +27,14 @@ using namespace cv;
 extern void cargar_variables_configuracion();
 extern void procesar_queue_cntrl();
 extern void mostrar_gif(string);
+extern void mkSetKeyboardCallback( const char* nombre_ventana, void(*callback_teclado)(int k));
 
 BOOL CALLBACK AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 /* La forma más rápida de fracasar es no intentarlo */
 /* Querer es poder */
 const char* nombreClase= "claseVentanaPrincipal";
-const char* nombreDiagrama="diagrama planta";
+const char* nombreDiagrama="diagrama de plant";
 const int ID_TIMER = 42;
 
 bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance)
@@ -70,7 +71,7 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
       nombreClase,
       "MJOLNIR",
       WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom,
+      CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom-200,
       NULL, NULL, hInstance, NULL);
 
   if(hwnd == NULL)
@@ -128,12 +129,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   ::SetParent(hParent, hwnd);
   EnableMenuItem(GetSystemMenu(hParent, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED);
   SendMessage(hParent, WM_SETICON, ICON_BIG, IDI_MJOLNIR);
+
+
   setMouseCallback(nombreDiagrama, manejarInputMouse);
+  setKeyboardCallback(nombreDiagrama, manejarInputTeclado);
 
   ShowWindow(hwnd, nCmdShow);
   UpdateWindow(hwnd);
 
-  auto ret = SetTimer(hwnd, ID_TIMER, 15, NULL);
+  auto ret = SetTimer(hwnd, ID_TIMER, 30, NULL);
     if(ret == 0)
         MessageBox(hwnd, "Error al llamar SetTimer()!", "Error", MB_OK | MB_ICONEXCLAMATION);
 

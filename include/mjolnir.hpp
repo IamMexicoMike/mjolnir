@@ -35,7 +35,7 @@ enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
 std::vector<std::unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point);
 
 void renderizarDiagrama(cv::Mat& matriz);
-void manejarInputTeclado(cv::Mat& matriz, int k);
+void manejarInputTeclado(int k);
 void manejarInputMouse(int event, int x, int y, int flags, void*);
 
 extern cv::Point operator/(cv::Point p, const int d);
