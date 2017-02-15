@@ -35,6 +35,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="Mjolnir2.ico" />
 		<Unit filename="config.txt" />
 		<Unit filename="configuracion.cpp" />
 		<Unit filename="cuenta_nueva.cxx" />
@@ -48,6 +49,10 @@
 		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="paleta_colores.cpp" />
+		<Unit filename="recurso.h" />
+		<Unit filename="recurso.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="sistema_de_archivos.cpp" />
 		<Unit filename="src/cuenta.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />

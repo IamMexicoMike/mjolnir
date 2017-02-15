@@ -11,7 +11,7 @@ using namespace std;
 extern asio::io_service iosvc;
 extern string extraer_queue_cntrl();
 extern void empujar_queue_saliente(string);
-extern const string CODIGO_ABORTAR; //definido DOS veces.
+extern const string CODIGO_ABORTAR;
 
 void reboot()
 {

@@ -21,12 +21,12 @@
 using namespace std;
 using namespace cv;
 
-extern int paleta_colores();
-extern void procesar_queue_cntrl();
 extern const char* nombreDiagrama;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
-/* no intentarlo es 100% probabilidad de fracaso */
+/* Oooohh!! */
+
+const char* nombreDiagrama="diagrama de planta";
 
 const Scalar BLANCO(255,255,255);
 const Scalar CAFE(0,51,102);
@@ -61,8 +61,8 @@ Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
 
 Point despl(4000,1300); //originalmente desplazamientoOrigen
 
-vector<unique_ptr<objeto>>::iterator itr_seleccionado = objetos.end();
-vector<unique_ptr<objeto>>::iterator itr_highlight = objetos.end();
+Apuntador itr_seleccionado = objetos.end();
+Apuntador itr_highlight = objetos.end();
 bool b_drag=false;
 bool b_resize=false;
 Point ptInicioArrastre(0,0);
@@ -99,34 +99,28 @@ void establecer_mensaje(string m) /*Mensaje informativo en esquina superior dere
 }
 
 /**
-La manera en la que se renderiza el diagrama es tomando los puntos absolutos (coordenadas) de los objetos o elementos a dibujar,
-y aplicándoles una transformación para poder hacer zoom out. Esta transformación es dependiente del ancho del diagrama w, pues
+La manera en la que se renderiza el diagrama es tomando los puntos absolutos (coordenadas) de los objetos
+o elementos a dibujar, y aplicándoles una transformación lineal de desplazamiento y zoom.
+Esta transformación es dependiente del ancho del diagrama w, pues
 al zoomoutear, la mitad del diagrama permanece en el centro.
-
 p' = f(p) = dx + (p - dx - d)/z
 dx = w/2, es decir el ancho de diagrama entre dos.
 d = desplazamiento del origen
 z es el factor zoom */
 
-/**transforma los puntos absolutos a puntos relativos renderizables
-p' = f(p) = dx + (p - dx - d)/z*/
-Point transformar(const cv::Point p)
+Point transformar(const Point p)
 {
   Point pp = dxy + (p - dxy - despl)/zoom; //dxy es la mitad del tamaño del diagrama
   return pp;
 }
 
-/*magia*/
-
-/**transforma un punto relativo a un punto absoluto
-p = g(p') = z*(p' - dx) + dx + d */
-Point transformacion_inversa(const cv::Point pp)
+Point transformacion_inversa(const Point pp) /*magia*/
 {
   Point p = zoom*(pp - dxy) + dxy + despl;
   return p;
 }
 
-void efecto_cuadricula(cv::Mat& matriz)
+void efecto_cuadricula(Mat& matriz)
 {
   static vector<chrono::duration<double>> tiempos(100);
   static int cnt;
@@ -260,28 +254,25 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 }
 
 //falta agregar los equivalentes con bloq mayus activadas
-void manejarInputTeclado(Mat& matriz, int k)
+void manejarInputTeclado(int k)
 {
   cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
-  constexpr int DESPLAZAMIENTO = 1500;
-  constexpr int TECLADO_FLECHA_ARRIBA = 2490368;
-  constexpr int TECLADO_FLECHA_ABAJO = 2621440;
-  constexpr int TECLADO_FLECHA_IZQUIERDA = 2424832;
-  constexpr int TECLADO_FLECHA_DERECHA = 2555904;
+  const int DESPLAZAMIENTO=1500;
 
   switch (k) {
-  case TECLADO_FLECHA_ARRIBA:
+  case 37: //<-
+    despl.x -= DESPLAZAMIENTO;
+  case 38: //flecha arriba
     despl.y -= DESPLAZAMIENTO;
     break;
-  case TECLADO_FLECHA_ABAJO:
+  case 39: //->
     despl.y += DESPLAZAMIENTO;
     break;
-  case TECLADO_FLECHA_DERECHA:
+  case 40: //flecha abajo
     despl.x += DESPLAZAMIENTO;
     break;
-  case TECLADO_FLECHA_IZQUIERDA:
-    despl.x -= DESPLAZAMIENTO;
+
     break;
 
   case 13: //tecla enter
@@ -293,11 +284,11 @@ void manejarInputTeclado(Mat& matriz, int k)
     }
     break;
 
-  case 43: //+ zoom in
+  case 187: //+ zoom in
     if(zoom!=1)
       zoom = zoom/2;
     break;
-  case 45: //- zoom out
+  case 189: //- zoom out
     if(zoom!=1024) //64 es razonable
       zoom = zoom*2;
     break;
@@ -318,7 +309,7 @@ void manejarInputTeclado(Mat& matriz, int k)
     establecer_mensaje("");
     break;
 
-  case 100: //d de debug
+  case 68: //d de debug
     cout << "\nDEBUG:\n";
     cout << "objetos.size() == " << objetos.size() << '\n';
     if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
@@ -333,7 +324,7 @@ void manejarInputTeclado(Mat& matriz, int k)
     }
     break;
 
-  case 101:
+  case 69:
     cout << "\tobjetos.begin()\tobjetos.end()\titr_highlight\titr_seleccion\n";
     cout << '\t' << &*objetos.begin() << '\t' << &*objetos.end() << '\t' << &*itr_highlight << '\t' << &*itr_seleccionado << '\n';
     for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
@@ -341,30 +332,30 @@ void manejarInputTeclado(Mat& matriz, int k)
       cout << &*itr << '\t' << (*itr)->id() << '\n';
     }
 
-  case 103: //g de guardar
+  case 71: //g de guardar
 
     break;
-  case 108: //l de load(cargar)
+  case 76: //l de load(cargar)
 
     break;
   //case 110: //n - cerrar redes
     //iosvc.stop();
     //break;
-  case 111: //o - ordenar
+  case 79: //o - ordenar
     ordenar_objetos();
     establecer_mensaje("objetos ordenados");
     break;
-  case 112: //p - paleta de colores
-    push_funptr(&paleta_colores);
+  case 80: //p - paleta de colores
+    //push_funptr(&paleta_colores);
     break;
 
-  case 114: //r (ojo, R tiene su propia clave
+  case 82: //r
     puntoOrigenobjeto = transformacion_inversa(puntoActualMouse); //convertimos p' en p
     puntoFinobjeto = puntoOrigenobjeto;
     b_dibujando_objeto = true;
     break;
 
-  case 115: //s - simulacion
+  case 83: //s - simulacion
   {
     Point p = transformacion_inversa(puntoActualMouse);
     for(int i=0; i<100; ++i)
@@ -381,7 +372,7 @@ void manejarInputTeclado(Mat& matriz, int k)
     determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     break;
 
-  case 3014656: //suprimir, borrar objeto
+  case 46: //suprimir, borrar objeto
     if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
     {
       destruir_objeto_seleccionado();
@@ -537,10 +528,10 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
 /**Debe determinar propiedades del punto en función de la dimensión en la que está.
  No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
-vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point p)
+Apuntador determinar_propiedades_ubicacion(cv::Point p)
 {
   /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
-  auto encontrarItrHighlight = [&]() -> vector<unique_ptr<objeto>>::iterator
+  auto encontrarItrHighlight = [&]() -> Apuntador
   {
     for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
       if((*itr)->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
@@ -548,7 +539,7 @@ vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point 
     return objetos.end();
   };
 
-  vector<unique_ptr<objeto>>::iterator itr = encontrarItrHighlight(); //obtenemos un apuntador al objeto que es dueño de esa área
+  Apuntador itr = encontrarItrHighlight(); //obtenemos un apuntador al objeto que es dueño de esa área
 
   if(itr == itr_highlight) //no hacemos cambios, seguimos hovereando dentro del area del mismo objeto
     return itr;
@@ -572,143 +563,5 @@ vector<unique_ptr<objeto>>::iterator determinar_propiedades_ubicacion(cv::Point 
   itr_highlight = itr; //actualizamos la llave highlight
 
   return itr;
-}
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-  switch(msg)
-  {
-  case WM_CREATE:
-    break;
-
-  case WM_TIMER:
-    //convertimos la matriz a un bitmap
-    renderizarDiagrama(region); //actualizamos el contenido de la matriz
-    imshow(nombreDiagrama, region);
-    procesar_queue_cntrl();
-    break;
-
-  case WM_KEYDOWN:
-    {
-      bitset<32> bs = (int)wParam;
-        cout << bs << '\n';
-        return 0;
-    }
-
-
-  case WM_RBUTTONDOWN:
-    {
-
-    }
-    break;
-
-  case WM_RBUTTONUP:
-
-    break;
-
-  case WM_LBUTTONDOWN:
-
-    break; ///LBUTTONDOWN
-
-  case WM_LBUTTONUP:
-
-    break;
-
-  case WM_MOUSEMOVE:
-
-    break;
-
-  case WM_RBUTTONDBLCLK:
-
-    break;
-
-  case WM_CLOSE:
-    DestroyWindow(hwnd);
-    break;
-
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    break;
-  }
-  return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-void matrizAControl(HWND& hwnd, Mat& img)
-{
-  if (img.empty())
-    return;
-
-  int bpp = 8 * img.elemSize();
-  assert((bpp == 8 || bpp == 24 || bpp == 32));
-
-  //Get DC of your win control
-  HDC hdc = GetDC(hwnd);
-
-  // This is the rectangle where the control is defined
-  // and where the image will appear
-  RECT rr;
-  GetWindowRect(hwnd, &rr);
-  //rr.top AND rr.left are always 0
-  int rectWidth = rr.right;
-  int rectHeight = rr.bottom;
-
-  /// DWORD ALIGNMENT AND CONTINOUS MEMORY
-  /// The image must be padded 4bytes and must be continuous
-
-  int padding = 0;
-  //32 bit image is always DWORD aligned because each pixel requires 4 bytes
-  if (bpp < 32)
-    padding = 4 - (img.cols % 4);
-
-  if(padding==4)
-    padding = 0;
-
-  cv::Mat tmpImg;
-  if (padding > 0 || img.isContinuous() == false)
-  {
-    // Adding needed columns on the right (max 3 px)
-    cv::copyMakeBorder(img, tmpImg, 0, 0, 0, padding, cv::BORDER_CONSTANT, 0);
-  }
-  else
-  {
-    tmpImg = img;
-  }
-
-  /// PREPARE BITMAP HEADER
-  /// The header defines format and shape of the source bitmap in memory
-
-  // extra memory space for palette -> 256*4
-  uchar buffer[sizeof(BITMAPINFO) + 256*4];
-  BITMAPINFO* bmi = (BITMAPINFO*)buffer;
-  BITMAPINFOHEADER* bmih = &(bmi->bmiHeader);
-  memset(bmih, 0, sizeof(*bmih));
-  bmih->biSize = sizeof(BITMAPINFOHEADER);
-  bmih->biWidth = tmpImg.cols;
-  bmih->biHeight = -tmpImg.rows;// DIB are bottom ->top -
-  bmih->biPlanes = 1;
-  bmih->biBitCount = bpp;
-  bmih->biCompression = BI_RGB;
-
-  if (bpp == 8)
-  {
-    RGBQUAD* palette = bmi->bmiColors;
-    for (int i = 0; i < 256; i++)
-    {
-      palette[i].rgbBlue = palette[i].rgbGreen = palette[i].rgbRed = (BYTE)i;
-      palette[i].rgbReserved = 0;
-    }
-  }
-  /// Draw to DC
-    // tranfer memory block
-    // NOTE: the padding border will be shown here. Anyway it will be max 3px width
-
-    SetDIBitsToDevice(hdc,
-      //destination rectangle
-      0, 0, rectWidth, rectHeight,
-      0, 0, 0, tmpImg.rows,
-      tmpImg.data, bmi, DIB_RGB_COLORS);
-
-
-  DeleteDC(hdc);
 }
 

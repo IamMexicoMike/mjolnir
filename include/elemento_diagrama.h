@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 #include <typeinfo>
-#include <opencv2/opencv.hpp>
 #include "mjolnir.hpp"
 
 void ordenar_objetos();
