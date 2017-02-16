@@ -1,19 +1,20 @@
 #include "redes.h"
 
+#include <iostream>
 #include <future>
 #include <fstream>
+#include <configuracion.hpp>
 
 using namespace std;
 using namespace asio;
 
-extern void escribir_valor_configuracion(string, string);
-extern void establecer_mensaje(std::string);
+extern void establecer_mensaje(string);
 
 io_service iosvc;
-std::queue<std::string> queue_saliente;
-std::mutex mtx_saliente;
-std::queue<std::string> queue_cntrl;
-std::mutex mtx_cntrl;
+queue<string> queue_saliente;
+queue<string> queue_cntrl;
+mutex mtx_saliente;
+mutex mtx_cntrl;
 
 #ifdef _WIN64
 const string NOMBRE_APLICACION = "opencv_mjolnir.exe";
@@ -22,11 +23,8 @@ const string NOMBRE_APLICACION = "opencv_mjolnir32.exe";
 #endif // _WIN64
 
 const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //mal estilo. Diseña algo mejor bruh
-string ip_servidor;
-string puerto_servidor; //inicializados a partir de config.txt
-string version;
 
-void generar_cliente_ftp(string);
+void generar_cliente_ftp(string); //no es accesible para el mundo externo a este archivo
 
 void empujar_queue_cntrl(string s)
 {
@@ -182,14 +180,15 @@ void cliente::conectar()
     {
       cout << "conectado a " << socket_.remote_endpoint().address().to_string() <<
                          ":" << socket_.remote_endpoint().port() << '\n';
-      escribir("version " + version);
+      escribir("mike;ftw");
+      //escribir("version " + version);
       leer();
     }
     else
     {
       std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << '\n';
       /*Puede ser un error 10061: Equipo destino denegó expresamente dicha conexión */
-      if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos?
+      if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos? esto es un buen comentario
         conectar();
 
       /*Error 10056: Se solicitó conexión en socket ya conectado*/
@@ -216,13 +215,15 @@ void cliente::leer()
     {
       std::cout << "lectura exitosa...\n";
       procesar_lectura();
-      leer();
     }
     else
     {
       std::cout << "Error leyendo " << ec.value() <<  ": " << ec.message() << std::endl;
       if(ec.value() == 10054) /*Error 10054: Interrupción forzada por host remoto*/
+      {
+        Sleep(1000);
         conectar();
+      }
     }
   });
 }
@@ -244,6 +245,7 @@ void cliente::procesar_lectura()
     cout << rx_buf_ << '\n';
   }
   memset(rx_buf_, '\0', sz_buf);
+  leer();
 }
 
 

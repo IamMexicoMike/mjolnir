@@ -3,20 +3,15 @@
 
 #define ASIO_HAS_STD_CHRONO
 
-#include <cstdlib>
-#include <iostream>
-#include <memory>
-#include <utility>
-#include <chrono>
 #include <queue>
 #include <mutex>
-#include <string> //to_string(short)
 
 #include "asio.hpp"
 #include "asio/steady_timer.hpp"
 
 using namespace asio::ip;
 using namespace std;
+
 extern asio::io_service iosvc;
 //using asio::ip::tcp;
 
@@ -24,9 +19,7 @@ extern std::queue<std::string> queue_saliente;
 extern std::mutex mtx_saliente;
 extern std::queue<std::string> queue_cntrl;
 extern std::mutex mtx_cntrl;
-extern const string NOMBRE_APLICACION;
 extern const string CODIGO_ABORTAR;
-extern string version;
 
 /**Esto demostrará ser o no útil con el tiempo*/
 void empujar_queue_cntrl(std::string s);

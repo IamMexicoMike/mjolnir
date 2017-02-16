@@ -1,12 +1,9 @@
 #include <iostream>
 #include <chrono> //para profiles
 #include <ctime> //para profiles
-#include <fstream>
 #include <algorithm>
 #include <bitset> //borrame si no debuggeas
-#include <future>
 #include <thread>
-#include <atomic>
 #include <mutex>
 
 #include <opencv2/opencv.hpp>
@@ -14,9 +11,6 @@
 #include "elemento_diagrama.h" /**mjolnir no incluye su propio header?!*/
 #include "mjolnir.hpp"
 #include "zonas.hpp"
-
-#include "gui.h"
-#include "../cuenta_nueva.h"
 
 using namespace std;
 using namespace cv;
@@ -296,14 +290,14 @@ void manejarInputTeclado(int k)
   case 48:
     //empujar_queue_cntrl("reboot");
   case 50: //debug
-    push_funptr(&foo_gui);
+    //push_funptr(&foo_gui);
     //push_funptr(&ventana_cuenta_nueva);
     break;
   case 51:
     establecer_mensaje("Cincuenta y uno");
     break;
   case 52:
-    establecer_mensaje("Arbitrario");
+    establecer_mensaje("Arbitrario.");
     break;
   case 53:
     establecer_mensaje("");

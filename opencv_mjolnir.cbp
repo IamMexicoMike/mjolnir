@@ -46,10 +46,10 @@
 		<Unit filename="include/gui.h" />
 		<Unit filename="include/mjolnir.hpp" />
 		<Unit filename="include/redes.h" />
+		<Unit filename="include/ventana_principal.h" />
 		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="paleta_colores.cpp" />
-		<Unit filename="recurso.h" />
 		<Unit filename="recurso.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
@@ -59,6 +59,7 @@
 		<Unit filename="src/gui.cpp" />
 		<Unit filename="src/mjolnir.cpp" />
 		<Unit filename="src/redes.cpp" />
+		<Unit filename="src/ventana_principal.cpp" />
 		<Unit filename="src/zonas.cpp" />
 		<Unit filename="versionado.cpp" />
 		<Extensions>

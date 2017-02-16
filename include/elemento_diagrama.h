@@ -92,7 +92,7 @@ void crear_objeto(T& t)
   itr_highlight=objetos.end();
   itr_seleccionado=objetos.end();
   //cout << paq << '\n';
-  empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
+  //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }
 
 #endif // ELEMENTO_DIAGRAMA_H

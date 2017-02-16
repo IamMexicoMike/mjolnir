@@ -1,10 +1,5 @@
 #include <iostream>
-#include <algorithm>
-#include <future>
 #include <thread>
-#include <cstdio>
-
-#include <opencv2/opencv.hpp>
 
 #include "redes.h"
 #include "ventana_principal.h"

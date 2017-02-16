@@ -1,6 +1,6 @@
 #include "ventana_principal.h"
 #include "mjolnir.hpp"
-#include "recurso.h"
+#include "../recurso.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 
@@ -131,7 +131,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       {
         LPWSTR buffer[256];
         SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
-        MessageBox(NULL, (LPCSTR)buffer, "Informacion", MB_ICONINFORMATION);
+        MessageBox(NULL, (LPCSTR)buffer, "Informacion!", MB_ICONINFORMATION);
       }
 
 		break;

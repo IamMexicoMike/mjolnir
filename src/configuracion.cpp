@@ -7,15 +7,15 @@
 
 using namespace std;
 
-extern string ip_servidor;
-extern string puerto_servidor;
-extern string version;
+string ip_servidor;
+string puerto_servidor;
+string version;
 
 mutex mtx_config;
 
 using namespace std;
 
-string cargar_valor(string arg)
+string cargar_valor(const string& arg)
 {
   lock_guard<mutex> lck(mtx_config);
   ifstream ifs("config.txt");
@@ -38,7 +38,7 @@ void cargar_variables_configuracion()
 }
 
 /** El simbolo y su valor que se quieren sobreescribir en el archivo de configuración. Reescribe todo el archivo*/
-void escribir_valor_configuracion(string simbolo, string valor)
+void escribir_valor_configuracion(const string& simbolo, const string& valor)
 {
   lock_guard<mutex> lck(mtx_config);
   fstream iofs("config.txt", ios::in);
