@@ -17,6 +17,13 @@ const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
 const cv::Scalar COLOR_SELECCION(50, 255, 25);
 const cv::Scalar COLOR_HIGHLIGHT_(150, 215, 50);
 
+enum class Objetos
+{
+  Rectangulo,
+  Circulo,
+  Zona,
+};
+
 class objeto
 {
 public:
@@ -76,13 +83,31 @@ public:
   virtual void imprimir_datos() const override;
 };
 
+class circulo : public objeto
+{
+public:
+  circulo(cv::Point centro, int radio)
+  {
+    inicio_ = fin_ = cv::Point(0,0);
+    centro_ = centro, radio_ = radio;
+    area_ = CV_PI*radio*radio;
+    color_ = cv::Scalar(200,65,100);
+  }
+  virtual void dibujarse(cv::Mat&) const override;
+  virtual void arrastrar(const cv::Point pt) override;
+  virtual bool pertenece_a_area(const cv::Point) const override;
+  virtual void imprimir_datos() const override;
 
+protected:
+  int radio_;
+};
+
+/** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
 template <typename T>
 void crear_objeto(T& t)
 {
   std::string nombre_tipo = typeid(t).name();
   std::lock_guard<std::mutex> lck(mtx_objetos);
-  //string paq = ">> (" + to_string(p1.x) + ',' + to_string(p1.y) + ')' + " (" + to_string(p2.x) + ',' + to_string(p2.y) + ") <<";
   std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
   if(itr_seleccionado >= objetos.begin() and itr_seleccionado < objetos.end())
     (*itr_seleccionado)->seleccionar(false);

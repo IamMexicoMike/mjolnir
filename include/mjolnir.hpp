@@ -39,19 +39,23 @@ void renderizarDiagrama(cv::Mat& matriz);
 void manejarInputTeclado(int k);
 void manejarInputMouse(int event, int x, int y, int flags, void*);
 
-extern cv::Point operator/(cv::Point p, const int d);
+cv::Point operator/(cv::Point p, const int d);
 
 /**transforma los puntos absolutos a puntos relativos renderizables
 p' = f(p) = dx + (p - dx - d)/z*/
-extern cv::Point transformar(const cv::Point p);
+cv::Point transformar(const cv::Point p);
 
 /**transforma un punto relativo a un punto absoluto
 p = g(p') = z*(p' - dx) + dx + d */
-extern cv::Point transformacion_inversa(const cv::Point pp);
+cv::Point transformacion_inversa(const cv::Point pp);
+
+int transformar_escalar(int i);
 
 extern void rellenar_zona_telares(); //zonas
 extern void anexar_zonas();
 
 extern const char* nombreDiagrama;
+extern int tamanio_texto;
+extern int ancho_texto;
 
 #endif // MJOLNIRHPP

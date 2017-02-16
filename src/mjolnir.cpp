@@ -15,10 +15,12 @@
 using namespace std;
 using namespace cv;
 
-extern const char* nombreDiagrama;
-
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
 /* Oooohh!! */
+
+void iniciar_creacion_objeto(Objetos); //enum representado el tipo del objeto a crear
+void terminar_creacion_objeto();
+void dibujar_objeto_temporal();
 
 const char* nombreDiagrama="diagrama de planta";
 
@@ -43,9 +45,6 @@ Point puntoInicioDesplazamiento(0,0); //panning
 bool b_dibujando_flecha; //flechas temporales
 Point puntoInicioFlecha(0,0); //flechas temporales
 Point puntoTerminoFlecha(0,0); //flechas temporales
-
-bool b_dibujando_circulo;           //completar esta interfaz
-Point puntoOrigenCirculo(0,0);
 
 bool b_dibujando_objeto; //objeto temporal
 Point puntoOrigenobjeto(0,0); //objeto temporal
@@ -73,6 +72,8 @@ int ancho_texto;
 
 string mensaje_derecho_superior;
 mutex mtx_mensaje_derecho_superior;
+
+Objetos Tipo_Objeto_Dibujando;
 
 Point operator/(Point p, const int d)
 {
@@ -112,6 +113,11 @@ Point transformacion_inversa(const Point pp) /*magia*/
 {
   Point p = zoom*(pp - dxy) + dxy + despl;
   return p;
+}
+
+int transformar_escalar(int i)
+{
+  return (i)/zoom;
 }
 
 void efecto_cuadricula(Mat& matriz)
@@ -218,9 +224,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
                 transformar(puntoTerminoFlecha),
                 COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
-  if(b_dibujando_objeto) //dibujamos un rectángulo temporal
-    rectangle(matriz, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
-              COLOR_RECT_DIBUJANDO, 2, CV_AA);
+  if(b_dibujando_objeto) //dibujamos un objeto temporal
+    dibujar_objeto_temporal();
 
   mat_header = BLANCO;
 
@@ -272,9 +277,7 @@ void manejarInputTeclado(int k)
   case 13: //tecla enter
     if(b_dibujando_objeto)
     {
-      b_dibujando_objeto = false;
-      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
-      crear_objeto(r); //deben ser p y no p'
+      terminar_creacion_objeto();
     }
     break;
 
@@ -303,6 +306,10 @@ void manejarInputTeclado(int k)
     establecer_mensaje("");
     break;
 
+  case 67: //c de circulo
+    iniciar_creacion_objeto(Objetos::Circulo);
+    break;
+
   case 68: //d de debug
     cout << "\nDEBUG:\n";
     cout << "objetos.size() == " << objetos.size() << '\n';
@@ -327,26 +334,18 @@ void manejarInputTeclado(int k)
     }
 
   case 71: //g de guardar
-
     break;
+
   case 76: //l de load(cargar)
-
     break;
-  //case 110: //n - cerrar redes
-    //iosvc.stop();
-    //break;
+
   case 79: //o - ordenar
     ordenar_objetos();
     establecer_mensaje("objetos ordenados");
     break;
-  case 80: //p - paleta de colores
-    //push_funptr(&paleta_colores);
-    break;
 
   case 82: //r
-    puntoOrigenobjeto = transformacion_inversa(puntoActualMouse); //convertimos p' en p
-    puntoFinobjeto = puntoOrigenobjeto;
-    b_dibujando_objeto = true;
+    iniciar_creacion_objeto(Objetos::Rectangulo);
     break;
 
   case 83: //s - simulacion
@@ -399,9 +398,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
     if(b_dibujando_objeto)
     {
-      b_dibujando_objeto = false;
-      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
-      crear_objeto(r);
+      terminar_creacion_objeto();
 
       /**solicitamos las propiedades del nuevo objeto a crear*/
       /***/
@@ -512,6 +509,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
       puntoFinobjeto = transformacion_inversa(puntoActualMouse);
 
   } //CV_EVENT_MOUSEMOVE
+
   if(event==CV_EVENT_LBUTTONDBLCLK)
   {
     cout << "DBL CLICK\n";
@@ -559,3 +557,71 @@ Apuntador determinar_propiedades_ubicacion(cv::Point p)
   return itr;
 }
 
+void iniciar_creacion_objeto(Objetos o)
+{
+  b_dibujando_objeto = true;
+  Tipo_Objeto_Dibujando = o;
+  puntoOrigenobjeto = transformacion_inversa(puntoActualMouse); //convertimos p' en p
+  switch (o)
+  {
+  case(Objetos::Rectangulo):
+    puntoFinobjeto = puntoOrigenobjeto;
+    break;
+
+  case(Objetos::Circulo):
+    puntoFinobjeto = puntoOrigenobjeto;
+    break;
+  case(Objetos::Zona):
+    break;
+  }
+
+}
+
+void terminar_creacion_objeto()
+{
+  b_dibujando_objeto = false;
+  switch(Tipo_Objeto_Dibujando)
+  {
+  case(Objetos::Rectangulo):
+    {
+      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
+      crear_objeto(r); //deben ser p y no p'
+    }
+    break;
+
+  case(Objetos::Circulo):
+    {
+      Point hipot = puntoFinobjeto - puntoOrigenobjeto;
+      int radio = hypot(hipot.x, hipot.y);
+      circulo c(puntoOrigenobjeto, radio);
+      crear_objeto(c);
+    }
+    break;
+    case(Objetos::Zona):
+    break;
+  }
+
+}
+
+void dibujar_objeto_temporal()
+{
+  switch(Tipo_Objeto_Dibujando)
+  {
+  case(Objetos::Rectangulo):
+    rectangle(region, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
+              COLOR_RECT_DIBUJANDO, 2, CV_AA);
+    break;
+  case(Objetos::Circulo):
+    {
+      Point hipot = puntoFinobjeto - puntoOrigenobjeto;
+      int radio = hypot(hipot.x, hipot.y);
+      cv::circle(region, transformar(puntoOrigenobjeto), transformar_escalar(radio),
+               COLOR_RECT_DIBUJANDO, 2, CV_AA);
+    }
+
+    break;
+  case(Objetos::Zona):
+    break;
+  }
+
+}

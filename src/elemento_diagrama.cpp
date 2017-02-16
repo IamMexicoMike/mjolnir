@@ -11,9 +11,6 @@
 using namespace std;
 using namespace cv;
 
-extern int tamanio_texto;
-extern int ancho_texto;
-
 mutex mtx_objetos;
 int objeto::sid = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
 
@@ -70,6 +67,13 @@ void destruir_objeto_seleccionado()
 }
 //-----------------------------------------------------------------------------------------------------------------
 
+void objeto::dibujar_nombre(Mat& m) const
+{
+  Point entiende_esto = centro();
+  Point pt = transformar(entiende_esto);
+  putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
+}
+
 void rectangulo::dibujarse(Mat& m) const
 {
   Point iniciodespl, findespl;
@@ -83,13 +87,6 @@ void rectangulo::dibujarse(Mat& m) const
 
   if(b_highlighteado_)
     rectangle(m, Rect(iniciodespl, findespl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
-}
-
-void objeto::dibujar_nombre(Mat& m) const
-{
-  Point entiende_esto = centro();
-  Point pt = transformar(entiende_esto);
-  putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
 }
 
 //se llama continuamente cuando haces drag, no sólo una vez
@@ -109,7 +106,36 @@ bool rectangulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto, 
 void rectangulo::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
-  cout << inicio_ << ", " << fin_;
+  cout << inicio_ << ", " << fin_ << '\n';
+}
+
+void circulo::dibujarse(Mat& m) const
+{
+  Point centro = transformar(centro_);
+  int radio = transformar_escalar(radio_);
+  cv::circle(m, centro, radio, color_, 2, CV_AA);
+
+  if(b_seleccionado_)
+    cv::circle(m, centro, radio, COLOR_SELECCION, 3, CV_AA);
+
+  if(b_highlighteado_)
+    cv::circle(m, centro, radio, COLOR_HIGHLIGHT, 1, CV_AA);
+}
+
+void circulo::arrastrar(const Point pt)
+{
+  centro_ += pt;
+}
+
+bool circulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto
+{
+  return ((pt.x - centro_.x)*(pt.x - centro_.x) + (pt.y - centro_.y)*(pt.y - centro_.y) < radio_*radio_);
+}
+
+void circulo::imprimir_datos() const
+{
+  cout << nombre() << " : " << id() << '\t';
+  cout << centro_ << ", " << radio_ << '\n';
 }
 
 /*bool objeto::es_esquina(const Point pt)

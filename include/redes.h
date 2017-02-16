@@ -13,15 +13,14 @@ using namespace asio::ip;
 using namespace std;
 
 extern asio::io_service iosvc;
-//using asio::ip::tcp;
 
 extern std::queue<std::string> queue_saliente;
-extern std::mutex mtx_saliente;
 extern std::queue<std::string> queue_cntrl;
+extern std::mutex mtx_saliente;
 extern std::mutex mtx_cntrl;
 extern const string CODIGO_ABORTAR;
 
-/**Esto demostrará ser o no útil con el tiempo*/
+/*Manejan reboots*/
 void empujar_queue_cntrl(std::string s);
 std::string extraer_queue_cntrl();
 void procesar_queue_cntrl();
