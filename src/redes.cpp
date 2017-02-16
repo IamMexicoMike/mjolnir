@@ -1,4 +1,5 @@
 #include "redes.h"
+#include "control.h"
 
 #include <iostream>
 #include <future>
@@ -28,7 +29,7 @@ void generar_cliente_ftp(string); //no es accesible para el mundo externo a este
 
 void empujar_queue_cntrl(string s)
 {
-  std::lock_guard<mutex> lck(mtx_cntrl);
+  lock_guard<mutex> lck(mtx_cntrl);
   queue_cntrl.emplace(s);
 }
 
@@ -45,6 +46,15 @@ string extraer_queue_cntrl()
     return string();
 }
 
+void procesar_queue_cntrl()
+{
+  string comando = extraer_queue_cntrl();
+  if(comando.empty())
+    return;
+  if (comando == "reboot")
+    reboot();
+}
+
 void empujar_queue_saliente(string s)
 {
   if(s.substr(0,3) == "ftp") //las peticiones ftp las mandamos por otro socket temporal, por eso no se añaden al queue
@@ -55,7 +65,7 @@ void empujar_queue_saliente(string s)
   }
   else
   {
-    std::lock_guard<std::mutex> lck(mtx_saliente);
+    lock_guard<mutex> lck(mtx_saliente);
     queue_saliente.push(s);
   }
 }
@@ -74,7 +84,7 @@ string extraer_queue_saliente()
     return std::string{};
 }
 
-void generar_cliente_ftp(string archivo)
+void generar_cliente_ftp(string archivo) //toda esta función requiere mantenimiento severo, muchas cosas desagradables
 {
   io_service servicio_ftp;
   asio::error_code ec;

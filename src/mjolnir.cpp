@@ -3,12 +3,12 @@
 #include <ctime> //para profiles
 #include <algorithm>
 #include <bitset> //borrame si no debuggeas
-#include <thread>
-#include <mutex>
+
+#include "redes.h"
 
 #include <opencv2/opencv.hpp>
 
-#include "elemento_diagrama.h" /**mjolnir no incluye su propio header?!*/
+#include "elemento_diagrama.h"
 #include "mjolnir.hpp"
 #include "zonas.hpp"
 
@@ -288,7 +288,7 @@ void manejarInputTeclado(int k)
     break;
 
   case 48:
-    //empujar_queue_cntrl("reboot");
+    empujar_queue_cntrl("reboot");
   case 50: //debug
     //push_funptr(&foo_gui);
     //push_funptr(&ventana_cuenta_nueva);

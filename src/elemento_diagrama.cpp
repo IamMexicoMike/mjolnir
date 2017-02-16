@@ -1,3 +1,4 @@
+#include "elemento_diagrama.h"
 #include <windows.h>
 
 #include <iostream>
@@ -6,8 +7,6 @@
 #include <mutex>
 #include <string>
 #include <algorithm>
-
-#include "elemento_diagrama.h"
 
 using namespace std;
 using namespace cv;

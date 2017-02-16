@@ -16,6 +16,7 @@ BOOL CALLBACK AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 /* Si no lo intentas entonces definitivamente tienes 0% de chance */
 /* Ta ta raaan! Ta ta raaan! */
+/* Ta raaan taan! */
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow)

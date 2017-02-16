@@ -1,18 +1,16 @@
 #ifndef ELEMENTO_DIAGRAMA_H
 #define ELEMENTO_DIAGRAMA_H
 
-#include <vector>
-#include <memory>
-#include <mutex>
-#include <typeinfo>
+#include "redes.h"
 #include "mjolnir.hpp"
+
+#include <typeinfo>
 
 void ordenar_objetos();
 void destruir_objeto(int id);
 void destruir_objeto_seleccionado();
 
 extern std::mutex mtx_objetos;
-extern void empujar_queue_saliente(std::string s); /*No quiero incluir redes.h*/
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
