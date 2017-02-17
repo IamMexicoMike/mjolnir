@@ -16,6 +16,7 @@ const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
 const cv::Scalar COLOR_SELECCION(50, 255, 25);
 const cv::Scalar COLOR_HIGHLIGHT_(150, 215, 50);
+const cv::Scalar COLOR_NEGRO(0,0,0);
 
 enum class Objetos
 {
@@ -38,7 +39,7 @@ public:
   int id() const {return id_;}
   unsigned int area() const {return area_;}
   std::string nombre() const {return nombre_;}
-  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
+  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos //REVISA
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
   bool operator<(const objeto& o2) const {return (this->area() < o2.area());}

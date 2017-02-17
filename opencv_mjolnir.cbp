@@ -19,7 +19,7 @@
 					<Add option="-Wundef" />
 					<Add option="-Wunreachable-code" />
 					<Add option="-Wmissing-include-dirs" />
-					<Add option="-std=c++11" />
+					<Add option="-std=c++14" />
 					<Add option="-g" />
 					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls" />
 					<Add directory="include" />
@@ -27,7 +27,7 @@
 				<Linker>
 					<Add option="-lopencv_core2413.dll -lopencv_highgui2413.dll  -lopencv_imgproc2413.dll" />
 					<Add option="-lws2_32 -lwsock32" />
-					<Add option="-lfltk -luser32 -lcomdlg32 -lcomctl32 -luuid -lole32 -lgdi32" />
+					<Add option="-luser32 -lcomdlg32 -lcomctl32 -luuid -lole32 -lgdi32" />
 				</Linker>
 			</Target>
 		</Build>
@@ -37,31 +37,28 @@
 		</Compiler>
 		<Unit filename="Mjolnir2.ico" />
 		<Unit filename="config.txt" />
-		<Unit filename="configuracion.cpp" />
-		<Unit filename="cuenta_nueva.cxx" />
-		<Unit filename="cuenta_nueva.h" />
 		<Unit filename="gifs.cpp" />
+		<Unit filename="include/configuracion.hpp" />
+		<Unit filename="include/control.h" />
 		<Unit filename="include/cuenta.h" />
 		<Unit filename="include/elemento_diagrama.h" />
-		<Unit filename="include/gui.h" />
 		<Unit filename="include/mjolnir.hpp" />
 		<Unit filename="include/redes.h" />
 		<Unit filename="include/ventana_principal.h" />
 		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
-		<Unit filename="paleta_colores.cpp" />
+		<Unit filename="recurso.h" />
 		<Unit filename="recurso.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
 		<Unit filename="sistema_de_archivos.cpp" />
-		<Unit filename="src/cuenta.cpp" />
+		<Unit filename="src/configuracion.cpp" />
+		<Unit filename="src/control.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />
-		<Unit filename="src/gui.cpp" />
 		<Unit filename="src/mjolnir.cpp" />
 		<Unit filename="src/redes.cpp" />
 		<Unit filename="src/ventana_principal.cpp" />
 		<Unit filename="src/zonas.cpp" />
-		<Unit filename="versionado.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

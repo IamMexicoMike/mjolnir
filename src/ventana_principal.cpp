@@ -1,10 +1,12 @@
 #include "ventana_principal.h"
 #include "mjolnir.hpp"
 #include "../recurso.h"
+#include "commctrl.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 
 HWND hEdit;
+HWND hTool;
 extern Mat region;
 extern void renderizarDiagrama(cv::Mat&);
 extern void procesar_queue_cntrl();
@@ -45,7 +47,7 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
       nombreClase,
       "MJOLNIR",
       WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom-200,
+      CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom,
       NULL, NULL, hInstance, NULL);
 
   if(hwnd == NULL)
@@ -54,7 +56,7 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
     return false;
   }
 
-  MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-200, TRUE);
+  MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-50, TRUE);
 
   return true;
 }
@@ -81,11 +83,16 @@ void configuramos_parametros_diagrama(HWND& hwnd)
   HWND hWnd2 = (HWND) cvGetWindowHandle(nombreDiagrama);
   HWND hDiagrama = ::GetParent(hWnd2);
   ::SetParent(hDiagrama, hwnd);
-  EnableMenuItem(GetSystemMenu(hDiagrama, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED);
+  //EnableMenuItem(GetSystemMenu(hDiagrama, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED);
+  /***************/
+  LONG lStyle = GetWindowLong(hDiagrama, GWL_STYLE);
+  lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
+  SetWindowLong(hDiagrama, GWL_STYLE, lStyle);
+  /***************/
   RECT sz_dia;
   GetWindowRect(hDiagrama, &sz_dia);// guarda el tamaño de la pantalla a la variable escritorio
   //SetWindowPos(hDiagrama, 0, 0, 0, sz_dia.right, sz_dia.bottom, SWP_NOSIZE);
-  MoveWindow(hDiagrama, 0, 0, sz_dia.right, sz_dia.bottom, TRUE);
+  MoveWindow(hDiagrama, 0, -20, sz_dia.right, sz_dia.bottom, TRUE);
   SendMessage(hDiagrama, WM_SETICON, ICON_BIG, IDI_MJOLNIR);
   cv::setMouseCallback(nombreDiagrama, manejarInputMouse);
   cv::setKeyboardCallback(nombreDiagrama, manejarInputTeclado);
@@ -97,42 +104,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   {
   case WM_CREATE:
   {
-    auto button1 = CreateWindowEx(0, "BUTTON", "&Entidad", WS_VISIBLE|WS_CHILD|WS_TABSTOP|BS_SOLID|WS_BORDER,
-                                 1200, 50, 100, 100, hwnd, (HMENU)ID_PB1, NULL, NULL);
-    auto rb1 = CreateWindowW(L"BUTTON", L"radio1", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_AUTORADIOBUTTON,
-                            1200, 200, 100, 20, hwnd, (HMENU)ID_RB1, NULL, NULL);
-    auto rb2 = CreateWindowW(L"BUTTON", L"radio2", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_AUTORADIOBUTTON,
-                            1200, 300, 100, 20, hwnd, (HMENU)ID_RB2, NULL, NULL);
+    auto button1 = CreateWindowEx(0, "BUTTON", "&Boton", WS_VISIBLE|WS_CHILD|WS_TABSTOP|BS_SOLID|WS_BORDER,
+                                 1200, 50, 100, 20, hwnd, (HMENU)ID_PB1, NULL, NULL);
+
     auto button3 = CreateWindowW(L"BUTTON", L"Bot5", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_CHECKBOX | BS_AUTOCHECKBOX,
                                1200, 400, 100, 20, hwnd, (HMENU)ID_CB1, NULL, NULL);
   //auto hImg = LoadImageW(NULL, L"boost.png", IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE | LR_LOADFROMFILE);
   //SendMessageW(button1, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hImg);
-    hEdit=CreateWindowEx(WS_EX_CLIENTEDGE,
-      "EDIT",
-      "",
-      WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_AUTOVSCROLL|ES_AUTOHSCROLL,
-      50,
-      100,
-      200,
-      100,
-      hwnd,
-      (HMENU)IDC_MAIN_EDIT,
-      GetModuleHandle(NULL),
-      NULL);
-
+    hEdit=CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "", WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_AUTOVSCROLL|ES_AUTOHSCROLL,
+      1200, 200, 100, 100, hwnd, (HMENU)IDC_MAIN_EDIT, GetModuleHandle(NULL), NULL);
+    ShowWindow(hEdit, SW_SHOW);
     SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)"Inserta texto aqui");
+
+    hTool = CreateWindowEx(0, TOOLBARCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd,
+                           0, GetModuleHandle(NULL), NULL);
+    SendMessage(hTool, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
   }
     break;
 
   case WM_COMMAND:
     switch(LOWORD(wParam))
     {
-      case ID_PB1:
-      {
-        LPWSTR buffer[256];
-        SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
-        MessageBox(NULL, (LPCSTR)buffer, "Informacion!", MB_ICONINFORMATION);
-      }
+    case ID_FILE_EXIT:
+      DestroyWindow(hwnd);
+      break;
+
+    case ID_PB1:
+    {
+      LPWSTR buffer[256];
+      SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
+      MessageBox(NULL, (LPCSTR)buffer, "Click boton", MB_ICONINFORMATION);
+      break;
+    }
+    case ID_ACCION1:
+    {
+      LPWSTR buffer[256];
+      SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
+      MessageBox(NULL, (LPCSTR)buffer, "Informacion!", MB_ICONINFORMATION);
+      break;
+    }
 
 		break;
     }

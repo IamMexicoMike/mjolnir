@@ -12,10 +12,10 @@ BEGIN
         MENUITEM "Salir", ID_FILE_EXIT
     END
 
-    POPUP "Popup"
+    POPUP "Chat"
     BEGIN
-        MENUITEM "Accion1", ID_ACCION1
-        MENUITEM "Accion2", 0, GRAYED
+        MENUITEM "Texto mensaje", ID_ACCION1
+        MENUITEM "Abrir ventana", 0, GRAYED
     END
 END
 

@@ -71,19 +71,20 @@ void objeto::dibujar_nombre(Mat& m) const
 {
   Point entiende_esto = centro();
   Point pt = transformar(entiende_esto);
-  putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
+  putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
 }
 
 void rectangulo::dibujarse(Mat& m) const
 {
   Point iniciodespl, findespl;
   iniciodespl = transformar(inicio_); findespl = transformar(fin_);
-  rectangle(m, Rect(iniciodespl, findespl), color_, 2, CV_AA);
+  rectangle(m, Rect(iniciodespl, findespl), color_, -2, CV_AA);
+  rectangle(m, Rect(iniciodespl, findespl), COLOR_NEGRO, 1, CV_AA);
   //rectangle(m, Rect(Point(centro_.x - despl.x - 4, centro_.y - despl.y - 4), Size(8,8)),Scalar(150, 165, 250), 1, CV_AA);
   //fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
 
   if(b_seleccionado_)
-    rectangle(m, Rect(iniciodespl, findespl), COLOR_SELECCION, 3, CV_AA); //selección
+    rectangle(m, Rect(iniciodespl, findespl), COLOR_SELECCION, 2, CV_AA); //selección
 
   if(b_highlighteado_)
     rectangle(m, Rect(iniciodespl, findespl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
@@ -113,13 +114,14 @@ void circulo::dibujarse(Mat& m) const
 {
   Point centro = transformar(centro_);
   int radio = transformar_escalar(radio_);
-  cv::circle(m, centro, radio, color_, 2, CV_AA);
+  cv::circle(m, centro, radio, color_, -2, CV_AA);
+  cv::circle(m, centro, radio, COLOR_NEGRO, 1, CV_AA);
 
   if(b_seleccionado_)
-    cv::circle(m, centro, radio, COLOR_SELECCION, 3, CV_AA);
+    cv::circle(m, centro, radio, COLOR_SELECCION, 2, CV_AA);
 
   if(b_highlighteado_)
-    cv::circle(m, centro, radio, COLOR_HIGHLIGHT, 1, CV_AA);
+    cv::circle(m, centro, radio, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void circulo::arrastrar(const Point pt)
@@ -129,7 +131,10 @@ void circulo::arrastrar(const Point pt)
 
 bool circulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto
 {
-  return ((pt.x - centro_.x)*(pt.x - centro_.x) + (pt.y - centro_.y)*(pt.y - centro_.y) < radio_*radio_);
+  double x2 = double(pt.x - centro_.x)*double(pt.x - centro_.x);
+  double y2 = double(pt.y - centro_.y)*double(pt.y - centro_.y);
+  double r2 = double(radio_)*double(radio_);
+  return (x2 + y2 < r2); //esto se hizo porque estaban overfloweando los valores de int
 }
 
 void circulo::imprimir_datos() const
