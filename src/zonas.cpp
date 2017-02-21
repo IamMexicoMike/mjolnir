@@ -172,12 +172,12 @@ void rellenar_zona_telares() //está de lujo esta función. bien hechiza
 void zona::dibujarse(cv::Mat& m) const
 {
   vector<Point> ps = puntos_desplazados();
-  fillConvexPoly(m, ps.data(), ps.size(), color());
-  if(b_seleccionado_)
-    polylines(m, ps, true, COLOR_SELECCION, 3, CV_AA); //selección
-
+  fillConvexPoly(m, ps.data(), ps.size(), color_);
+  polylines(m, ps, true, COLOR_NEGRO, 1, CV_AA);
   if(b_highlighteado_)
-    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA); //highlight
+    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA);
+  if(b_seleccionado_)
+    polylines(m, ps, true, COLOR_SELECCION, 2, CV_AA);
 }
 
 void zona::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto

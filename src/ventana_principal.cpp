@@ -104,21 +104,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   {
   case WM_CREATE:
   {
-    auto button1 = CreateWindowEx(0, "BUTTON", "&Boton", WS_VISIBLE|WS_CHILD|WS_TABSTOP|BS_SOLID|WS_BORDER,
-                                 1200, 50, 100, 20, hwnd, (HMENU)ID_PB1, NULL, NULL);
 
-    auto button3 = CreateWindowW(L"BUTTON", L"Bot5", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_CHECKBOX | BS_AUTOCHECKBOX,
-                               1200, 400, 100, 20, hwnd, (HMENU)ID_CB1, NULL, NULL);
-  //auto hImg = LoadImageW(NULL, L"boost.png", IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE | LR_LOADFROMFILE);
-  //SendMessageW(button1, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hImg);
-    hEdit=CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "", WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_AUTOVSCROLL|ES_AUTOHSCROLL,
-      1200, 200, 100, 100, hwnd, (HMENU)IDC_MAIN_EDIT, GetModuleHandle(NULL), NULL);
-    ShowWindow(hEdit, SW_SHOW);
-    SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)"Inserta texto aqui");
-
-    hTool = CreateWindowEx(0, TOOLBARCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd,
-                           0, GetModuleHandle(NULL), NULL);
-    SendMessage(hTool, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
   }
     break;
 

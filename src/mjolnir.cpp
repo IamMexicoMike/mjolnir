@@ -202,11 +202,11 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
 
   //dibujamos todos los objetos
-  for(auto& p : objetos)
+  for(auto p = objetos.end()-1; p>=objetos.begin(); --p)
   {
-    p->dibujarse(matriz);
+    (*p)->dibujarse(matriz);
     if(b_dibujar_nombres)
-      p->dibujar_nombre(matriz);
+      (*p)->dibujar_nombre(matriz);
   }
 
 
@@ -336,7 +336,8 @@ void manejarInputTeclado(int k)
   case 71: //g de guardar
     break;
 
-  case 76: //l de load(cargar)
+  case 76: //l
+    iniciar_creacion_objeto(Objetos::Linea);
     break;
 
   case 79: //o - ordenar
@@ -522,6 +523,11 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
  No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
 Apuntador determinar_propiedades_ubicacion(cv::Point p)
 {
+  if(itr_seleccionado>=objetos.begin() and itr_seleccionado<objetos.end())
+  {
+    //checar si es un punto clave
+
+  }
   /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
   auto encontrarItrHighlight = [&]() -> Apuntador
   {
@@ -562,16 +568,16 @@ void iniciar_creacion_objeto(Objetos o)
   b_dibujando_objeto = true;
   Tipo_Objeto_Dibujando = o;
   puntoOrigenobjeto = transformacion_inversa(puntoActualMouse); //convertimos p' en p
-  switch (o)
+  puntoFinobjeto = puntoOrigenobjeto;
+  switch (o) //aunque este switch no haga nada, nos da opciones para agregar comportamiento opcional
   {
   case(Objetos::Rectangulo):
-    puntoFinobjeto = puntoOrigenobjeto;
     break;
-
   case(Objetos::Circulo):
-    puntoFinobjeto = puntoOrigenobjeto;
     break;
   case(Objetos::Zona):
+    break;
+  case(Objetos::Linea):
     break;
   }
 
@@ -597,7 +603,13 @@ void terminar_creacion_objeto()
       crear_objeto(c);
     }
     break;
-    case(Objetos::Zona):
+  case(Objetos::Zona):
+    break;
+  case(Objetos::Linea):
+    {
+      linea l(puntoOrigenobjeto, puntoFinobjeto);
+      crear_objeto(l);
+    }
     break;
   }
 
@@ -621,6 +633,9 @@ void dibujar_objeto_temporal()
 
     break;
   case(Objetos::Zona):
+    break;
+  case(Objetos::Linea):
+    line(region, transformar(puntoOrigenobjeto), transformar(puntoFinobjeto), COLOR_BLANCO, 2, CV_AA);
     break;
   }
 

@@ -13,6 +13,7 @@ using namespace cv;
 
 mutex mtx_objetos;
 int objeto::sid = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
+const Point objeto::offset_puntos_clave_(3,3);
 
 //void comparar_por_area(const un)
 
@@ -76,18 +77,26 @@ void objeto::dibujar_nombre(Mat& m) const
 
 void rectangulo::dibujarse(Mat& m) const
 {
-  Point iniciodespl, findespl;
-  iniciodespl = transformar(inicio_); findespl = transformar(fin_);
-  rectangle(m, Rect(iniciodespl, findespl), color_, -2, CV_AA);
-  rectangle(m, Rect(iniciodespl, findespl), COLOR_NEGRO, 1, CV_AA);
+  Point inicio, fin;
+  inicio = transformar(inicio_); fin = transformar(fin_);
+  rectangle(m, Rect(inicio, fin), color_, -2, CV_AA);
+  rectangle(m, Rect(inicio, fin), COLOR_NEGRO, 1, CV_AA);
   //rectangle(m, Rect(Point(centro_.x - despl.x - 4, centro_.y - despl.y - 4), Size(8,8)),Scalar(150, 165, 250), 1, CV_AA);
   //fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
 
   if(b_seleccionado_)
-    rectangle(m, Rect(iniciodespl, findespl), COLOR_SELECCION, 2, CV_AA); //selección
+  {
+    rectangle(m, Rect(inicio, fin), COLOR_SELECCION, 2, CV_AA); //selección
+    for(auto& p : puntos_clave_)
+    {
+      Point pc = transformar(p);
+      rectangle(m, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+    }
+  }
+
 
   if(b_highlighteado_)
-    rectangle(m, Rect(iniciodespl, findespl), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
+    rectangle(m, Rect(inicio, fin), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
 }
 
 //se llama continuamente cuando haces drag, no sólo una vez
@@ -96,6 +105,8 @@ void rectangulo::arrastrar(const Point pt) //no es realmente un punto, sino una 
     fin_ += pt;
     inicio_ += pt;
     centro_ += pt;
+    for(auto& p : puntos_clave_)
+      p+=pt;
 }
 
 bool rectangulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto, obtenido mediante p = g(p')
@@ -141,6 +152,29 @@ void circulo::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
   cout << centro_ << ", " << radio_ << '\n';
+}
+
+void linea::dibujarse(Mat& m) const
+{
+  cv::line(m, transformar(inicio_), transformar(fin_), color_, 1, CV_AA);
+}
+
+void linea::arrastrar(const Point pt)
+{
+  inicio_ +=pt;
+  fin_    +=pt;
+}
+
+bool linea::pertenece_a_area(const Point pt) const
+{
+  //no mames jaja, no está tan fácil
+  return false;
+}
+
+void linea::imprimir_datos() const
+{
+  cout << nombre() << " : " << id() << '\t';
+  cout << inicio_ << ", " << fin_ << '\n';
 }
 
 /*bool objeto::es_esquina(const Point pt)

@@ -15,6 +15,7 @@ extern int ancho_region;  //w = 2dx
 extern int altura_region; //h = 2dy
 extern cv::Point dxy;     // (w/2, h/2)
 
+const cv::Scalar COLOR_BLANCO(255,255,255);
 /*se ven feos*/
 const cv::Point HEADER0(5,20);
 const cv::Point HEADER1(100,20);

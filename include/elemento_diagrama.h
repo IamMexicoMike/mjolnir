@@ -23,6 +23,7 @@ enum class Objetos
   Rectangulo,
   Circulo,
   Zona,
+  Linea,
 };
 
 class objeto
@@ -30,7 +31,7 @@ class objeto
 public:
   objeto():
     id_ (sid++), //primero asignamos, luego incrementamos
-    b_seleccionado_(false), b_highlighteado_(false), b_esquina_(false),
+    b_seleccionado_(false), b_highlighteado_(false),
     color_(cv::Scalar(100,65,150)) {}
 
   virtual ~objeto();
@@ -51,7 +52,6 @@ public:
   //virtual bool es_esquina(const cv::Point pt);
   //void resizear(const cv::Point pt);
   virtual void imprimir_datos() const=0; //debug
-
   static int sid;
 
 protected:
@@ -61,10 +61,12 @@ protected:
   cv::Point centro_;
   bool b_seleccionado_;
   bool b_highlighteado_;   //se usa para objeto::dibujarse
-  bool b_esquina_; //!!
+  bool cache_valida_;
   unsigned int area_;
   cv::Scalar color_;
   std::string nombre_;
+  std::vector<cv::Point> puntos_clave_;
+  static const cv::Point offset_puntos_clave_;
 };
 
 class rectangulo : public objeto
@@ -75,6 +77,9 @@ public:
     inicio_ = inicio, fin_ = fin;
     centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
     area_ = std::abs((fin_.x - inicio_.x)*(fin.y - inicio_.y)); //base por altura
+    nombre_ = "Rectangulo";
+    puntos_clave_.emplace_back(inicio);
+    puntos_clave_.emplace_back(fin);
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
@@ -93,6 +98,7 @@ public:
     centro_ = centro, radio_ = radio;
     area_ = CV_PI*radio*radio;
     color_ = cv::Scalar(200,65,100);
+    nombre_ = "Circulo";
   }
   virtual void dibujarse(cv::Mat&) const override;
   virtual void arrastrar(const cv::Point pt) override;
@@ -101,6 +107,22 @@ public:
 
 protected:
   int radio_;
+};
+
+class linea : public objeto
+{
+public:
+  linea(cv::Point p1, cv::Point p2)
+  {
+    inicio_ = p1; fin_ = p2;
+    area_ = 0xffffffff;
+    color_ = cv::Scalar(255,255,255);
+    nombre_ = "Linea";
+  }
+  virtual void dibujarse(cv::Mat&) const override;
+  virtual void arrastrar(const cv::Point pt) override;
+  virtual bool pertenece_a_area(const cv::Point) const override;
+  virtual void imprimir_datos() const override;
 };
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
