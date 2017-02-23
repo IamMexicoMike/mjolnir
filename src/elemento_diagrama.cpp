@@ -70,7 +70,8 @@ void destruir_objeto_seleccionado()
 
 void objeto::dibujar_nombre(Mat& m) const
 {
-  Point entiende_esto = centro();
+  static const int fff = 30;
+  Point entiende_esto = Point(centro_.x-nombre_.size()*fff, centro_.y);
   Point pt = transformar(entiende_esto);
   putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
 }
@@ -191,6 +192,7 @@ void cuadrado_isometrico::dibujarse(cv::Mat& m) const
 void cuadrado_isometrico::arrastrar(const cv::Point pt)
 {
   inicio_+=pt;
+  centro_+=pt;
   fin_+=pt;
   for(auto& v : vertices_)
     v+=pt;

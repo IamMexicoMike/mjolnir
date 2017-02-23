@@ -13,7 +13,9 @@ public:
   zona(std::initializer_list<cv::Point> ps, const cv::Scalar& c, std::string n) :
     puntos_(ps)
   {
-    centro_ = puntos_[3];
+    //centro_ = puntos_[3];
+    auto M = cv::moments(puntos_, false);
+    centro_ = cv::Point(int(M.m10/M.m00), int(M.m01/M.m00) );
     color_ = c;
     nombre_ = n; //los miembros de la base ya inicializados no se pueden inicializar en la subclase, pero sí asignar
     area_ = cv::contourArea(puntos_);

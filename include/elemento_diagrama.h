@@ -47,6 +47,7 @@ public:
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
   bool operator<(const objeto& o2) const {return (this->area() < o2.area());}
   void dibujar_nombre(cv::Mat&) const;
+  void nombre(std::string nuevo_nombre) { nombre_ = nuevo_nombre; }
 
   virtual void dibujarse(cv::Mat& m) const=0;
   virtual void arrastrar(const cv::Point pt)=0;
