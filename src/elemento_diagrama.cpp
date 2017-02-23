@@ -158,17 +158,43 @@ void circulo::imprimir_datos() const
 void linea::dibujarse(Mat& m) const
 {
   cv::line(m, transformar(inicio_), transformar(fin_), color_, 1, CV_AA);
+
+  if(b_seleccionado_)
+    cv::line(m, transformar(inicio_), transformar(fin_), COLOR_SELECCION, 2, CV_AA);
+
+  if(b_highlighteado_)
+    cv::line(m, transformar(inicio_), transformar(fin_), COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void linea::arrastrar(const Point pt)
 {
   inicio_ +=pt;
   fin_    +=pt;
+  actualizar_parametros_linea();
 }
 
-bool linea::pertenece_a_area(const Point pt) const
+/**Sólo si el punto satisface la ecuación de la línea determinamos si cae dentro de la región acotada*/
+bool linea::pertenece_a_area(const Point pt) const //no mames jaja, no está tan fácil
 {
-  //no mames jaja, no está tan fácil
+  int y = efe_de_x(pt.x);
+  int tolerancia = transformar_escalar_inverso(tolerancia_);
+  if(pt.y < y-tolerancia || pt.y > y+tolerancia)
+    return false;
+
+
+  //el punto satisfizo la ecuación, ahora vemos si cae en el rango acotado por los dos puntos
+  else if(inicio_.x < fin_.x)
+  {
+    if(pt.x > inicio_.x and pt.x < fin_.x)
+      return true;
+  }
+
+  else
+  {
+    if(pt.x > fin_.x and pt.x < inicio_.x)
+      return true;
+  }
+  cout << "!!, y=" << y << endl;
   return false;
 }
 
@@ -176,6 +202,7 @@ void linea::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
   cout << inicio_ << ", " << fin_ << '\n';
+  cout << "m=" << m << ", " << "b=" << b << '\n';
 }
 
 void cuadrado_isometrico::dibujarse(cv::Mat& m) const

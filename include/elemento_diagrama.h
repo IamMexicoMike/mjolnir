@@ -115,17 +115,29 @@ protected:
 class linea : public objeto
 {
 public:
-  linea(cv::Point p1, cv::Point p2)
+  linea(cv::Point p1, cv::Point p2, bool relaciona=false) :
+  b_relaciona_(relaciona)
   {
     inicio_ = p1; fin_ = p2;
     area_ = 0xffffffff;
     color_ = cv::Scalar(255,255,255);
     nombre_ = "Linea";
+    actualizar_parametros_linea();
   }
   virtual void dibujarse(cv::Mat&) const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+private:
+  void actualizar_parametros_linea() {
+    m=(float)(fin_.y - inicio_.y)/(float)(fin_.x-inicio_.x);
+    b = fin_.y - m*fin_.x;
+  }
+  int efe_de_x(int x) const { return m*x + b; }
+  int b;
+  float m;
+  const int tolerancia_ = 8; //valor encontrado experimentalmente
+  bool b_relaciona_;
 };
 
 class cuadrado_isometrico : public objeto

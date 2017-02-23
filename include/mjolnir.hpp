@@ -51,6 +51,7 @@ p = g(p') = z*(p' - dx) + dx + d */
 cv::Point transformacion_inversa(const cv::Point pp);
 
 int transformar_escalar(int i);
+int transformar_escalar_inverso(int i);
 
 extern void rellenar_zona_telares(); //zonas
 extern void anexar_zonas();

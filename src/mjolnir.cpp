@@ -120,6 +120,8 @@ int transformar_escalar(int i)
   return (i)/zoom;
 }
 
+int transformar_escalar_inverso(int i) { return i*zoom; }
+
 void efecto_cuadricula(Mat& matriz)
 {
   static vector<chrono::duration<double>> tiempos(100);
