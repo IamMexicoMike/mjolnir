@@ -17,6 +17,7 @@ const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
 const cv::Scalar COLOR_SELECCION(50, 255, 25);
 const cv::Scalar COLOR_HIGHLIGHT_(150, 215, 50);
 const cv::Scalar COLOR_NEGRO(0,0,0);
+const cv::Scalar COLOR_AZUL_COMO_EL_MAR_AZUL(255,100,100);
 
 enum class Objetos
 {
@@ -24,6 +25,7 @@ enum class Objetos
   Circulo,
   Zona,
   Linea,
+  Cuadrado_Isometrico,
 };
 
 class objeto
@@ -123,6 +125,48 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+};
+
+class cuadrado_isometrico : public objeto
+{
+public:
+   cuadrado_isometrico(cv::Point inicio, cv::Point fin)
+  {
+    cout << inicio << '\t' << fin << '\n';
+    inicio_ = inicio;
+    fin_ = cv::Point(fin.x, inicio_.y);
+    centro_ = cv::Point((inicio_.x + fin_.x)/2, inicio_.y);
+    l = calcular_l(inicio_, fin_);
+    area_ = std::abs((fin_.x - inicio_.x)*l/2); //base por altura
+    nombre_ = "Relacion";
+    vertices_.reserve(4);
+    calcular_vertices();
+    color_ = COLOR_AZUL_COMO_EL_MAR_AZUL;
+  }
+   std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
+
+  virtual void dibujarse(cv::Mat&) const override;
+  virtual void arrastrar(const cv::Point pt) override;
+  virtual bool pertenece_a_area(const cv::Point) const override;
+  virtual void imprimir_datos() const override;
+private:
+  float calcular_l(cv::Point ini, cv::Point fin) { return std::abs( float(fin.x-ini.x)/std::sqrt(3) ); };
+  void calcular_vertices() { //vaya cuanta verbosidad
+    vertices_.emplace(vertices_.begin(), inicio_);
+    vertices_.emplace(vertices_.begin() + + 1, cv::Point((inicio_.x + fin_.x)/2,inicio_.y-l/2) );
+    vertices_.emplace(vertices_.begin() + 2, fin_);
+    vertices_.emplace(vertices_.begin() + 3, cv::Point((inicio_.x + fin_.x)/2,inicio_.y+l/2) );
+  };
+  std::vector<cv::Point> puntos_desplazados() const
+  {
+    std::vector<cv::Point> poff; //p'
+    for(auto p : vertices_)
+      poff.emplace_back(transformar(p));
+    return poff;
+  }
+  float l;
+  std::vector<cv::Point> vertices_;
+  //std::array<cv::Point,4> vertices_; //std::array no es un argumento aceptable para pointPolygonTest...
 };
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/

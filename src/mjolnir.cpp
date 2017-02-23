@@ -336,6 +336,10 @@ void manejarInputTeclado(int k)
   case 71: //g de guardar
     break;
 
+  case 73: // i
+    iniciar_creacion_objeto(Objetos::Cuadrado_Isometrico);
+    break;
+
   case 76: //l
     iniciar_creacion_objeto(Objetos::Linea);
     break;
@@ -579,6 +583,8 @@ void iniciar_creacion_objeto(Objetos o)
     break;
   case(Objetos::Linea):
     break;
+  case(Objetos::Cuadrado_Isometrico):
+    break;
   }
 
 }
@@ -611,6 +617,11 @@ void terminar_creacion_objeto()
       crear_objeto(l);
     }
     break;
+  case(Objetos::Cuadrado_Isometrico):
+    {
+      cuadrado_isometrico ci(puntoOrigenobjeto, puntoFinobjeto);
+      crear_objeto(ci);
+    }
   }
 
 }
@@ -637,6 +648,13 @@ void dibujar_objeto_temporal()
   case(Objetos::Linea):
     line(region, transformar(puntoOrigenobjeto), transformar(puntoFinobjeto), COLOR_BLANCO, 2, CV_AA);
     break;
+  case (Objetos::Cuadrado_Isometrico):
+    {
+      cuadrado_isometrico ci(puntoOrigenobjeto, puntoFinobjeto);
+      ci.dibujarse(region);
+      break;
+    }
+
   }
 
 }

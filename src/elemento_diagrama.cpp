@@ -177,6 +177,38 @@ void linea::imprimir_datos() const
   cout << inicio_ << ", " << fin_ << '\n';
 }
 
+void cuadrado_isometrico::dibujarse(cv::Mat& m) const
+{
+  vector<Point> ps = puntos_desplazados();
+  fillConvexPoly(m, ps.data(), ps.size(), color_);
+  polylines(m, ps, true, COLOR_NEGRO, 1, CV_AA);
+  if(b_highlighteado_)
+    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA);
+  if(b_seleccionado_)
+    polylines(m, ps, true, COLOR_SELECCION, 2, CV_AA);
+}
+
+void cuadrado_isometrico::arrastrar(const cv::Point pt)
+{
+  inicio_+=pt;
+  fin_+=pt;
+  for(auto& v : vertices_)
+    v+=pt;
+}
+
+bool cuadrado_isometrico::pertenece_a_area(const cv::Point pt) const
+{
+  if(pointPolygonTest(vertices_, pt, false) > 0)
+    return true;
+  return false;
+}
+
+void cuadrado_isometrico::imprimir_datos() const
+{
+  cout << nombre() << " : " << id() << '\t';
+  cout << inicio_ << ", " << fin_ << '\n';
+}
+
 /*bool objeto::es_esquina(const Point pt)
 {
   return (pt.x <= fin_.x && pt.x > fin_.x-5 && pt.y <= fin_.y && pt.y > fin_.y-5); //XXXXXXXXXXXXXXXXXXXXX -5
