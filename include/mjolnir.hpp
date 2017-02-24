@@ -60,4 +60,6 @@ extern const char* nombreDiagrama;
 extern int tamanio_texto;
 extern int ancho_texto;
 
+void preparar_memoria();
+
 #endif // MJOLNIRHPP

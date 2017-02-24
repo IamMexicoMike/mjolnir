@@ -52,9 +52,12 @@ public:
   virtual void dibujarse(cv::Mat& m) const=0;
   virtual void arrastrar(const cv::Point pt)=0;
   virtual bool pertenece_a_area(const cv::Point pt) const=0;
+  bool pertenece_a_punto_clave(const cv::Point pt);
   //virtual bool es_esquina(const cv::Point pt);
   //void resizear(const cv::Point pt);
   virtual void imprimir_datos() const=0; //debug
+  virtual void avisar_objeto_destruido(objeto* o) { }
+  virtual void actualizar_pointers() {};
   static int sid;
 
 protected:
@@ -68,8 +71,11 @@ protected:
   unsigned int area_;
   cv::Scalar color_;
   std::string nombre_;
-  std::vector<cv::Point> puntos_clave_;
+  std::vector<cv::Point*> puntos_clave_;
   static const cv::Point offset_puntos_clave_;
+  bool resizeando_{false};
+  cv::Point* punto_arrastrado_{nullptr};
+  const int tolerancia_ = 8; //valor encontrado experimentalmente, es para seleccionar línea y puntos clave
 };
 
 class rectangulo : public objeto
@@ -81,8 +87,6 @@ public:
     centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
     area_ = std::abs((fin_.x - inicio_.x)*(fin.y - inicio_.y)); //base por altura
     nombre_ = "Rectangulo";
-    puntos_clave_.emplace_back(inicio);
-    puntos_clave_.emplace_back(fin);
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
@@ -90,6 +94,7 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+  virtual void actualizar_pointers() override;
 };
 
 class circulo : public objeto
@@ -115,8 +120,7 @@ protected:
 class linea : public objeto
 {
 public:
-  linea(cv::Point p1, cv::Point p2, bool relaciona=false) :
-  b_relaciona_(relaciona)
+  linea(cv::Point p1, cv::Point p2, bool relaciona=false)
   {
     inicio_ = p1; fin_ = p2;
     area_ = 0xffffffff;
@@ -128,6 +132,9 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+  virtual void avisar_objeto_destruido(objeto* o) override;
+  virtual void actualizar_pointers() override;
+
 private:
   void actualizar_parametros_linea() {
     m=(float)(fin_.y - inicio_.y)/(float)(fin_.x-inicio_.x);
@@ -136,8 +143,8 @@ private:
   int efe_de_x(int x) const { return m*x + b; }
   int b;
   float m;
-  const int tolerancia_ = 8; //valor encontrado experimentalmente
-  bool b_relaciona_;
+  objeto* ptrf_{nullptr};
+  objeto* ptri_{nullptr};
 };
 
 class cuadrado_isometrico : public objeto
@@ -191,7 +198,9 @@ void crear_objeto(T& t)
   std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
   if(itr_seleccionado >= objetos.begin() and itr_seleccionado < objetos.end())
     (*itr_seleccionado)->seleccionar(false);
-  objetos.emplace_back(std::make_unique<T>(t));
+  std::unique_ptr<T> po = std::make_unique<T>(t);
+  po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
+  objetos.emplace_back(std::move(po));
   itr_highlight=objetos.end();
   itr_seleccionado=objetos.end();
   //cout << paq << '\n';

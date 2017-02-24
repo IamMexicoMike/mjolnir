@@ -59,6 +59,9 @@ void destruir_objeto_seleccionado()
     //cout << "\tobjetos.begin()\tobjetos.end()\titr_highlight\titr_seleccion\n";
     //cout << '\t' << &*objetos.begin() << '\t' << &*objetos.end() << '\t' << &*itr_highlight << '\t' << &*itr_seleccionado << '\n';
     string paq = "ro" + to_string((*itr_seleccionado)->id());
+    //avisamos a las lineas que ese objeto ya no existe
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido((*itr_seleccionado).get());
     objetos.erase(itr_seleccionado);
     itr_seleccionado=objetos.end();
     itr_highlight=objetos.end();
@@ -76,25 +79,44 @@ void objeto::dibujar_nombre(Mat& m) const
   putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
 }
 
+bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
+{
+  int tolerancia = transformar_escalar_inverso(tolerancia_); //tolerancia es adaptiva
+  for(auto u : puntos_clave_)
+  {
+    bool pertenece = (pt.x > u->x-tolerancia
+                      and pt.x < u->x+tolerancia
+                      and pt.y > u->y-tolerancia
+                      and pt.y < u->y+tolerancia); //es un cuadradito
+    if(pertenece)
+    {
+      punto_arrastrado_ = u;
+      resizeando_ = true;
+      return true;
+    }
+  }
+  resizeando_ = false;
+  punto_arrastrado_ = nullptr;
+  return false;
+}
+
 void rectangulo::dibujarse(Mat& m) const
 {
   Point inicio, fin;
   inicio = transformar(inicio_); fin = transformar(fin_);
   rectangle(m, Rect(inicio, fin), color_, -2, CV_AA);
   rectangle(m, Rect(inicio, fin), COLOR_NEGRO, 1, CV_AA);
-  //rectangle(m, Rect(Point(centro_.x - despl.x - 4, centro_.y - despl.y - 4), Size(8,8)),Scalar(150, 165, 250), 1, CV_AA);
-  //fillConvexPoly(matriz, ps.data(), ps.size(), z.color());
 
   if(b_seleccionado_)
   {
     rectangle(m, Rect(inicio, fin), COLOR_SELECCION, 2, CV_AA); //selección
-    for(auto& p : puntos_clave_)
+    for(auto p : puntos_clave_)
     {
-      Point pc = transformar(p);
+      Point pc = transformar(*p);
+      //cout  << "p: "<< *p << " p': " << pc << '\t';
       rectangle(m, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
     }
   }
-
 
   if(b_highlighteado_)
     rectangle(m, Rect(inicio, fin), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
@@ -103,11 +125,14 @@ void rectangulo::dibujarse(Mat& m) const
 //se llama continuamente cuando haces drag, no sólo una vez
 void rectangulo::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
 {
-    fin_ += pt;
-    inicio_ += pt;
-    centro_ += pt;
-    for(auto& p : puntos_clave_)
-      p+=pt;
+  if(resizeando_)
+  {
+    (*punto_arrastrado_) += pt;
+    return;
+  }
+  fin_ += pt;
+  inicio_ += pt;
+  centro_ += pt;
 }
 
 bool rectangulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto, obtenido mediante p = g(p')
@@ -116,10 +141,20 @@ bool rectangulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto, 
         (pt.y > inicio_.y && pt.y > fin_.y) || (pt.y < inicio_.y && pt.y < fin_.y));
 }
 
+void rectangulo::actualizar_pointers()
+{
+  puntos_clave_.push_back(&inicio_);
+  puntos_clave_.push_back(&fin_);
+  //std::cout << "dir de inicio: " << &inicio_ << "\tdir de fin: " << &fin_ << '\n';
+  //std::cout << "dir punto c[0]: " << puntos_clave_.at(0) << "dir punto c[1]: " << puntos_clave_.at(1) << '\n';
+}
+
 void rectangulo::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
   cout << inicio_ << ", " << fin_ << '\n';
+  cout << "dir de inicio: " << &inicio_ << "\tdir de fin: " << &fin_ << '\n';
+  cout << "dir punto c[0]: " << puntos_clave_.at(0) << "dir punto c[1]: " << puntos_clave_.at(1) << '\n';
 }
 
 void circulo::dibujarse(Mat& m) const
@@ -160,7 +195,15 @@ void linea::dibujarse(Mat& m) const
   cv::line(m, transformar(inicio_), transformar(fin_), color_, 1, CV_AA);
 
   if(b_seleccionado_)
+  {
     cv::line(m, transformar(inicio_), transformar(fin_), COLOR_SELECCION, 2, CV_AA);
+    for(auto p : puntos_clave_)
+    {
+      Point pc = transformar(*p);
+      //cout  << "p: "<< *p << " p': " << pc << '\t';
+      rectangle(m, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+    }
+  }
 
   if(b_highlighteado_)
     cv::line(m, transformar(inicio_), transformar(fin_), COLOR_HIGHLIGHT_, 1, CV_AA);
@@ -168,13 +211,19 @@ void linea::dibujarse(Mat& m) const
 
 void linea::arrastrar(const Point pt)
 {
+  if(resizeando_)
+  {
+    (*punto_arrastrado_) += pt;
+    actualizar_parametros_linea();
+    return;
+  }
   inicio_ +=pt;
   fin_    +=pt;
   actualizar_parametros_linea();
 }
 
 /**Sólo si el punto satisface la ecuación de la línea determinamos si cae dentro de la región acotada*/
-bool linea::pertenece_a_area(const Point pt) const //no mames jaja, no está tan fácil
+bool linea::pertenece_a_area(const Point pt) const
 {
   int y = efe_de_x(pt.x);
   int tolerancia = transformar_escalar_inverso(tolerancia_);
@@ -198,6 +247,12 @@ bool linea::pertenece_a_area(const Point pt) const //no mames jaja, no está tan 
   return false;
 }
 
+void linea::actualizar_pointers()
+{
+  puntos_clave_.push_back(&inicio_);
+  puntos_clave_.push_back(&fin_);
+}
+
 void linea::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
@@ -205,15 +260,23 @@ void linea::imprimir_datos() const
   cout << "m=" << m << ", " << "b=" << b << '\n';
 }
 
+void linea::avisar_objeto_destruido(objeto* o)
+{
+  if(o==ptrf_)
+    ptrf_ = nullptr;
+  if(o==ptri_)
+    ptri_ = nullptr;
+}
+
 void cuadrado_isometrico::dibujarse(cv::Mat& m) const
 {
   vector<Point> ps = puntos_desplazados();
   fillConvexPoly(m, ps.data(), ps.size(), color_);
   polylines(m, ps, true, COLOR_NEGRO, 1, CV_AA);
-  if(b_highlighteado_)
-    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA);
   if(b_seleccionado_)
     polylines(m, ps, true, COLOR_SELECCION, 2, CV_AA);
+  if(b_highlighteado_)
+    polylines(m, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void cuadrado_isometrico::arrastrar(const cv::Point pt)

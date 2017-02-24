@@ -73,6 +73,7 @@ void inicializar_diagrama(HWND& hwnd)
   mat_header = Mat(region.colRange(0, region.cols).rowRange(0,30)); //instanciamos la submatriz del header
   HEADER_MSG = Point(region.cols-300, HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
 
+  preparar_memoria(); //incluir elemento_diagrama.h añadiría costos al tiempo de compilacion
   anexar_zonas();
   rellenar_zona_telares();
 }

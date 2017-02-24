@@ -402,22 +402,21 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
   if(event == CV_EVENT_LBUTTONDOWN)
   {
+    botonMouseIzquierdoAbajo = true;
+
     /*Si estábamos dibujando un objeto y dimos click, lo insertamos y no hacemos nada más*/
     if(b_dibujando_objeto)
     {
       terminar_creacion_objeto();
-
       /**solicitamos las propiedades del nuevo objeto a crear*/
-      /***/
     }
 
     /*no estábamos dibujando un objeto, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
     else
     {
-      botonMouseIzquierdoAbajo = true;
       auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
-      if(itr!=objetos.end())
+      if(itr!=objetos.end()) //estamos dentro del área de un objeto y dimos click
       {
         if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
           (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
@@ -532,6 +531,8 @@ Apuntador determinar_propiedades_ubicacion(cv::Point p)
   if(itr_seleccionado>=objetos.begin() and itr_seleccionado<objetos.end())
   {
     //checar si es un punto clave
+    if( (*itr_seleccionado)->pertenece_a_punto_clave(p) )
+      return (itr_seleccionado);
 
   }
   /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
@@ -659,4 +660,9 @@ void dibujar_objeto_temporal()
 
   }
 
+}
+
+void preparar_memoria()
+{
+  objetos.reserve(1024);
 }
