@@ -57,7 +57,6 @@ Point despl(4000,1300); //originalmente desplazamientoOrigen
 Apuntador itr_seleccionado = objetos.end();
 Apuntador itr_highlight = objetos.end();
 bool b_drag=false;
-bool b_resize=false;
 Point ptInicioArrastre(0,0);
 Point ptFinArrastre(0,0);
 vector<unique_ptr<objeto>> objetos;
@@ -74,6 +73,15 @@ string mensaje_derecho_superior;
 mutex mtx_mensaje_derecho_superior;
 
 Objetos Tipo_Objeto_Dibujando;
+
+
+Apuntador encontrar_itr_area(cv::Point& p)
+{
+  for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
+    if((*itr)->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
+      return itr;
+  return objetos.end();
+};
 
 Point operator/(Point p, const int d)
 {
@@ -375,6 +383,10 @@ void manejarInputTeclado(int k)
   case 46: //suprimir, borrar objeto
     if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
     {
+      const type_info& tipo_zona = typeid(zona);
+      const type_info& tipo_objeto = typeid(*(*itr_seleccionado));
+      if(tipo_zona.hash_code() == tipo_objeto.hash_code()) //no queremos borrar zonas
+        break;
       destruir_objeto_seleccionado();
       determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
@@ -435,11 +447,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
           ptInicioArrastre = transformacion_inversa(puntoActualMouse);
           ptFinArrastre = ptInicioArrastre;
           b_dibujando_flecha = false;
-          /*if((*itr)->es_esquina(transformacion_inversa(puntoActualMouse)))
-          {
-            b_resize = true;
-          }
-          else*/
+
           {
             b_drag = true;
           }
@@ -459,16 +467,21 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
   {
     botonMouseIzquierdoAbajo = false;
     b_drag = false; //terminan las condiciones de arrastre y resize
-    b_resize = false;
+
+    //si estaba resizeando una linea y caí en otro objeto, hago el centro de ese objeto el vértice de la línea
+    auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+
 
     if(b_dibujando_flecha) //esto se va a revampear
     {
-      //flechas.push_back(flecha(puntoInicioFlecha, cv::Point(x,y) + despl));
-      auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
-      if(itr_seleccionado!=objetos.end() && itr != itr_seleccionado)
+      if(itr_seleccionado!=objetos.end() && itr != itr_seleccionado && itr!=objetos.end())
       {
         /**Se dibujó una flecha de un objeto a otro, originalmente se entablaba relación*/
-        cout << "interaccion?\tentre " << (*itr)->id() << " y " << (*itr_seleccionado)->id() << "\n";
+        cout << "interaccion entre " << (*itr)->id() << " y " << (*itr_seleccionado)->id() << "\n";
+        auto up = make_unique<linea>((*itr)->centro(),(*itr_seleccionado)->centro()); //es solo para construir algo
+        up->punto_inicial((*itr).get());
+        up->punto_final((*itr_seleccionado).get());
+        objetos.emplace_back(move(up));
       }
       b_dibujando_flecha = false;
     }
@@ -491,13 +504,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
         (*itr_seleccionado)->arrastrar(dif);
         ptInicioArrastre = pt;
       }
-      /*else if(b_resize)
-      {
-        Point pt = transformacion_inversa(puntoActualMouse);
-        Point dif = pt - ptInicioArrastre;
-        (*itr_seleccionado)->resizear(dif);
-        ptInicioArrastre = pt;
-      }*/
+
       //...
 
       if(b_dibujando_flecha)  //dibujando flecha temporal
@@ -531,20 +538,12 @@ Apuntador determinar_propiedades_ubicacion(cv::Point p)
   if(itr_seleccionado>=objetos.begin() and itr_seleccionado<objetos.end())
   {
     //checar si es un punto clave
-    if( (*itr_seleccionado)->pertenece_a_punto_clave(p) )
+    if( (*itr_seleccionado)->pertenece_a_punto_clave(p) ) //esto es mal diseño porque esta función modifica a los objetos
       return (itr_seleccionado);
 
   }
-  /*Este lambda podría generalizarse si recibiera como argumentos el tipo de operación y la categoría del contenedor. Nubloso*/
-  auto encontrarItrHighlight = [&]() -> Apuntador
-  {
-    for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
-      if((*itr)->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
-        return itr;
-    return objetos.end();
-  };
 
-  Apuntador itr = encontrarItrHighlight(); //obtenemos un apuntador al objeto que es dueño de esa área
+  Apuntador itr = encontrar_itr_area(p); //obtenemos un apuntador al objeto que es dueño de esa área
 
   if(itr == itr_highlight) //no hacemos cambios, seguimos hovereando dentro del area del mismo objeto
     return itr;
@@ -568,6 +567,11 @@ Apuntador determinar_propiedades_ubicacion(cv::Point p)
   itr_highlight = itr; //actualizamos la llave highlight
 
   return itr;
+}
+
+Apuntador determinar_zona_drop(cv::Point p)
+{
+
 }
 
 void iniciar_creacion_objeto(Objetos o)

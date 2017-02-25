@@ -28,7 +28,6 @@ using Apuntador = std::vector<std::unique_ptr<objeto>>::iterator;
 extern Apuntador itr_seleccionado;
 extern Apuntador itr_highlight;
 extern bool b_drag;
-extern bool b_resize;
 extern cv::Point ptInicioArrastre;
 extern cv::Point ptFinArrastre;
 extern std::vector<std::unique_ptr<objeto>> objetos;

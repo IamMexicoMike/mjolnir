@@ -42,7 +42,6 @@ public:
   int id() const {return id_;}
   unsigned int area() const {return area_;}
   std::string nombre() const {return nombre_;}
-  std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos //REVISA
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
   bool operator<(const objeto& o2) const {return (this->area() < o2.area());}
@@ -58,6 +57,7 @@ public:
   virtual void imprimir_datos() const=0; //debug
   virtual void avisar_objeto_destruido(objeto* o) { }
   virtual void actualizar_pointers() {};
+  virtual void recalcular_dimensiones() {}
   static int sid;
 
 protected:
@@ -76,6 +76,8 @@ protected:
   bool resizeando_{false};
   cv::Point* punto_arrastrado_{nullptr};
   const int tolerancia_ = 8; //valor encontrado experimentalmente, es para seleccionar línea y puntos clave
+  bool acepta_drops_{true};
+  bool es_dropeable_{false};
 };
 
 class rectangulo : public objeto
@@ -84,17 +86,20 @@ public:
   rectangulo(cv::Point inicio, cv::Point fin)
   {
     inicio_ = inicio, fin_ = fin;
-    centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
-    area_ = std::abs((fin_.x - inicio_.x)*(fin.y - inicio_.y)); //base por altura
+    recalcular_dimensiones();
     nombre_ = "Rectangulo";
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&)const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
   virtual void actualizar_pointers() override;
+  virtual void recalcular_dimensiones() {
+    centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
+    area_ = std::abs((fin_.x - inicio_.x)*(fin_.y - inicio_.y)); //base por altura}
+  };
 };
 
 class circulo : public objeto
@@ -108,7 +113,7 @@ public:
     color_ = cv::Scalar(200,65,100);
     nombre_ = "Circulo";
   }
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&)const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -126,20 +131,24 @@ public:
     area_ = 0xffffffff;
     color_ = cv::Scalar(255,255,255);
     nombre_ = "Linea";
-    actualizar_parametros_linea();
+    recalcular_dimensiones();
+    acepta_drops_ = false;
+    es_dropeable_ = true;
   }
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&)const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
   virtual void avisar_objeto_destruido(objeto* o) override;
   virtual void actualizar_pointers() override;
-
-private:
-  void actualizar_parametros_linea() {
+  virtual void punto_inicial(objeto* p) { ptri_=p; }
+  virtual void punto_final(objeto* p) { ptrf_=p; }
+  virtual void recalcular_dimensiones() override {
     m=(float)(fin_.y - inicio_.y)/(float)(fin_.x-inicio_.x);
     b = fin_.y - m*fin_.x;
   }
+
+private:
   int efe_de_x(int x) const { return m*x + b; }
   int b;
   float m;
@@ -165,7 +174,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&)const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;

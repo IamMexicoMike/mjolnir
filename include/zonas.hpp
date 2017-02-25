@@ -31,7 +31,7 @@ public:
       poff.emplace_back(transformar(p));
     return poff;
   }
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&)const override;
   virtual void arrastrar(const cv::Point) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;

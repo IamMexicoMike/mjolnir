@@ -43,6 +43,8 @@ void destruir_objeto(int id)
   auto itr = encontrarItrId();
   if(itr != objetos.end())
   {
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido((*itr).get());
     objetos.erase(itr);
     itr_seleccionado=objetos.end();
     itr_highlight=objetos.end();
@@ -128,6 +130,7 @@ void rectangulo::arrastrar(const Point pt) //no es realmente un punto, sino una 
   if(resizeando_)
   {
     (*punto_arrastrado_) += pt;
+    recalcular_dimensiones();
     return;
   }
   fin_ += pt;
@@ -192,11 +195,23 @@ void circulo::imprimir_datos() const
 
 void linea::dibujarse(Mat& m) const
 {
-  cv::line(m, transformar(inicio_), transformar(fin_), color_, 1, CV_AA);
+  Point tinicio = inicio_;
+  Point tfin = fin_;
+
+  if(ptrf_!=nullptr)
+    tfin = ptrf_->centro();
+
+  if(ptri_!=nullptr)
+    tinicio = ptri_->centro();
+
+  tinicio = transformar(tinicio);
+  tfin = transformar(tfin);
+
+  cv::line(m, tinicio, tfin, color_, 1, CV_AA);
 
   if(b_seleccionado_)
   {
-    cv::line(m, transformar(inicio_), transformar(fin_), COLOR_SELECCION, 2, CV_AA);
+    cv::line(m, tinicio, tfin, COLOR_SELECCION, 2, CV_AA);
     for(auto p : puntos_clave_)
     {
       Point pc = transformar(*p);
@@ -206,7 +221,7 @@ void linea::dibujarse(Mat& m) const
   }
 
   if(b_highlighteado_)
-    cv::line(m, transformar(inicio_), transformar(fin_), COLOR_HIGHLIGHT_, 1, CV_AA);
+    cv::line(m, tinicio, tfin, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void linea::arrastrar(const Point pt)
@@ -214,12 +229,12 @@ void linea::arrastrar(const Point pt)
   if(resizeando_)
   {
     (*punto_arrastrado_) += pt;
-    actualizar_parametros_linea();
+    recalcular_dimensiones();
     return;
   }
   inicio_ +=pt;
   fin_    +=pt;
-  actualizar_parametros_linea();
+  recalcular_dimensiones();
 }
 
 /**Sólo si el punto satisface la ecuación de la línea determinamos si cae dentro de la región acotada*/
@@ -301,17 +316,6 @@ void cuadrado_isometrico::imprimir_datos() const
   cout << inicio_ << ", " << fin_ << '\n';
 }
 
-/*bool objeto::es_esquina(const Point pt)
-{
-  return (pt.x <= fin_.x && pt.x > fin_.x-5 && pt.y <= fin_.y && pt.y > fin_.y-5); //XXXXXXXXXXXXXXXXXXXXX -5
-}*/
-
-/*void objeto::resizear(const Point pt)
-{
-  fin_ += pt;
-  centro_ = Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
-}*/
-
 objeto::~objeto()
 {
     //cout << "soy el destructor de objetos[" << id_ << "]\n";
@@ -319,8 +323,7 @@ objeto::~objeto()
 
 ostream& operator<<(ostream& os, objeto& o)
 {
-  auto pts = o.pts();
-  return os << 'o' << o.id() << " " << pts.first.x << " " << pts.first.y << " " << pts.second.x << " " << pts.second.y;
+  return os << 'o' << o.id() << '\t' << typeid(o).name() << '\n';
 }
 
 //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
