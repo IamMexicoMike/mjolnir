@@ -144,14 +144,6 @@ bool rectangulo::pertenece_a_area(const Point pt) const //pt debe ser absoluto, 
         (pt.y > inicio_.y && pt.y > fin_.y) || (pt.y < inicio_.y && pt.y < fin_.y));
 }
 
-void rectangulo::actualizar_pointers()
-{
-  puntos_clave_.push_back(&inicio_);
-  puntos_clave_.push_back(&fin_);
-  //std::cout << "dir de inicio: " << &inicio_ << "\tdir de fin: " << &fin_ << '\n';
-  //std::cout << "dir punto c[0]: " << puntos_clave_.at(0) << "dir punto c[1]: " << puntos_clave_.at(1) << '\n';
-}
-
 void rectangulo::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
@@ -232,8 +224,13 @@ void linea::arrastrar(const Point pt)
     recalcular_dimensiones();
     return;
   }
-  inicio_ +=pt;
-  fin_    +=pt;
+
+  if(ptrf_==nullptr)
+    fin_    +=pt;
+
+  if(ptri_==nullptr)
+    inicio_ +=pt;
+
   recalcular_dimensiones();
 }
 
@@ -262,12 +259,6 @@ bool linea::pertenece_a_area(const Point pt) const
   return false;
 }
 
-void linea::actualizar_pointers()
-{
-  puntos_clave_.push_back(&inicio_);
-  puntos_clave_.push_back(&fin_);
-}
-
 void linea::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
@@ -289,13 +280,28 @@ void cuadrado_isometrico::dibujarse(cv::Mat& m) const
   fillConvexPoly(m, ps.data(), ps.size(), color_);
   polylines(m, ps, true, COLOR_NEGRO, 1, CV_AA);
   if(b_seleccionado_)
+  {
     polylines(m, ps, true, COLOR_SELECCION, 2, CV_AA);
+    for(auto p : puntos_clave_)
+    {
+      Point pc = transformar(*p);
+      //cout  << "p: "<< *p << " p': " << pc << '\t';
+      rectangle(m, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+    }
+  }
+
   if(b_highlighteado_)
     polylines(m, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void cuadrado_isometrico::arrastrar(const cv::Point pt)
 {
+  if(resizeando_)
+  {
+    punto_arrastrado_->x += pt.x;
+    recalcular_dimensiones();
+    return;
+  }
   inicio_+=pt;
   centro_+=pt;
   fin_+=pt;
@@ -314,6 +320,10 @@ void cuadrado_isometrico::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
   cout << inicio_ << ", " << fin_ << '\n';
+  cout << "vertices: ";
+  for(auto& v : vertices_)
+    cout << v << " ";
+  cout << '\n';
 }
 
 objeto::~objeto()

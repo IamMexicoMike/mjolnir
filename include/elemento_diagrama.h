@@ -56,7 +56,7 @@ public:
   //void resizear(const cv::Point pt);
   virtual void imprimir_datos() const=0; //debug
   virtual void avisar_objeto_destruido(objeto* o) { }
-  virtual void actualizar_pointers() {};
+  virtual void actualizar_pointers() { puntos_clave_.push_back(&inicio_); puntos_clave_.push_back(&fin_); }
   virtual void recalcular_dimensiones() {}
   static int sid;
 
@@ -95,7 +95,6 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
-  virtual void actualizar_pointers() override;
   virtual void recalcular_dimensiones() {
     centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
     area_ = std::abs((fin_.x - inicio_.x)*(fin_.y - inicio_.y)); //base por altura}
@@ -107,13 +106,13 @@ class circulo : public objeto
 public:
   circulo(cv::Point centro, int radio)
   {
-    inicio_ = fin_ = cv::Point(0,0);
+    inicio_ = fin_ = cv::Point(inicio_.x + radio, inicio_.y);
     centro_ = centro, radio_ = radio;
-    area_ = CV_PI*radio*radio;
+    area_ = CV_PI*radio_*radio_;
     color_ = cv::Scalar(200,65,100);
     nombre_ = "Circulo";
   }
-  virtual void dibujarse(cv::Mat&)const override;
+  virtual void dibujarse(cv::Mat&) const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -135,15 +134,16 @@ public:
     acepta_drops_ = false;
     es_dropeable_ = true;
   }
-  virtual void dibujarse(cv::Mat&)const override;
+  virtual void dibujarse(cv::Mat&) const override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
   virtual void avisar_objeto_destruido(objeto* o) override;
-  virtual void actualizar_pointers() override;
+
   virtual void punto_inicial(objeto* p) { ptri_=p; }
   virtual void punto_final(objeto* p) { ptrf_=p; }
   virtual void recalcular_dimensiones() override {
+    centro_ = (inicio_ + fin_)/2;
     m=(float)(fin_.y - inicio_.y)/(float)(fin_.x-inicio_.x);
     b = fin_.y - m*fin_.x;
   }
@@ -164,13 +164,11 @@ public:
     cout << inicio << '\t' << fin << '\n';
     inicio_ = inicio;
     fin_ = cv::Point(fin.x, inicio_.y);
-    centro_ = cv::Point((inicio_.x + fin_.x)/2, inicio_.y);
-    l = calcular_l(inicio_, fin_);
-    area_ = std::abs((fin_.x - inicio_.x)*l/2); //base por altura
     nombre_ = "Relacion";
-    vertices_.reserve(4);
-    calcular_vertices();
+    for(int i=0; i<4; ++i)
+      vertices_.push_back(cv::Point() );
     color_ = COLOR_AZUL_COMO_EL_MAR_AZUL;
+    recalcular_dimensiones();
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
@@ -178,13 +176,19 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+  virtual void recalcular_dimensiones() override {
+    centro_ = cv::Point((inicio_.x + fin_.x)/2, inicio_.y);
+    l_ = calcular_l(inicio_, fin_);
+    area_ = std::abs((fin_.x - inicio_.x)*l_/2); //base por altura
+    calcular_vertices();
+  }
 private:
   float calcular_l(cv::Point ini, cv::Point fin) { return std::abs( float(fin.x-ini.x)/std::sqrt(3) ); };
   void calcular_vertices() { //vaya cuanta verbosidad
-    vertices_.emplace(vertices_.begin(), inicio_);
-    vertices_.emplace(vertices_.begin() + + 1, cv::Point((inicio_.x + fin_.x)/2,inicio_.y-l/2) );
-    vertices_.emplace(vertices_.begin() + 2, fin_);
-    vertices_.emplace(vertices_.begin() + 3, cv::Point((inicio_.x + fin_.x)/2,inicio_.y+l/2) );
+    vertices_[0] = inicio_;
+    vertices_[1] = cv::Point((inicio_.x + fin_.x)/2,inicio_.y-l_/2);
+    vertices_[2] = fin_;
+    vertices_[3] = cv::Point((inicio_.x + fin_.x)/2,inicio_.y+l_/2);
   };
   std::vector<cv::Point> puntos_desplazados() const
   {
@@ -193,7 +197,7 @@ private:
       poff.emplace_back(transformar(p));
     return poff;
   }
-  float l;
+  float l_;
   std::vector<cv::Point> vertices_;
   //std::array<cv::Point,4> vertices_; //std::array no es un argumento aceptable para pointPolygonTest...
 };
