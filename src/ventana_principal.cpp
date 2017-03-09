@@ -4,6 +4,7 @@
 #include "commctrl.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
+using namespace std;
 
 HWND hEdit;
 HWND hTool;
@@ -137,9 +138,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
 
   case WM_TIMER:
-    renderizarDiagrama(region); //actualizamos el contenido de la matriz
-    imshow(nombreDiagrama, region);
-    procesar_queue_cntrl();
+    switch (wParam)
+    {
+      case ID_T30:
+        renderizarDiagrama(region); //actualizamos el contenido de la matriz
+        imshow(nombreDiagrama, region);
+        procesar_queue_cntrl();
+        break;
+
+      case ID_T5000:
+        break;
+    }
     break;
 
   case WM_KEYDOWN:

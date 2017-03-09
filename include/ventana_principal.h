@@ -6,7 +6,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#define ID_TIMER 42
+#define ID_T30 1001
+#define ID_T5000 1002
 #define ID_PB1 5001
 #define ID_RB1 5101
 #define ID_RB2 5102

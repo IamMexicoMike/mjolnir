@@ -102,7 +102,7 @@ bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
   return false;
 }
 
-void rectangulo::dibujarse(Mat& m) const
+void rectangulo::dibujarse(Mat& m)
 {
   Point inicio, fin;
   inicio = transformar(inicio_); fin = transformar(fin_);
@@ -152,7 +152,7 @@ void rectangulo::imprimir_datos() const
   cout << "dir punto c[0]: " << puntos_clave_.at(0) << "dir punto c[1]: " << puntos_clave_.at(1) << '\n';
 }
 
-void circulo::dibujarse(Mat& m) const
+void circulo::dibujarse(Mat& m)
 {
   Point centro = transformar(centro_);
   int radio = transformar_escalar(radio_);
@@ -185,21 +185,28 @@ void circulo::imprimir_datos() const
   cout << centro_ << ", " << radio_ << '\n';
 }
 
-void linea::dibujarse(Mat& m) const
+void linea::dibujarse(Mat& m)
 {
-  Point tinicio = inicio_;
-  Point tfin = fin_;
+  Point tinicio=inicio_;
+  Point tfin=fin_;
 
   if(ptrf_!=nullptr)
-    tfin = ptrf_->centro();
+  {
+    fin_ = ptrf_->centro();
+    recalcular_dimensiones();
+  }
 
   if(ptri_!=nullptr)
-    tinicio = ptri_->centro();
+  {
+    inicio_ = ptri_->centro();
+    recalcular_dimensiones();
+  }
 
-  tinicio = transformar(tinicio);
-  tfin = transformar(tfin);
+  tinicio = transformar(inicio_);
+  tfin = transformar(fin_);
 
-  cv::line(m, tinicio, tfin, color_, 1, CV_AA);
+  cv::line(m, tinicio, tfin, COLOR_BLANCO, 1, CV_AA);
+
 
   if(b_seleccionado_)
   {
@@ -255,7 +262,6 @@ bool linea::pertenece_a_area(const Point pt) const
     if(pt.x > fin_.x and pt.x < inicio_.x)
       return true;
   }
-  cout << "!!, y=" << y << endl;
   return false;
 }
 
@@ -274,7 +280,7 @@ void linea::avisar_objeto_destruido(objeto* o)
     ptri_ = nullptr;
 }
 
-void cuadrado_isometrico::dibujarse(cv::Mat& m) const
+void cuadrado_isometrico::dibujarse(cv::Mat& m)
 {
   vector<Point> ps = puntos_desplazados();
   fillConvexPoly(m, ps.data(), ps.size(), color_);
@@ -334,6 +340,16 @@ objeto::~objeto()
 ostream& operator<<(ostream& os, objeto& o)
 {
   return os << 'o' << o.id() << '\t' << typeid(o).name() << '\n';
+}
+
+void crear_relacion(objeto* o1, objeto* o2)
+{
+  lock_guard<mutex> lck(mtx_objetos);
+  auto up = make_unique<linea>(o1->centro(),o2->centro()); //es solo para construir algo
+  up->punto_inicial(o1);
+  up->punto_final(o2);
+  up->actualizar_pointers();
+  objetos.emplace_back(move(up));
 }
 
 //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo

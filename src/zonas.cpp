@@ -169,7 +169,7 @@ void rellenar_zona_telares() //está de lujo esta función. bien hechiza
     }
 }
 
-void zona::dibujarse(cv::Mat& m)const
+void zona::dibujarse(cv::Mat& m)
 {
   vector<Point> ps = puntos_desplazados();
   fillConvexPoly(m, ps.data(), ps.size(), color_);

@@ -28,7 +28,8 @@ const Scalar BLANCO(255,255,255);
 const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
-const Scalar Bckgnd(46,169,230);
+//const Scalar Bckgnd(46,169,230);
+const Scalar Bckgnd(230,0,0);
 
 class zona;
 extern vector<zona> superzonas;
@@ -60,6 +61,7 @@ bool b_drag=false;
 Point ptInicioArrastre(0,0);
 Point ptFinArrastre(0,0);
 vector<unique_ptr<objeto>> objetos;
+vector<unique_ptr<objeto>> objetos_invisibles;
 
 int ancho_region; //w = 2dx
 int altura_region; //h = 2dy
@@ -372,8 +374,8 @@ void manejarInputTeclado(int k)
       {
         Point p1(p.x + i*(-10000), p.y + j*(-10000));
         Point p2(p.x + i*(-10000)-5000, p.y + j*(-10000)-5000);
-        rectangulo r(p1,p2);
-        crear_objeto(r);
+        circulo c(p1, (p2.x-p1.x)/2);
+        crear_objeto(c);
       }
     }
   }
@@ -428,7 +430,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
       auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
-      if(itr!=objetos.end()) //estamos dentro del área de un objeto y dimos click
+      if(itr>= objetos.begin() and itr!=objetos.end()) //estamos dentro del área de un objeto y dimos click
       {
         if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
           (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
@@ -476,12 +478,9 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
       if(itr_seleccionado!=objetos.end() && itr != itr_seleccionado && itr!=objetos.end())
       {
-        /**Se dibujó una flecha de un objeto a otro, originalmente se entablaba relación*/
+        /**Se entabla una relación entre dos objetos*/
         cout << "interaccion entre " << (*itr)->id() << " y " << (*itr_seleccionado)->id() << "\n";
-        auto up = make_unique<linea>((*itr)->centro(),(*itr_seleccionado)->centro()); //es solo para construir algo
-        up->punto_inicial((*itr).get());
-        up->punto_final((*itr_seleccionado).get());
-        objetos.emplace_back(move(up));
+        crear_relacion(itr->get(), itr_seleccionado->get());
       }
       b_dibujando_flecha = false;
     }

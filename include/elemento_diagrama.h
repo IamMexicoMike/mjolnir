@@ -48,7 +48,7 @@ public:
   void dibujar_nombre(cv::Mat&) const;
   void nombre(std::string nuevo_nombre) { nombre_ = nuevo_nombre; }
 
-  virtual void dibujarse(cv::Mat& m) const=0;
+  virtual void dibujarse(cv::Mat& m)=0;
   virtual void arrastrar(const cv::Point pt)=0;
   virtual bool pertenece_a_area(const cv::Point pt) const=0;
   bool pertenece_a_punto_clave(const cv::Point pt);
@@ -78,6 +78,7 @@ protected:
   const int tolerancia_ = 8; //valor encontrado experimentalmente, es para seleccionar línea y puntos clave
   bool acepta_drops_{true};
   bool es_dropeable_{false};
+  std::vector<objeto*> objetos_cliente_;
 };
 
 class rectangulo : public objeto
@@ -91,7 +92,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&)const override;
+  virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -106,13 +107,14 @@ class circulo : public objeto
 public:
   circulo(cv::Point centro, int radio)
   {
-    inicio_ = fin_ = cv::Point(inicio_.x + radio, inicio_.y);
-    centro_ = centro, radio_ = radio;
+    centro_ = centro;
+    radio_ = std::abs(radio);
+    inicio_ = fin_ = cv::Point(inicio_.x + radio_, inicio_.y);
     area_ = CV_PI*radio_*radio_;
     color_ = cv::Scalar(200,65,100);
     nombre_ = "Circulo";
   }
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -129,12 +131,12 @@ public:
     inicio_ = p1; fin_ = p2;
     area_ = 0xffffffff;
     color_ = cv::Scalar(255,255,255);
-    nombre_ = "Linea";
+    nombre_ = "";
     recalcular_dimensiones();
     acepta_drops_ = false;
     es_dropeable_ = true;
   }
-  virtual void dibujarse(cv::Mat&) const override;
+  virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -172,7 +174,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&)const override;
+  virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -219,5 +221,7 @@ void crear_objeto(T& t)
   //cout << paq << '\n';
   //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }
+
+void crear_relacion(objeto* o1, objeto* o2);
 
 #endif // ELEMENTO_DIAGRAMA_H
