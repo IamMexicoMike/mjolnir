@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <atomic>
 
 #include <opencv2/opencv.hpp>
 
@@ -32,6 +33,7 @@ extern cv::Point ptInicioArrastre;
 extern cv::Point ptFinArrastre;
 extern std::vector<std::unique_ptr<objeto>> objetos;
 extern std::vector<std::unique_ptr<objeto>> objetos_invisibles;
+extern std::atomic<bool> b_cache_valida;
 
 enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
 Apuntador determinar_propiedades_ubicacion(cv::Point);

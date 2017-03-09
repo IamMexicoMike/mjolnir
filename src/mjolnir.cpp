@@ -74,7 +74,9 @@ int ancho_texto;
 string mensaje_derecho_superior;
 mutex mtx_mensaje_derecho_superior;
 
-Objetos Tipo_Objeto_Dibujando;
+extern std::atomic<bool> b_cache_valida{false};
+
+Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
 
 
 Apuntador encontrar_itr_area(cv::Point& p)
@@ -488,6 +490,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
   if(event == CV_EVENT_MOUSEMOVE)
   {
+    b_cache_valida=false;
     if(botonMouseDerechoAbajo) //Panning. Moviéndonos con click derecho apretado
     {
       despl = puntoInicioDesplazamiento + zoom*(puntoClickMouseDerecho - puntoActualMouse);

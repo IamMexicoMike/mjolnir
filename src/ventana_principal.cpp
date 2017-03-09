@@ -141,8 +141,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     switch (wParam)
     {
       case ID_T30:
-        renderizarDiagrama(region); //actualizamos el contenido de la matriz
-        imshow(nombreDiagrama, region);
+        if(!b_cache_valida)
+        {
+          renderizarDiagrama(region); //actualizamos el contenido de la matriz
+          imshow(nombreDiagrama, region);
+          b_cache_valida = true;
+        }
         procesar_queue_cntrl();
         break;
 
