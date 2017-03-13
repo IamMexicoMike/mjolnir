@@ -79,6 +79,13 @@ void objeto::dibujar_nombre(Mat& m) const
   Point entiende_esto = Point(centro_.x-nombre_.size()*fff, centro_.y);
   Point pt = transformar(entiende_esto);
   putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
+  if(b_subrayar_)
+  {
+    int tolerancia = transformar_escalar(tolerancia_);
+    pt.y += tolerancia;
+    Point p2 = Point(pt.x + nombre_.size()*fff*4/10, pt.y);
+    line(m, pt, p2, COLOR_NEGRO);
+  }
 }
 
 bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
@@ -160,7 +167,16 @@ void circulo::dibujarse(Mat& m)
   cv::circle(m, centro, radio, COLOR_NEGRO, 1, CV_AA);
 
   if(b_seleccionado_)
+  {
     cv::circle(m, centro, radio, COLOR_SELECCION, 2, CV_AA);
+    for(auto p : puntos_clave_)
+    {
+      Point pc = transformar(*p);
+      //cout  << "p: "<< *p << " p': " << pc << '\t';
+      rectangle(m, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+    }
+  }
+
 
   if(b_highlighteado_)
     cv::circle(m, centro, radio, COLOR_HIGHLIGHT_, 1, CV_AA);
@@ -168,6 +184,14 @@ void circulo::dibujarse(Mat& m)
 
 void circulo::arrastrar(const Point pt)
 {
+  if(resizeando_)
+  {
+    (*punto_arrastrado_) += pt;
+    recalcular_dimensiones();
+    return;
+  }
+  fin_ += pt;
+  inicio_ += pt;
   centro_ += pt;
 }
 

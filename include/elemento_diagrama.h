@@ -78,6 +78,7 @@ protected:
   const int tolerancia_ = 8; //valor encontrado experimentalmente, es para seleccionar línea y puntos clave
   bool acepta_drops_{true};
   bool es_dropeable_{false};
+  bool b_subrayar_{false};
   std::vector<objeto*> objetos_cliente_;
 };
 
@@ -109,8 +110,7 @@ public:
   {
     centro_ = centro;
     radio_ = std::abs(radio);
-    inicio_ = fin_ = cv::Point(inicio_.x + radio_, inicio_.y);
-    area_ = CV_PI*radio_*radio_;
+    fin_ = cv::Point(centro_.x + radio_, centro_.y);
     color_ = cv::Scalar(200,65,100);
     nombre_ = "C"+to_string(id_);
   }
@@ -118,6 +118,11 @@ public:
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+  virtual void actualizar_pointers() { puntos_clave_.push_back(&fin_); }
+  virtual void recalcular_dimensiones() {
+    radio_ = std::hypot((fin_.x-centro_.x),(fin_.y-centro_.y));
+    area_ = CV_PI*radio_*radio_;
+  };
 
 protected:
   int radio_;

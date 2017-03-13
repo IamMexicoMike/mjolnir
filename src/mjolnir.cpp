@@ -17,6 +17,7 @@ using namespace cv;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
 /* Oooohh!! */
+/* TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC*/
 
 void iniciar_creacion_objeto(Objetos); //enum representado el tipo del objeto a crear
 void terminar_creacion_objeto();
@@ -246,7 +247,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
     putText(matriz, string("" + (*itr_seleccionado)->nombre()),
-            HEADER2, FONT_HERSHEY_PLAIN, 1, COLOR_SELECCION, 1, CV_AA);
+            HEADER2, FONT_HERSHEY_PLAIN, 1, COLOR_NEGRO, 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
   putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX

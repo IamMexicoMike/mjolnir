@@ -126,8 +126,8 @@ vector<zona> zonas(
   zona({P2(7.6,7), P2(12.6,7), P2(12.6,13), P2(7.6,13)},COLORES[3], "Mantenimiento"),
   zona({P2(7.6,13), P2(12.6,13), P2(12.6,17.9), P2(7.6,17.9)},COLORES[2], "Etiquetas"),
   zona({P2(12.6,1.9), P2(20,1.9), P2(20,22.9), P2(7.6,22.9), P2(7.6,17.9), P2(12.6,17.9)},COLORES[4], "Corte longitudinal"),
-  zona({P2(20,1.9), P2(28.33,1.9), P2(28.33,22.9), P2(20,22.9) }, COLOR_MAQ, "Costura longitudinal"),
-  zona({P2(28.33,1.9), P2(36.66,1.9), P2(36.66,22.9), P2(28.33,22.9) }, COLORES[7], "Corte transversal"),
+  zona({P2(20,1.9), P2(36.66,1.9), P2(36.66,12.4), P2(20,12.4) }, COLOR_MAQ, "Costura longitudinal"),
+  zona({P2(20,12.4), P2(36.66,12.4), P2(36.66,22.9), P2(20,22.9) }, COLORES[7], "Corte transversal"),
   zona({P2(36.66,1.9), P2(45,1.9), P2(45,22.9), P2(36.66,22.9) }, COLORES[5], "Empaque"),
   zona({P2(45,1.9), P2(60,1.9), P2(60,5), P2(45,5) }, COLORES[1], "Desarrollo de muestras"),
   zona({P2(60,1.9), P2(60,5), P2(45,5), P2(45,22.9), P2(95,22.9), P2(95,14), P2(93,14), P2(93,1.9)}, COLORES[8], "Costura"),
@@ -182,7 +182,7 @@ void zona::dibujarse(cv::Mat& m)
 
 void zona::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
 {
-    for(auto p : puntos_)
+    for(auto p : puntos_) //PORQUE EXISTE ESTA FUNCIÓN PARA ZONA? DEBERÍA SER ';'
       p += pt;
 }
 
