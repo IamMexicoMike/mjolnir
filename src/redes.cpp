@@ -190,7 +190,7 @@ void cliente::conectar()
     {
       cout << "conectado a " << socket_.remote_endpoint().address().to_string() <<
                          ":" << socket_.remote_endpoint().port() << '\n';
-      escribir("mike;ftw");
+      escribir("mike;ftw;");
       //escribir("version " + version);
       leer();
     }

@@ -33,7 +33,7 @@ extern cv::Point ptInicioArrastre;
 extern cv::Point ptFinArrastre;
 extern std::vector<std::unique_ptr<objeto>> objetos;
 extern std::vector<std::unique_ptr<objeto>> objetos_invisibles;
-extern std::atomic<bool> b_cache_valida;
+extern std::atomic<bool> b_cache_valida, b_puntos_relativos_validos;
 
 enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
 Apuntador determinar_propiedades_ubicacion(cv::Point);

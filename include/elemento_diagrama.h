@@ -88,7 +88,7 @@ public:
   {
     inicio_ = inicio, fin_ = fin;
     recalcular_dimensiones();
-    nombre_ = "Rectangulo";
+    nombre_ = "R"+to_string(id_);
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
@@ -112,7 +112,7 @@ public:
     inicio_ = fin_ = cv::Point(inicio_.x + radio_, inicio_.y);
     area_ = CV_PI*radio_*radio_;
     color_ = cv::Scalar(200,65,100);
-    nombre_ = "Circulo";
+    nombre_ = "C"+to_string(id_);
   }
   virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
@@ -166,7 +166,7 @@ public:
     cout << inicio << '\t' << fin << '\n';
     inicio_ = inicio;
     fin_ = cv::Point(fin.x, inicio_.y);
-    nombre_ = "Relacion";
+    nombre_ = "I"+to_string(id_);
     for(int i=0; i<4; ++i)
       vertices_.push_back(cv::Point() );
     color_ = COLOR_AZUL_COMO_EL_MAR_AZUL;

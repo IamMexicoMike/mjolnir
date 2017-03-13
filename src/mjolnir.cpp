@@ -29,7 +29,7 @@ const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
 //const Scalar Bckgnd(46,169,230);
-const Scalar Bckgnd(230,0,0);
+const Scalar Bckgnd(230,200,200);
 
 class zona;
 extern vector<zona> superzonas;
@@ -74,7 +74,8 @@ int ancho_texto;
 string mensaje_derecho_superior;
 mutex mtx_mensaje_derecho_superior;
 
-extern std::atomic<bool> b_cache_valida{false};
+atomic<bool> b_cache_valida{false};
+atomic<bool> b_puntos_relativos_validos{false};
 
 Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
 
@@ -397,6 +398,7 @@ void manejarInputTeclado(int k)
     break;
 
   }
+  b_cache_valida=false;
     //cout << desplazamientoOrigen << endl;
 }
 
@@ -569,11 +571,6 @@ Apuntador determinar_propiedades_ubicacion(cv::Point p)
   itr_highlight = itr; //actualizamos la llave highlight
 
   return itr;
-}
-
-Apuntador determinar_zona_drop(cv::Point p)
-{
-
 }
 
 void iniciar_creacion_objeto(Objetos o)
