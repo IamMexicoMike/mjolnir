@@ -6,6 +6,7 @@
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
 
+HWND hVentanaPrincipal;
 HWND hEdit;
 HWND hTool;
 extern Mat region;
@@ -58,6 +59,7 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
   }
 
   MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-50, TRUE);
+  hVentanaPrincipal = hwnd;
 
   return true;
 }
@@ -105,9 +107,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   switch(msg)
   {
   case WM_CREATE:
-  {
-
-  }
     break;
 
   case WM_COMMAND:
@@ -155,38 +154,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     break;
 
-  case WM_KEYDOWN:
-    {
-      break;
-    }
-
-
-  case WM_RBUTTONDOWN:
-    {
-
-    }
-    break;
-
-  case WM_RBUTTONUP:
-
-    break;
-
-  case WM_LBUTTONDOWN:
-
-    break; ///LBUTTONDOWN
-
-  case WM_LBUTTONUP:
-
-    break;
-
-  case WM_MOUSEMOVE:
-
-    break;
-
-  case WM_RBUTTONDBLCLK:
-
-    break;
-
   case WM_CLOSE:
     DestroyWindow(hwnd);
     break;
@@ -196,4 +163,61 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
   }
   return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+
+BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+  switch(Message)
+  {
+    case WM_INITDIALOG:
+
+    return TRUE;
+    case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+        case IDOK:
+          EndDialog(hwnd, IDOK);
+        break;
+        case IDCANCEL:
+          EndDialog(hwnd, IDCANCEL);
+        break;
+      }
+    break;
+    default:
+        return FALSE;
+  }
+  return TRUE;
+}
+
+void crear_dialogo_nombre()
+{
+  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), hVentanaPrincipal, (DLGPROC)DialogoTextoProc);
+  if(ret == IDOK)
+  {
+    int len = GetWindowTextLength(GetDlgItem(hVentanaPrincipal, IDT_NVONOMBRE));
+    cout << "len:" << len;
+    if(len > 0)
+    {
+      int i;
+      char* buf;
+      buf = (char*)GlobalAlloc(GPTR, len + 1);
+      GetDlgItemText(hVentanaPrincipal, IDT_NVONOMBRE, buf, len + 1);
+
+      string s(buf);
+      cout << s << '\n';
+
+      GlobalFree((HANDLE)buf);
+    }
+  }
+
+
+  else if(ret == IDCANCEL)
+  {
+
+  }
+
+  else if(ret == -1)
+    MessageBox(hVentanaPrincipal, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+
 }

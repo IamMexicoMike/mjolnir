@@ -5,6 +5,7 @@
 #include "mjolnir.hpp"
 
 #include <typeinfo>
+#include <fstream>
 
 void ordenar_objetos();
 void destruir_objeto(int id);
@@ -58,6 +59,7 @@ public:
   virtual void avisar_objeto_destruido(objeto* o) { }
   virtual void actualizar_pointers() { puntos_clave_.push_back(&inicio_); puntos_clave_.push_back(&fin_); }
   virtual void recalcular_dimensiones() {}
+  virtual void guardar(std::ofstream& ofs) const {};
   static int sid;
 
 protected:
@@ -102,6 +104,7 @@ public:
     centro_ = cv::Point(inicio_.x + (fin_.x - inicio_.x)/2, inicio_.y + (fin_.y - inicio_.y)/2);
     area_ = std::abs((fin_.x - inicio_.x)*(fin_.y - inicio_.y)); //base por altura}
   };
+  virtual void guardar(std::ofstream& ofs) const;
 };
 
 class circulo : public objeto
@@ -124,6 +127,7 @@ public:
     radio_ = std::hypot((fin_.x-centro_.x),(fin_.y-centro_.y));
     area_ = CV_PI*radio_*radio_;
   };
+  virtual void guardar(std::ofstream& ofs) const;
 
 protected:
   int radio_;
@@ -155,6 +159,7 @@ public:
     m=(float)(fin_.y - inicio_.y)/(float)(fin_.x-inicio_.x);
     b = fin_.y - m*fin_.x;
   }
+  virtual void guardar(std::ofstream& ofs) const;
 
 private:
   int efe_de_x(int x) const { return m*x + b; }
@@ -190,6 +195,7 @@ public:
     area_ = std::abs((fin_.x - inicio_.x)*l_/2); //base por altura
     calcular_vertices();
   }
+  virtual void guardar(std::ofstream& ofs) const;
 private:
   float calcular_l(cv::Point ini, cv::Point fin) { return std::abs( float(fin.x-ini.x)/std::sqrt(3) ); };
   void calcular_vertices() { //vaya cuanta verbosidad

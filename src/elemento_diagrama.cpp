@@ -157,6 +157,11 @@ void rectangulo::imprimir_datos() const
   cout << "dir punto c[0]: " << puntos_clave_.at(0) << "dir punto c[1]: " << puntos_clave_.at(1) << '\n';
 }
 
+void rectangulo::guardar(ofstream& ofs) const
+{
+  ofs << 'r' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
+}
+
 void circulo::dibujarse(Mat& m)
 {
   Point centro = transformar(centro_);
@@ -205,6 +210,11 @@ void circulo::imprimir_datos() const
 {
   cout << nombre() << " : " << id() << '\t';
   cout << centro_ << ", " << radio_ << '\n';
+}
+
+void circulo::guardar(ofstream& ofs) const
+{
+  ofs << 'c' << id() << ':' << centro_ << ',' << radio_ << '\r\n';
 }
 
 void linea::dibujarse(Mat& m)
@@ -302,6 +312,11 @@ void linea::avisar_objeto_destruido(objeto* o)
     ptri_ = nullptr;
 }
 
+void linea::guardar(ofstream& ofs) const
+{
+  ofs << 'l' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
+}
+
 void cuadrado_isometrico::dibujarse(cv::Mat& m)
 {
   vector<Point> ps = puntos_desplazados();
@@ -352,6 +367,11 @@ void cuadrado_isometrico::imprimir_datos() const
   for(auto& v : vertices_)
     cout << v << " ";
   cout << '\n';
+}
+
+void cuadrado_isometrico::guardar(ofstream& ofs) const
+{
+  ofs << 'i' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
 }
 
 objeto::~objeto()

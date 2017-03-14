@@ -4,3 +4,6 @@
 
 #define ID_FILE_EXIT	9001
 #define ID_ACCION1 9002
+
+#define IDD_ABOUT 10001
+#define IDT_NVONOMBRE 10002

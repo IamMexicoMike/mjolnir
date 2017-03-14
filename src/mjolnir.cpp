@@ -80,6 +80,7 @@ atomic<bool> b_puntos_relativos_validos{false};
 
 Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
 
+extern void crear_dialogo_nombre();
 
 Apuntador encontrar_itr_area(cv::Point& p)
 {
@@ -353,6 +354,12 @@ void manejarInputTeclado(int k)
     }
 
   case 71: //g de guardar
+    {
+      ofstream ofs("objetos.txt");
+      for(auto& o : objetos)
+        o->guardar(ofs);
+    }
+
     break;
 
   case 73: // i
@@ -363,6 +370,10 @@ void manejarInputTeclado(int k)
     iniciar_creacion_objeto(Objetos::Linea);
     break;
 
+  case 78: //n
+  {
+    crear_dialogo_nombre();
+  }
   case 79: //o - ordenar
     ordenar_objetos();
     establecer_mensaje("objetos ordenados");

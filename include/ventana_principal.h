@@ -19,5 +19,7 @@ bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance);
 bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);
 void inicializar_diagrama(HWND& hwnd);
 void configuramos_parametros_diagrama(HWND& hwnd);
+BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+void crear_dialogo_nombre();
 
 #endif // VENTANA_PRINCIPAL_H
