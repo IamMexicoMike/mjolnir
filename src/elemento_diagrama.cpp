@@ -75,16 +75,14 @@ void destruir_objeto_seleccionado()
 
 void objeto::dibujar_nombre(Mat& m) const
 {
-  static const int fff = 30;
-  Point entiende_esto = Point(centro_.x-nombre_.size()*fff, centro_.y);
-  Point pt = transformar(entiende_esto);
+  static const int factor = 10;
+  Point cc = transformar(centro_);
+  Point pt = Point(cc.x - (nombre_.size()/2)*factor, cc.y + factor/2);
   putText(m, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
   if(b_subrayar_)
   {
-    int tolerancia = transformar_escalar(tolerancia_);
-    pt.y += tolerancia;
-    Point p2 = Point(pt.x + nombre_.size()*fff*4/10, pt.y);
-    line(m, pt, p2, COLOR_NEGRO);
+    Point pt2 = Point(cc.x + (nombre_.size()/2)*factor, cc.y + factor/2);
+    line(m, pt, pt2, COLOR_NEGRO);
   }
 }
 

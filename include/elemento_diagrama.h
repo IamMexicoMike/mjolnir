@@ -90,6 +90,7 @@ public:
     inicio_ = inicio, fin_ = fin;
     recalcular_dimensiones();
     nombre_ = "R"+to_string(id_);
+    b_subrayar_ = true;
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 

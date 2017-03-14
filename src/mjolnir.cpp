@@ -204,12 +204,15 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   if(zoom<=8)
   {
+    tamanio_texto=1;
+    /*
     tamanio_texto = 4/zoom;
     if(tamanio_texto==0)
       tamanio_texto=1;
     ancho_texto=4-zoom;
     if(ancho_texto<0)
       ancho_texto = 1;
+    */
 
     b_dibujar_nombres = true;
   }
