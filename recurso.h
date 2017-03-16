@@ -7,3 +7,4 @@
 
 #define IDD_ABOUT 10001
 #define IDT_NVONOMBRE 10002
+#define IDT_HEDIT1 10003

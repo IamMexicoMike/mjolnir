@@ -159,7 +159,7 @@ void rectangulo::imprimir_datos() const
 
 void rectangulo::guardar(ofstream& ofs) const
 {
-  ofs << 'r' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
+  ofs << 'r' << id() << ':' << inicio_ << ',' << fin_ << "\r\n";
 }
 
 void circulo::dibujarse(Mat& m)
@@ -214,7 +214,7 @@ void circulo::imprimir_datos() const
 
 void circulo::guardar(ofstream& ofs) const
 {
-  ofs << 'c' << id() << ':' << centro_ << ',' << radio_ << '\r\n';
+  ofs << 'c' << id() << ':' << centro_ << ',' << radio_ << "\r\n";
 }
 
 void linea::dibujarse(Mat& m)
@@ -314,7 +314,7 @@ void linea::avisar_objeto_destruido(objeto* o)
 
 void linea::guardar(ofstream& ofs) const
 {
-  ofs << 'l' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
+  ofs << 'l' << id() << ':' << inicio_ << ',' << fin_ << "\r\n";
 }
 
 void cuadrado_isometrico::dibujarse(cv::Mat& m)
@@ -371,7 +371,7 @@ void cuadrado_isometrico::imprimir_datos() const
 
 void cuadrado_isometrico::guardar(ofstream& ofs) const
 {
-  ofs << 'i' << id() << ':' << inicio_ << ',' << fin_ << '\r\n';
+  ofs << 'i' << id() << ':' << inicio_ << ',' << fin_ << "\r\n";
 }
 
 objeto::~objeto()

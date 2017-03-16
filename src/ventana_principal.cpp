@@ -168,20 +168,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
+  static objeto* pobj;
+  static HWND hEdit1;
   switch(Message)
   {
     case WM_INITDIALOG:
+      pobj = reinterpret_cast<objeto*>(lParam);
+      SetDlgItemTextA(hwnd, IDT_NVONOMBRE, pobj->nombre().c_str());
+      hEdit1 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+        WS_CHILD | WS_VISIBLE |  ES_NUMBER,
+        30,60,144,100, hwnd, (HMENU)IDT_HEDIT1, GetModuleHandle(NULL), NULL);
+      break;
 
     return TRUE;
     case WM_COMMAND:
       switch(LOWORD(wParam))
       {
         case IDOK:
+          {
+            char buf[128];
+            GetDlgItemText(hwnd, IDT_NVONOMBRE, buf, 128);
+            string s(buf);
+            pobj->nombre(s);
+            cout << s << '\t' << pobj->id() << pobj->nombre() << '\n';
+          }
+
           EndDialog(hwnd, IDOK);
         break;
+
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
         break;
+
       }
     break;
     default:
@@ -190,27 +208,14 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
   return TRUE;
 }
 
-void crear_dialogo_nombre()
+void crear_dialogo_objeto(objeto* pobj)
 {
-  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), hVentanaPrincipal, (DLGPROC)DialogoTextoProc);
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), hVentanaPrincipal,
+                           (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
   if(ret == IDOK)
   {
-    int len = GetWindowTextLength(GetDlgItem(hVentanaPrincipal, IDT_NVONOMBRE));
-    cout << "len:" << len;
-    if(len > 0)
-    {
-      int i;
-      char* buf;
-      buf = (char*)GlobalAlloc(GPTR, len + 1);
-      GetDlgItemText(hVentanaPrincipal, IDT_NVONOMBRE, buf, len + 1);
-
-      string s(buf);
-      cout << s << '\n';
-
-      GlobalFree((HANDLE)buf);
-    }
+    //has algo?
   }
-
 
   else if(ret == IDCANCEL)
   {

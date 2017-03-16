@@ -377,3 +377,114 @@
 	"gui.h"
 	"../cuenta_nueva.h"
 
+1487575317 source:c:\users\propietario\documents\proyectos\mjolnir2\gifs.cpp
+	<opencv2/opencv.hpp>
+	<iostream>
+	<fstream>
+	<vector>
+
+1487575317 source:c:\users\propietario\documents\proyectos\mjolnir2\sistema_de_archivos.cpp
+	<iostream>
+	<experimental/filesystem>
+
+1487575317 source:c:\users\propietario\documents\proyectos\mjolnir2\src\configuracion.cpp
+	<iostream>
+	<fstream>
+	<sstream>
+	<string>
+	<vector>
+	<mutex>
+
+1487575317 source:c:\users\propietario\documents\proyectos\mjolnir2\src\control.cpp
+	"control.h"
+	<redes.h>
+	<thread>
+
+1487575317 c:\users\propietario\documents\proyectos\mjolnir2\include\control.h
+
+1487575317 c:\users\propietario\documents\proyectos\mjolnir2\include\redes.h
+	<queue>
+	<mutex>
+	"asio.hpp"
+	"asio/steady_timer.hpp"
+
+1489554770 source:c:\users\propietario\documents\proyectos\mjolnir2\main.cpp
+	<iostream>
+	<thread>
+	"redes.h"
+	"ventana_principal.h"
+	"mjolnir.hpp"
+	"elemento_diagrama.h"
+
+1489607190 c:\users\propietario\documents\proyectos\mjolnir2\include\ventana_principal.h
+	<windows.h>
+	<windowsx.h>
+	<elemento_diagrama.h>
+
+1489554770 c:\users\propietario\documents\proyectos\mjolnir2\include\mjolnir.hpp
+	<vector>
+	<memory>
+	<atomic>
+	<opencv2/opencv.hpp>
+
+1489554770 c:\users\propietario\documents\proyectos\mjolnir2\include\elemento_diagrama.h
+	"redes.h"
+	"mjolnir.hpp"
+	<typeinfo>
+	<fstream>
+
+1489629557 source:c:\users\propietario\documents\proyectos\mjolnir2\recurso.rc
+	"recurso.h"
+	"afxres.h"
+
+1489629341 c:\users\propietario\documents\proyectos\mjolnir2\recurso.h
+
+1489607190 source:c:\users\propietario\documents\proyectos\mjolnir2\src\mjolnir.cpp
+	<iostream>
+	<chrono>
+	<ctime>
+	<algorithm>
+	<bitset>
+	"redes.h"
+	<opencv2/opencv.hpp>
+	"elemento_diagrama.h"
+	"mjolnir.hpp"
+	"zonas.hpp"
+
+1489554770 c:\users\propietario\documents\proyectos\mjolnir2\include\zonas.hpp
+	<initializer_list>
+	<vector>
+	<opencv2/opencv.hpp>
+	"elemento_diagrama.h"
+	"mjolnir.hpp"
+
+1489554770 source:c:\users\propietario\documents\proyectos\mjolnir2\src\redes.cpp
+	"redes.h"
+	"control.h"
+	<iostream>
+	<future>
+	<fstream>
+	<configuracion.hpp>
+
+1487575317 c:\users\propietario\documents\proyectos\mjolnir2\include\configuracion.hpp
+	<string>
+
+1489629584 source:c:\users\propietario\documents\proyectos\mjolnir2\src\ventana_principal.cpp
+	"ventana_principal.h"
+	"mjolnir.hpp"
+	"../recurso.h"
+	"commctrl.h"
+
+1489554770 source:c:\users\propietario\documents\proyectos\mjolnir2\src\zonas.cpp
+	"zonas.hpp"
+
+1489554984 source:c:\users\propietario\documents\proyectos\mjolnir2\src\elemento_diagrama.cpp
+	"elemento_diagrama.h"
+	<windows.h>
+	<iostream>
+	<fstream>
+	<sstream>
+	<mutex>
+	<string>
+	<algorithm>
+

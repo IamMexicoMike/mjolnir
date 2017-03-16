@@ -80,7 +80,7 @@ atomic<bool> b_puntos_relativos_validos{false};
 
 Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
 
-extern void crear_dialogo_nombre();
+extern void crear_dialogo_objeto(objeto* pobj);
 
 Apuntador encontrar_itr_area(cv::Point& p)
 {
@@ -372,7 +372,14 @@ void manejarInputTeclado(int k)
 
   case 78: //n
   {
-    crear_dialogo_nombre();
+    if(itr_seleccionado >= objetos.begin() && itr_seleccionado < objetos.end() )
+    {
+      objeto* psel = (*itr_seleccionado).get();
+      if (psel != nullptr)
+        crear_dialogo_objeto(psel);
+    }
+
+    break;
   }
   case 79: //o - ordenar
     ordenar_objetos();
@@ -544,7 +551,12 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
   if(event==CV_EVENT_LBUTTONDBLCLK)
   {
-    cout << "DBL CLICK\n";
+    if(itr_seleccionado >= objetos.begin() && itr_seleccionado < objetos.end() )
+    {
+      objeto* psel = (*itr_seleccionado).get();
+      if (psel != nullptr)
+        crear_dialogo_objeto(psel);
+    }
   }
 
 } //manejarInputMouse

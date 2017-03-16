@@ -5,6 +5,7 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include <elemento_diagrama.h>
 
 #define ID_T30 1001
 #define ID_T5000 1002
@@ -20,6 +21,6 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);
 void inicializar_diagrama(HWND& hwnd);
 void configuramos_parametros_diagrama(HWND& hwnd);
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void crear_dialogo_nombre();
+void crear_dialogo_objeto(objeto* pobj);
 
 #endif // VENTANA_PRINCIPAL_H
