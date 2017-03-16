@@ -5,6 +5,7 @@
 #include "ventana_principal.h"
 #include "mjolnir.hpp"
 #include "elemento_diagrama.h"
+#include "postgres_funciones.h"
 
 using namespace std;
 using namespace cv;
@@ -25,6 +26,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
   cargar_variables_configuracion();
   thread hilo_redes(redes_main); //hilo de redes siempre debe de correr
+  conectar_db();
+  prueba_db();
 
   WNDCLASSEX wc;
   HWND hwnd;

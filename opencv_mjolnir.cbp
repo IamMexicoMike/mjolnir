@@ -21,7 +21,7 @@
 					<Add option="-Wmissing-include-dirs" />
 					<Add option="-std=c++14" />
 					<Add option="-g" />
-					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls" />
+					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls -DASIO_STANDALONE" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
@@ -47,6 +47,7 @@
 		<Unit filename="include/ventana_principal.h" />
 		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="postgres_funciones.cpp" />
 		<Unit filename="recurso.h" />
 		<Unit filename="recurso.rc">
 			<Option compilerVar="WINDRES" />
