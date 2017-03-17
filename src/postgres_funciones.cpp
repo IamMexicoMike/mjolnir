@@ -12,11 +12,12 @@ PGconn* conexion;
 
 void conectar_db()
 {
-  conexion = PQconnectdb("dbname = mjolnir");
+  conexion = PQconnectdb("dbname = mjolnir hostaddr=192.168.1.10"); //el archivo pg_hba.txt está en la instalación de postgres/data
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
     PQfinish(conexion);
+    system("pause");
     exit(-1);
   }
   cout << "Conectado a la base de datos\n";
@@ -24,7 +25,7 @@ void conectar_db()
 
 void prueba_db()
 {
-  PGresult* res = PQexec(conexion, "SELECT * FROM public.User");
+  PGresult* res = PQexec(conexion, "SELECT * FROM public.User"); //se ejecuta una query
   auto campos = PQnfields(res);
   for(int i=0; i<campos; ++i)
     cout << PQfname(res, i) << '\t';
@@ -37,3 +38,29 @@ void prueba_db()
   }
   PQclear(res);
 }
+
+void entablar_escuchador_db()
+{
+  PGresult* res = PQexec(conexion, "LISTEN TBL2");
+  if (PQresultStatus(res) != PGRES_COMMAND_OK)
+  {
+    cerr << "Error entablando LISTEN: " << PQerrorMessage(conexion) << "\n";
+  }
+
+  PQclear(res);
+}
+
+void checar_input_db()
+{
+  PGnotify* noti;
+  PQconsumeInput(conexion);
+  while( (noti = PQnotifies(conexion)) != NULL)
+  {
+    cout << "Notificacion de la DB recibida: " << noti->relname << "(pid=" << noti->be_pid<< ")\n";
+    cout << "extras: " << noti->extra << "\t\n";// << noti->next()
+    PQfreemem(noti);
+  }
+}
+
+
+

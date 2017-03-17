@@ -5,5 +5,7 @@
 
 void conectar_db();
 void prueba_db();
+void entablar_escuchador_db();
+void checar_input_db();
 
 #endif // POSTGRES_FUNCIONES_H

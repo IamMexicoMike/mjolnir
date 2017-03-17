@@ -2,6 +2,7 @@
 #include "mjolnir.hpp"
 #include "../recurso.h"
 #include "commctrl.h"
+#include "postgres_funciones.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
@@ -147,6 +148,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
           b_cache_valida = true;
         }
         procesar_queue_cntrl();
+        checar_input_db();
         break;
 
       case ID_T5000:
