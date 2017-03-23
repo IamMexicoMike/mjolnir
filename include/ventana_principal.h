@@ -15,6 +15,10 @@
 #define ID_CB1 5201
 #define IDC_MAIN_EDIT 6000
 
+extern HWND hVentanaPrincipal;
+extern HWND hEdit;
+extern HWND hTool;
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance);
 bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);

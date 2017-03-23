@@ -3,6 +3,7 @@
 #include "../recurso.h"
 #include "commctrl.h"
 #include "postgres_funciones.h"
+#include "ficha_tecnica.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
@@ -131,6 +132,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       MessageBox(NULL, (LPCSTR)buffer, "Informacion!", MB_ICONINFORMATION);
       break;
     }
+    case IDM_CREAR_FICHA:
+    {
+      dialogo_ficha_tecnica();
+    }
 
 		break;
     }
@@ -172,6 +177,7 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 {
   static objeto* pobj;
   static HWND hEdit1;
+
   switch(Message)
   {
     case WM_INITDIALOG:
@@ -212,7 +218,7 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 
 void crear_dialogo_objeto(objeto* pobj)
 {
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), hVentanaPrincipal,
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), hVentanaPrincipal,
                            (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
   if(ret == IDOK)
   {

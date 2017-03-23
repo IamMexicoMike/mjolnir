@@ -549,7 +549,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
   } //CV_EVENT_MOUSEMOVE
 
-  if(event==CV_EVENT_LBUTTONDBLCLK)
+  if(event==CV_EVENT_LBUTTONDBLCLK) //doble_click -> vemos informacion del objeto
   {
     if(itr_seleccionado >= objetos.begin() && itr_seleccionado < objetos.end() )
     {
