@@ -43,7 +43,7 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,540,250,50,14
     PUSHBUTTON      "&Cancelar",IDCANCEL,540,267,50,14 /*diferencia de +17 en 'y' inicial*/
     /*Medidas*/
-    GROUPBOX        "Medidas(cm)",IDC_STATIC,7,7,155,65
+    GROUPBOX        "Medidas(cm)",IDC_STATIC,7,7,200,65
       LTEXT           "Ancho: ", IDC_STATIC, 14,18,30,14
       COMBOBOX        IDCOMBO_FT_ANCHO, 45,18,30,60, CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP | ES_NUMBER
       LTEXT           "Largo acabado: ", IDC_STATIC, 14,40,30,20
@@ -56,26 +56,30 @@ BEGIN
         LTEXT           "MAX", IDC_STATIC, 129,30,15,14
         LTEXT           "134", IDL_FT_LMAX, 129,45,15,14
 
-    GROUPBOX        "Pesos(gr/m^2)", IDC_STATIC, 7,80,155,45
+    GROUPBOX        "Pesos(gr)", IDC_STATIC, 7,80,200,45
       LTEXT         "Acabado:", IDC_STATIC, 14,91,30,12
       EDITTEXT       IDT_FT_PESO_ACABADO,14,104,30,12, ES_NUMBER
-      GROUPBOX        "Peso en telares", IDC_STATIC, 70,85,75,35
-        LTEXT           "MIN", IDC_STATIC, 80,95,15,14
-        LTEXT           "132", IDL_FT_LMIN, 80,105,15,10
-        LTEXT           "REQ", IDC_STATIC, 102,95,15,14
-        LTEXT           "133", IDL_FT_LREQ, 102,105,15,10
-        LTEXT           "MAX", IDC_STATIC, 124,95,15,14
-        LTEXT           "134", IDL_FT_LMAX, 124,105,15,10
+      GROUPBOX        "Peso en telares", IDC_STATIC, 65,85,75,35
+        LTEXT           "MIN", IDC_STATIC, 75,95,15,14
+        LTEXT           "132", IDL_FT_LMIN, 75,105,15,10
+        LTEXT           "REQ", IDC_STATIC, 97,95,15,14
+        LTEXT           "133", IDL_FT_LREQ, 97,105,15,10
+        LTEXT           "MAX", IDC_STATIC, 119,95,15,14
+        LTEXT           "134", IDL_FT_LMAX, 119,105,15,10
+        LTEXT           "gr/ m^2", IDC_STATIC, 143,85,15,24
+        LTEXT           "500", IDL_FT_GRXM2, 143,105,15,10
 
-    GROUPBOX      "Composiciones", IDC_STATIC, 7,130,155,40
+    GROUPBOX      "Composiciones", IDC_STATIC, 7,130,205,40
       LTEXT       "Rizo", IDC_STATIC, 14,141,30,12
       COMBOBOX    IDCOMBO_FT_HILO_RIZO, 14,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-      LTEXT       "Pie", IDC_STATIC, 64,141,30,12
-      COMBOBOX    IDCOMBO_FT_HILO_RIZO, 64,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-      LTEXT       "Trama", IDC_STATIC, 114,141,30,12
-      COMBOBOX    IDCOMBO_FT_HILO_RIZO, 114,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+      LTEXT       "Rizo 2", IDC_STATIC, 64,141,30,12
+      COMBOBOX    IDCOMBO_FT_HILO_RIZO2, 64,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+      LTEXT       "Pie", IDC_STATIC, 114,141,30,12
+      COMBOBOX    IDCOMBO_FT_HILO_PIE, 114,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+      LTEXT       "Trama", IDC_STATIC, 164,141,30,12
+      COMBOBOX    IDCOMBO_FT_HILO_TRAMA, 164,154,45,60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-    GROUPBOX        "Densidades y LPD",IDC_STATIC,207,7,120,152
+    GROUPBOX        "Densidades y LPD",IDC_STATIC,210,7,120,120
 
     AUTOCHECKBOX    "Rasurado", IDCB_FT_RASURADO, 400,7,45,10
 END
