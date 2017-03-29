@@ -11,6 +11,7 @@
 #include "elemento_diagrama.h"
 #include "mjolnir.hpp"
 #include "zonas.hpp"
+#include "puerto_serial.h"
 
 using namespace std;
 using namespace cv;
@@ -385,6 +386,9 @@ void manejarInputTeclado(int k)
     ordenar_objetos();
     establecer_mensaje("objetos ordenados");
     break;
+  case 80: //p - puerto serial
+    iniciar_creacion_objeto(Objetos::Puerto_Serial);
+    break;
 
   case 82: //r
     iniciar_creacion_objeto(Objetos::Rectangulo);
@@ -618,6 +622,8 @@ void iniciar_creacion_objeto(Objetos o)
     break;
   case(Objetos::Cuadrado_Isometrico):
     break;
+  case(Objetos::Puerto_Serial):
+    break;
   }
 
 }
@@ -631,6 +637,31 @@ void terminar_creacion_objeto()
     {
       rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
       crear_objeto(r); //deben ser p y no p'
+    }
+    break;
+  case (Objetos::Puerto_Serial):
+    {
+      vector<string> puertos_disponibles;
+      for(int i=0; i<255; ++i)
+      {
+        DWORD prueba=0;
+        char buf[256];
+        string nomcom = "COM"+to_string(i);
+        prueba = QueryDosDevice(nomcom.c_str(),buf,256); //al parecer buf no es usado pero es útil? ok
+        if(prueba!=0)
+        {
+          puertos_disponibles.push_back(nomcom);
+        }
+      }
+
+      for(auto& s : puertos_disponibles)
+        cout << s << endl;
+      if(crear_dialogo_serial(&puertos_disponibles))
+      {
+        auto ps = make_unique<puerto_serial>(puntoOrigenobjeto, puntoFinobjeto, iosvc, puerto_serial::puerto_temporal_, puerto_serial::baudios_temporales_);
+        crear_objeto_delicado(std::move(ps));
+      }
+
     }
     break;
 
@@ -663,6 +694,7 @@ void dibujar_objeto_temporal()
 {
   switch(Tipo_Objeto_Dibujando)
   {
+  case(Objetos::Puerto_Serial):
   case(Objetos::Rectangulo):
     rectangle(region, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
               COLOR_RECT_DIBUJANDO, 2, CV_AA);

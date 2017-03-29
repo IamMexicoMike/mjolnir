@@ -1,8 +1,10 @@
 #include "puerto_serial.h"
+#include "../recurso.h"
 
 using namespace asio;
 
-asio::io_service iosvc_serial;
+string puerto_serial::puerto_temporal_ = "";
+int puerto_serial::baudios_temporales_=0; //plz borra esto cuando tengas una mejor solucion
 
 void puerto_serial::leer()
 {
@@ -49,42 +51,74 @@ void puerto_serial::escribir(string& s) //es asíncrono pero no hacemos nada al t
   });
 }
 
-struct dummy_loop
-{
-  dummy_loop():
-    ios(iosvc_serial),
-    temporizador_(iosvc_serial)
-    {
-      t_forever();
-    }
-  void t_forever()
-{
-  temporizador_.expires_from_now(std::chrono::milliseconds(10000));
-  temporizador_.async_wait([&](std::error_code ec)
-  {
-    if(!ec)
-    {
-      t_forever();
-    }
-    else
-    {
-      cout << "Error dummy_loop: " << ec.value() << ec.message() << endl;
-    }
-  });
-}
-  io_service& ios;
-  asio::steady_timer temporizador_;
-};
+extern HWND hVentanaPrincipal;
 
-void serial_main()
+BOOL CALLBACK DialogoSerial(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
-  try
+  vector<string>* puertos_disponibles = reinterpret_cast<vector<string>*>(lParam);
+  const vector<string> baudios= {"9600","19200","38400","57600","115200","230400"};
+
+  switch(Message)
   {
-    iosvc_serial.run();
-    std::cout << "Saliendo de ciclo de iosvc_serial\n";
+    case WM_INITDIALOG:
+    {
+      auto resBaudios = GetDlgItem(hwnd, IDCOMBO_BAUDIOS);
+      for(auto& s : baudios)
+        SendMessage(resBaudios, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(s.c_str()));
+
+      auto resPuertos = GetDlgItem(hwnd, IDCOMBO_PUERTOS_SERIALES_DISPONIBLES);
+      for(auto& s : *puertos_disponibles)
+        SendMessage(resPuertos, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(s.c_str()));
+    }
+      return TRUE;
+
+    case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+        case IDOK:
+        {
+          char buf[32];
+          GetDlgItemText(hwnd, IDCOMBO_PUERTOS_SERIALES_DISPONIBLES, buf, 31);
+          string puerto(buf);
+          memset(buf, '\0', 32);
+          GetDlgItemText(hwnd, IDCOMBO_BAUDIOS, buf, 31);
+          string sbaudios(buf);
+          if(puerto.empty() || sbaudios.empty())
+          {
+            MessageBox(hVentanaPrincipal, "Puerto o baudios vacio, reintenta", "Error", MB_OK | MB_ICONINFORMATION);
+            break;
+          }
+
+          int baudios = stoi(sbaudios, nullptr);
+          puerto_serial::puerto_temporal_ = puerto;
+          puerto_serial::baudios_temporales_ = baudios;
+
+        }
+        EndDialog(hwnd, IDOK);
+        break;
+
+        case IDCANCEL:
+          EndDialog(hwnd, IDCANCEL);
+        break;
+
+      }
+    break;
+    default:
+        return FALSE;
   }
-  catch (std::exception& e)
+  return TRUE;
+}
+
+bool crear_dialogo_serial(vector<string>* puertos_disponibles)
+{
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_SERIAL), hVentanaPrincipal,
+                           (DLGPROC)DialogoSerial, reinterpret_cast<LPARAM>(puertos_disponibles));
+ /*int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), hVentanaPrincipal,
+      (DLGPROC)DialogoTextoProc, 0);*/
+  if(ret==-1)
   {
-    std::cerr << "Excepcion en hilo del puerto serial: " << e.what() << "\n";
+    MessageBox(hVentanaPrincipal, "Error al crear props de Puerto Serial", "Error", MB_OK | MB_ICONINFORMATION);
+    return false;
   }
+  return true;
 }

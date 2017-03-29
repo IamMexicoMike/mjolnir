@@ -21,7 +21,7 @@
 					<Add option="-Wmissing-include-dirs" />
 					<Add option="-std=c++14" />
 					<Add option="-g" />
-					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls -DASIO_STANDALONE" />
+					<Add option="-Wno-int-to-pointer-cast -Wno-undef -Wno-shadow -DWIN32 -Wno-redundant-decls -DASIO_STANDALONE -D_WIN32_WINNT=0x0501" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
@@ -46,6 +46,7 @@
 		<Unit filename="include/ficha_tecnica.h" />
 		<Unit filename="include/mjolnir.hpp" />
 		<Unit filename="include/postgres_funciones.h" />
+		<Unit filename="include/puerto_serial.h" />
 		<Unit filename="include/redes.h" />
 		<Unit filename="include/ventana_principal.h" />
 		<Unit filename="include/zonas.hpp" />
@@ -54,13 +55,17 @@
 		<Unit filename="recurso.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
-		<Unit filename="sistema_de_archivos.cpp" />
+		<Unit filename="recurso_serial.h" />
+		<Unit filename="recurso_serial.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="src/configuracion.cpp" />
 		<Unit filename="src/control.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />
 		<Unit filename="src/ficha_tecnica.cpp" />
 		<Unit filename="src/mjolnir.cpp" />
 		<Unit filename="src/postgres_funciones.cpp" />
+		<Unit filename="src/puerto_serial.cpp" />
 		<Unit filename="src/redes.cpp" />
 		<Unit filename="src/ventana_principal.cpp" />
 		<Unit filename="src/zonas.cpp" />

@@ -188,7 +188,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
   static objeto* pobj;
-  static HWND hEdit1;
+  static HWND hEdit1=0;
 
   switch(Message)
   {
