@@ -1,8 +1,6 @@
 #ifndef REDES_H
 #define REDES_H
 
-#define ASIO_HAS_STD_CHRONO
-
 #include <queue>
 #include <mutex>
 
