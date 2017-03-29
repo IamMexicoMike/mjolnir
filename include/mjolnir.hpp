@@ -22,6 +22,7 @@ const cv::Point HEADER0(5,20);
 const cv::Point HEADER1(100,20);
 const cv::Point HEADER2(300,20);
 extern cv::Point HEADER_MSG;
+extern cv::Scalar Bckgnd;
 
 /**apuntador a un elemento de un vector de apuntadores. OK. SWAG.*/
 using Apuntador = std::vector<std::unique_ptr<objeto>>::iterator;

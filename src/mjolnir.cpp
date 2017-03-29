@@ -30,7 +30,7 @@ const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
 //const Scalar Bckgnd(46,169,230);
-const Scalar Bckgnd(230,200,200);
+Scalar Bckgnd(30,100,20);
 
 class zona;
 extern vector<zona> superzonas;

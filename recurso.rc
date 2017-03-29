@@ -12,10 +12,10 @@ BEGIN
         MENUITEM "Salir", ID_FILE_EXIT
     END
 
-    POPUP "Chat"
+    POPUP "Configurar"
     BEGIN
         MENUITEM "Texto mensaje", ID_ACCION1
-        MENUITEM "Abrir ventana", 0, GRAYED
+        MENUITEM "Colores", IDM_CFG_COLORES
     END
     POPUP "Ficha Tecnica"
     BEGIN

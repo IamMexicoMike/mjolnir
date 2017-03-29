@@ -5,6 +5,8 @@
 #include <vector>
 #include <mutex>
 
+extern void alerta_cierre_programa(std::string msg);
+
 using namespace std;
 
 string ip_servidor;
@@ -13,12 +15,12 @@ string version;
 
 mutex mtx_config;
 
-using namespace std;
-
 string cargar_valor(const string& arg)
 {
   lock_guard<mutex> lck(mtx_config);
   ifstream ifs("config.txt");
+  if(!ifs.is_open())
+    alerta_cierre_programa("Error al abrir archivo de configuracion: config.txt\nEste archivo es necesario para determinar la direccion IP del servidor\n\nVerifique que el archivo existe");
   string simbolo, valor;
   while(ifs >> simbolo >> valor)
   {
@@ -42,6 +44,8 @@ void escribir_valor_configuracion(const string& simbolo, const string& valor)
 {
   lock_guard<mutex> lck(mtx_config);
   fstream iofs("config.txt", ios::in);
+  if(!iofs.is_open())
+    alerta_cierre_programa("El archivo config.txt fue movido o eliminado en el transcurso de la ejecucion del programa\nEsto pudo hacerse por negligencia o malicia de un usuario, o por error del programa.\n\nSaliendo");
   vector<string> lineas;
   string s, v;
   while(iofs >> s >> v)

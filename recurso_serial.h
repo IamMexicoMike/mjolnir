@@ -1,0 +1,2 @@
+#define IDM_MENU_SERIAL 10000
+#define IDM_SALIR 10001

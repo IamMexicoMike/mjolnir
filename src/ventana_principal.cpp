@@ -4,6 +4,8 @@
 #include "commctrl.h"
 #include "postgres_funciones.h"
 #include "ficha_tecnica.h"
+#include "commdlg.h"
+#include "wingdi.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
@@ -135,12 +137,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case IDM_CREAR_FICHA:
     {
       dialogo_ficha_tecnica();
+      break;
     }
 
-		break;
+    case IDM_CFG_COLORES:
+    {
+      COLORREF ccref[16];
+      COLORREF csel=0x000000;
+      CHOOSECOLOR c; ZeroMemory(&c, sizeof(CHOOSECOLOR)); c.lStructSize = sizeof(CHOOSECOLOR);
+      c.Flags=CC_FULLOPEN|CC_RGBINIT; c.hwndOwner=hwnd; c.lpCustColors=ccref; c.rgbResult=csel;
+      if(ChooseColor(&c))
+        Bckgnd = Scalar(GetBValue(c.rgbResult), GetGValue(c.rgbResult), GetRValue(c.rgbResult) );
+      break;
+    }
+
     }
 	break;
-    break;
 
   case WM_TIMER:
     switch (wParam)
@@ -233,4 +245,10 @@ void crear_dialogo_objeto(objeto* pobj)
   else if(ret == -1)
     MessageBox(hVentanaPrincipal, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 
+}
+
+void alerta_cierre_programa(string msg)
+{
+  MessageBox(NULL, msg.c_str(), "Cerrando programa", MB_OK);
+  exit(0);
 }

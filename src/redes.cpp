@@ -53,6 +53,8 @@ void procesar_queue_cntrl()
     return;
   if (comando == "reboot")
     reboot();
+  if(comando == "apagar")
+    apagar();
 }
 
 void empujar_queue_saliente(string s)

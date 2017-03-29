@@ -1,0 +1,13 @@
+#include "recurso_serial.h"
+#include "afxres.h"
+
+IDM_MENU_SERIAL MENU
+BEGIN
+    POPUP "Puerto"
+    BEGIN
+        MENUITEM "Salir", IDM_SALIR
+    END
+
+
+END
+

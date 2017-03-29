@@ -17,8 +17,6 @@
 using namespace std;
 using namespace cv;
 
-extern const Scalar Bckgnd(46,169,230);
-
 const Scalar CAFE(0,51,102);
 const Scalar COLOR_ZONA(125,189,200);
 const Scalar COLOR_ZONA2(145,210,220);

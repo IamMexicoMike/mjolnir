@@ -26,5 +26,6 @@ void inicializar_diagrama(HWND& hwnd);
 void configuramos_parametros_diagrama(HWND& hwnd);
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void crear_dialogo_objeto(objeto* pobj);
+void alerta_cierre_programa(std::string msg);
 
 #endif // VENTANA_PRINCIPAL_H
