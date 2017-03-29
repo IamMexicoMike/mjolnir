@@ -28,4 +28,7 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 void crear_dialogo_objeto(objeto* pobj);
 void alerta_cierre_programa(std::string msg);
 
+void crear_dialogo_objeto(objeto* pobj);
+void mensaje(std::string msg, std::string titulo);
+
 #endif // VENTANA_PRINCIPAL_H

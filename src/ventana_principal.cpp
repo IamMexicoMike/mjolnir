@@ -252,3 +252,8 @@ void alerta_cierre_programa(string msg)
   MessageBox(NULL, msg.c_str(), "Cerrando programa", MB_OK);
   exit(0);
 }
+
+void mensaje(string msg, string titulo)
+{
+  MessageBox(hVentanaPrincipal, msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
+}

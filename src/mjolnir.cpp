@@ -13,6 +13,8 @@
 #include "zonas.hpp"
 #include "puerto_serial.h"
 
+extern void mensaje(std::string, std::string);
+
 using namespace std;
 using namespace cv;
 
@@ -80,8 +82,6 @@ atomic<bool> b_cache_valida{false};
 atomic<bool> b_puntos_relativos_validos{false};
 
 Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
-
-extern void crear_dialogo_objeto(objeto* pobj);
 
 Apuntador encontrar_itr_area(cv::Point& p)
 {
@@ -559,7 +559,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     {
       objeto* psel = (*itr_seleccionado).get();
       if (psel != nullptr)
-        crear_dialogo_objeto(psel);
+        psel->dialogo_objeto();
     }
   }
 
@@ -658,8 +658,13 @@ void terminar_creacion_objeto()
         cout << s << endl;
       if(crear_dialogo_serial(&puertos_disponibles))
       {
+        try {
         auto ps = make_unique<puerto_serial>(puntoOrigenobjeto, puntoFinobjeto, iosvc, puerto_serial::puerto_temporal_, puerto_serial::baudios_temporales_);
         crear_objeto_delicado(std::move(ps));
+        } catch (std::exception& e)
+        {
+          mensaje(e.what(), "Error al crear puerto serie");
+        }
       }
 
     }

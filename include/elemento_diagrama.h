@@ -11,6 +11,8 @@ void ordenar_objetos();
 void destruir_objeto(int id);
 void destruir_objeto_seleccionado();
 
+extern void crear_dialogo_objeto(objeto* pobj);
+
 extern std::mutex mtx_objetos;
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
@@ -61,6 +63,7 @@ public:
   virtual void actualizar_pointers() { puntos_clave_.push_back(&inicio_); puntos_clave_.push_back(&fin_); }
   virtual void recalcular_dimensiones() {}
   virtual void guardar(std::ofstream& ofs) const {};
+  virtual void dialogo_objeto() { crear_dialogo_objeto(this);}
   static int sid;
 
 protected:
