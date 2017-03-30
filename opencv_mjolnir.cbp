@@ -55,10 +55,6 @@
 		<Unit filename="recurso.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
-		<Unit filename="recurso_serial.h" />
-		<Unit filename="recurso_serial.rc">
-			<Option compilerVar="WINDRES" />
-		</Unit>
 		<Unit filename="src/configuracion.cpp" />
 		<Unit filename="src/control.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />

@@ -654,8 +654,8 @@ void terminar_creacion_objeto()
         }
       }
 
-      for(auto& s : puertos_disponibles)
-        cout << s << endl;
+      //for(auto& s : puertos_disponibles)
+        //cout << s << endl;
       if(crear_dialogo_serial(&puertos_disponibles))
       {
         try {
