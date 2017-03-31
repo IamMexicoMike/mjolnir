@@ -22,6 +22,10 @@ public:
   {
     nombre_ = "PS"+to_string(id_);
     puerto_.set_option(asio::serial_port_base::baud_rate(baudios));
+    //puerto_.set_option(asio::serial_port_base:: );
+    //cout << "Opciones del puerto: \n";
+    //asio::serial_port_base::parity paridad;
+    //cout << "Paridad: " << puerto_.get_option(paridad) << '\n';
     leer();
     iniciar_temporizador(); //para verificar estado del queue de mensajes
   }
@@ -35,7 +39,7 @@ public:
   void cerrar() { b_cerrar_ps=true; }
   void salir_limpiamente() { puerto_.close(); }
   string nombre_puerto() const { return nombre_puerto_; }
-  int baudios() const { return baudios_; }
+  unsigned int baudios() const { return baudios_; }
 
 private:
   asio::io_service& iosvc_;

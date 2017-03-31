@@ -12,7 +12,7 @@ PGconn* conexion;
 
 void conectar_db()
 {
-  conexion = PQconnectdb("dbname = mjolnir hostaddr=192.168.1.10"); //el archivo pg_hba.txt está en la instalación de postgres/data
+  conexion = PQconnectdb("dbname=mjolnir hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
