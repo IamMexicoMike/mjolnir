@@ -207,15 +207,6 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   if(zoom<=8)
   {
     tamanio_texto=1;
-    /*
-    tamanio_texto = 4/zoom;
-    if(tamanio_texto==0)
-      tamanio_texto=1;
-    ancho_texto=4-zoom;
-    if(ancho_texto<0)
-      ancho_texto = 1;
-    */
-
     b_dibujar_nombres = true;
   }
   else
@@ -647,6 +638,14 @@ void terminar_creacion_objeto()
         DWORD prueba=0;
         char buf[256];
         string nomcom = "COM"+to_string(i);
+        prueba = QueryDosDevice(nomcom.c_str(),buf,256); //al parecer buf no es usado pero es útil? ok
+        if(prueba!=0)
+        {
+          puertos_disponibles.push_back(nomcom);
+        }
+
+        /* impresoras */
+        nomcom = "LPT"+to_string(i);
         prueba = QueryDosDevice(nomcom.c_str(),buf,256); //al parecer buf no es usado pero es útil? ok
         if(prueba!=0)
         {

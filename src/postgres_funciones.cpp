@@ -6,18 +6,18 @@
 
 using namespace std;
 
-PGconn* conexion;
+PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
 
 //static int miProcesadorEventos(PGEventId evtid, void* evtInfo, void* pasar /*??*/);
 
 void conectar_db()
 {
-  conexion = PQconnectdb("dbname=mjolnir hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data
+  conexion = PQconnectdb("dbname=mjolnir hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
     PQfinish(conexion);
-    system("pause");
+    system("pause");//ATTN
     exit(-1);
   }
   cout << "Conectado a la base de datos\n";

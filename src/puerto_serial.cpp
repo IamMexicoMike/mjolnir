@@ -16,14 +16,6 @@ void puerto_serial::leer()
       if(!ec)
       {
         cout.write(rx_buf_.data(), length);
-        cout << '\n';
-        try {
-        string s(std::begin(rx_buf_), std::end(rx_buf_));
-        bitset<256> bs(s);
-        //for(int i=0; i<length; ++i)
-
-        cout << bs << '\n';
-        } catch(...) { cout << "mta" ; }
         //escribir_display(buf_.data(), length); //vamos a ver si no hay pedos de buffers temporales
         memset(rx_buf_.data(), '\0', rx_buf_.size() );
         leer();
