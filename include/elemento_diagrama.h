@@ -95,7 +95,7 @@ public:
   {
     inicio_ = inicio, fin_ = fin;
     recalcular_dimensiones();
-    nombre_ = "R"+to_string(id_);
+    nombre_ = "R"+std::to_string(id_);
     b_subrayar_ = true;
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
@@ -120,7 +120,7 @@ public:
     radio_ = std::abs(radio);
     fin_ = cv::Point(centro_.x + radio_, centro_.y);
     color_ = cv::Scalar(200,65,100);
-    nombre_ = "C"+to_string(id_);
+    nombre_ = "C"+std::to_string(id_);
   }
   virtual void dibujarse(cv::Mat&) override;
   virtual void arrastrar(const cv::Point pt) override;
@@ -178,10 +178,10 @@ class cuadrado_isometrico : public objeto
 public:
    cuadrado_isometrico(cv::Point inicio, cv::Point fin)
   {
-    cout << inicio << '\t' << fin << '\n';
+    std::cout << inicio << '\t' << fin << '\n';
     inicio_ = inicio;
     fin_ = cv::Point(fin.x, inicio_.y);
-    nombre_ = "I"+to_string(id_);
+    nombre_ = "I"+std::to_string(id_);
     for(int i=0; i<4; ++i)
       vertices_.push_back(cv::Point() );
     color_ = COLOR_AZUL_COMO_EL_MAR_AZUL;

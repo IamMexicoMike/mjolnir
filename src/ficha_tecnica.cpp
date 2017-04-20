@@ -6,6 +6,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
+using namespace std;
+
 ficha_tecnica::ficha_tecnica()
 {
   //ctor

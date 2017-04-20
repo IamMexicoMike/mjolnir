@@ -2,6 +2,7 @@
 #include "../recurso.h"
 
 using namespace asio;
+using namespace std;
 
 string puerto_serial::puerto_temporal_ = "";
 int puerto_serial::baudios_temporales_=0; //plz borra esto cuando tengas una mejor solucion

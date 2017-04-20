@@ -3,13 +3,13 @@
 
 #include <string>
 
-extern string ip_servidor;
-extern string puerto_servidor;
-extern string version;
+extern std::string ip_servidor;
+extern std::string puerto_servidor;
+extern std::string version;
 
-string cargar_valor(const string& arg);
+std::string cargar_valor(const std::string& arg);
 void cargar_variables_configuracion();
-void escribir_valor_configuracion(const string& simbolo, const string& valor);
+void escribir_valor_configuracion(const std::string& simbolo, const std::string& valor);
 
 
 

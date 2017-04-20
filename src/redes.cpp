@@ -1,5 +1,6 @@
 #include "redes.h"
 #include "control.h"
+#include "dialogos.h"
 
 #include <iostream>
 #include <future>
@@ -186,25 +187,47 @@ void cliente::timer_queue()
 void cliente::conectar()
 {
   socket_.async_connect(endpoint_,
-    [this](std::error_code ec)
+    [this](error_code ec)
   {
     if(!ec)
     {
-      cout << "conectado a " << socket_.remote_endpoint().address().to_string() <<
-                         ":" << socket_.remote_endpoint().port() << '\n';
+      cout << "conectado a " << socket_.remote_endpoint().address().to_string()
+          << ":" << socket_.remote_endpoint().port() << '\n';
       escribir("mike;ftw;");
       //escribir("version " + version);
       leer();
     }
     else
     {
-      std::cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << '\n';
+      cout << "Error conectando: " << ec.value() <<  ": " <<  ec.message() << '\n';
       /*Puede ser un error 10061: Equipo destino denegó expresamente dicha conexión */
       if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos? esto es un buen comentario
-        conectar();
+      {
+        /*este codigo esta sucio, pero basicamente lidia con que el usuario introduzca valores para conectarse con el host*/
+
+        auto h = dialogo_seleccion_host(); //retorna un par con {ip,puerto}
+        if(h.first.empty() && h.second.empty())
+        {
+          gui::alerta("No se entabló una conexión con el servidor");
+          return;
+        }
+
+        try
+        {
+          ip::tcp::resolver resolvedor(iosvc_);
+          tcp::resolver::query query(h.first, h.second); //puedes meter dns aqui
+          tcp::resolver::iterator iter = resolvedor.resolve(query);
+          endpoint_ = iter->endpoint();
+          conectar();
+        } catch(...)
+        {
+          gui::alerta("La combinación de IP y Puerto produjo una excepción");
+          conectar();
+        }
+      }
 
       /*Error 10056: Se solicitó conexión en socket ya conectado*/
-      if(ec.value() == 10056)
+      else if(ec.value() == 10056)
       {
         std::error_code ec_cerrar;
         socket_.close(ec_cerrar);

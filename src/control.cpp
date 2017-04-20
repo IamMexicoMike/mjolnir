@@ -10,7 +10,7 @@ void reboot()
   using namespace std::chrono_literals;
   empujar_queue_saliente(CODIGO_ABORTAR);
   this_thread::sleep_for(1s);
-  system("start rebooter.bat");
+  //system("start rebooter.bat"); //NO ES NECESARIO ESTO. REVISA
   exit(0);
 }
 

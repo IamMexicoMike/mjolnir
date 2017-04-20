@@ -8,7 +8,6 @@
 #include "asio/steady_timer.hpp"
 
 using namespace asio::ip;
-using namespace std;
 
 extern asio::io_service iosvc;
 
@@ -16,7 +15,7 @@ extern std::queue<std::string> queue_saliente;
 extern std::queue<std::string> queue_cntrl;
 extern std::mutex mtx_saliente;
 extern std::mutex mtx_cntrl;
-extern const string CODIGO_ABORTAR;
+extern const std::string CODIGO_ABORTAR;
 
 /*Manejan reboots*/
 void empujar_queue_cntrl(std::string s);
@@ -37,6 +36,7 @@ class cliente
 {
 public:
   cliente(asio::io_service& io_service, std::string huesped, std::string puerto) :
+    iosvc_(io_service),
     socket_(io_service),
     temporizador(io_service)
   {
@@ -55,11 +55,12 @@ private:
   void escribir(std::string str);
   void timer_queue();
 
+  asio::io_service& iosvc_;
   tcp::socket socket_;
   tcp::endpoint endpoint_;
   enum { sz_buf = 128 };
   char rx_buf_[sz_buf];
-  string tx_buf_;
+  std::string tx_buf_;
   asio::steady_timer temporizador;
 };
 
