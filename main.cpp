@@ -26,9 +26,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
   cargar_variables_configuracion();
   thread hilo_redes(redes_main); //hilo de redes siempre debe de correr
-  conectar_db();
-  prueba_db();
-  entablar_escuchador_db();
+  db::conectar_db();
+  db::prueba_db();
+  db::entablar_escuchador_db();
 
   WNDCLASSEX wc;
   HWND hwnd;

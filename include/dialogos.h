@@ -1,4 +1,5 @@
 #define IDD_SELECCIONAR_HOST 13000
+#define IDD_QUERY 13001
 
 /*esto es para evitar que windres arroje errores de compilación al toparse con <string> u otras cosas*/
 #ifdef __cplusplus
@@ -14,6 +15,7 @@ namespace gui
 
 /**Retorna el IP y Puerto del host seleccionado*/
 std::pair<std::string, std::string> dialogo_seleccion_host();
+void dialogo_query();
 
 #endif // DIALOGOS_H
 #endif // __cplusplus

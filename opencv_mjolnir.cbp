@@ -29,6 +29,7 @@
 					<Add option="-lws2_32 -lwsock32" />
 					<Add option="-luser32 -lcomdlg32 -lcomctl32 -luuid -lole32 -lgdi32" />
 					<Add option="-lpq" />
+					<Add directory="c:/lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -38,10 +39,15 @@
 		</Compiler>
 		<Unit filename="Mjolnir2.ico" />
 		<Unit filename="config.txt" />
+		<Unit filename="dialogos.h" />
+		<Unit filename="dialogos.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="gifs.cpp" />
 		<Unit filename="include/configuracion.hpp" />
 		<Unit filename="include/control.h" />
 		<Unit filename="include/cuenta.h" />
+		<Unit filename="include/dialogos.h" />
 		<Unit filename="include/elemento_diagrama.h" />
 		<Unit filename="include/ficha_tecnica.h" />
 		<Unit filename="include/mjolnir.hpp" />
@@ -57,6 +63,7 @@
 		</Unit>
 		<Unit filename="src/configuracion.cpp" />
 		<Unit filename="src/control.cpp" />
+		<Unit filename="src/dialogos.cpp" />
 		<Unit filename="src/elemento_diagrama.cpp" />
 		<Unit filename="src/ficha_tecnica.cpp" />
 		<Unit filename="src/mjolnir.cpp" />

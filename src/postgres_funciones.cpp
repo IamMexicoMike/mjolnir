@@ -10,9 +10,9 @@ PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
 
 //static int miProcesadorEventos(PGEventId evtid, void* evtInfo, void* pasar /*??*/);
 
-void conectar_db()
+void db::conectar_db()
 {
-  conexion = PQconnectdb("dbname=mjolnir hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
+  conexion = PQconnectdb("dbname=heredera hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
@@ -23,7 +23,7 @@ void conectar_db()
   cout << "Conectado a la base de datos\n";
 }
 
-void prueba_db()
+void db::prueba_db()
 {
   PGresult* res = PQexec(conexion, "SELECT * FROM public.User"); //se ejecuta una query
   auto campos = PQnfields(res);
@@ -39,7 +39,23 @@ void prueba_db()
   PQclear(res);
 }
 
-void entablar_escuchador_db()
+void db::query_db(string query)
+{
+  PGresult* res = PQexec(conexion, query.c_str()); //se ejecuta una query
+  auto campos = PQnfields(res);
+  for(int i=0; i<campos; ++i)
+    cout << PQfname(res, i) << '\t';
+  cout << '\n';
+  for(int i=0; i<PQntuples(res); ++i)
+  {
+    for(int j=0; j<campos; ++j)
+      cout << PQgetvalue(res, i, j) << '\t';
+    cout << '\n';
+  }
+  PQclear(res);
+}
+
+void db::entablar_escuchador_db()
 {
   PGresult* res = PQexec(conexion, "LISTEN TBL2");
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -50,7 +66,7 @@ void entablar_escuchador_db()
   PQclear(res);
 }
 
-void checar_input_db()
+void db::checar_input_db()
 {
   PGnotify* noti;
   PQconsumeInput(conexion);

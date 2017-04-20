@@ -165,7 +165,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
           b_cache_valida = true;
         }
         procesar_queue_cntrl();
-        checar_input_db();
+        db::checar_input_db();
         break;
 
       case ID_T5000:

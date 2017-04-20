@@ -12,6 +12,7 @@
 #include "mjolnir.hpp"
 #include "zonas.hpp"
 #include "puerto_serial.h"
+#include "dialogos.h"
 
 extern void mensaje(std::string, std::string);
 
@@ -379,6 +380,10 @@ void manejarInputTeclado(int k)
     break;
   case 80: //p - puerto serial
     iniciar_creacion_objeto(Objetos::Puerto_Serial);
+    break;
+
+  case 81: //q - query
+    dialogo_query();
     break;
 
   case 82: //r
