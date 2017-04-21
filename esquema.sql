@@ -1,3 +1,6 @@
+-- postgres tiene varias categorias de tipos fundamentales:
+-- booleanos, numericos, string, bitstring, datetime, timespan, geometric, network, y user-defined.
+
 CREATE SCHEMA "public";
 
 CREATE TABLE Usuario(
@@ -49,6 +52,10 @@ CREATE TABLE MovimientoInventario(
   fecha_mov timestamp NOT NULL
 );
 
+CREATE TABLE Objeto(
+  id int4 PRIMARY KEY,
+
+)
 
 INSERT INTO Usuario(username, email, password, nombre, apellido) VALUES
 ('emp1', 'emp1@gmail.com', 'here123', 'Migue', 'Lorenzo'),

@@ -43,6 +43,7 @@
 		<Unit filename="dialogos.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
+		<Unit filename="esquema.sql" />
 		<Unit filename="gifs.cpp" />
 		<Unit filename="include/configuracion.hpp" />
 		<Unit filename="include/control.h" />
