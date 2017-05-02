@@ -39,7 +39,6 @@
 		</Compiler>
 		<Unit filename="Mjolnir2.ico" />
 		<Unit filename="config.txt" />
-		<Unit filename="dialogos.h" />
 		<Unit filename="dialogos.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>

@@ -30,30 +30,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   db::prueba_db();
   db::entablar_escuchador_db();
 
-  WNDCLASSEX wc;
-  HWND hwnd;
+  ventana v(hInstance, "Mjolnir");
+
   MSG Msg;
-
-  if(!registrarClase(wc, hInstance))
-    return -1;
-
-  if(!crearVentana(hwnd, hInstance))
-    return -1;
-
-  inicializar_diagrama(hwnd);
-  configuramos_parametros_diagrama(hwnd);
-
-  ShowWindow(hwnd, nCmdShow);
-  UpdateWindow(hwnd);
-
-  auto t30 = SetTimer(hwnd, ID_T30, 30, NULL);
-  if(t30 == 0)
-    MessageBox(hwnd, "Error al llamar SetTimer() de t30", "Error", MB_OK | MB_ICONEXCLAMATION);
-
-  auto t5000 = SetTimer(hwnd, ID_T5000, 5000, NULL);
-  if(t5000 == 0)
-    MessageBox(hwnd, "Error al llamar SetTimer() de t5000", "Error", MB_OK | MB_ICONEXCLAMATION);
-
   while(GetMessage(&Msg, NULL, 0, 0) > 0)
   {
     TranslateMessage(&Msg);

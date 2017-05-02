@@ -1,0 +1,54 @@
+Views en SQL:
+CREATE VIEW myview AS
+SELECT city, temp_lo, temp_hi, prcp, date, location
+FROM weather, cities
+WHERE city = name;
+SELECT * FROM myview;
+
+Llaves Foráneas:
+Digamos que quieres asegurar que nadie inserte filas en una tabla A mientras no tengan una entrada
+homóloga en la tabla B. Esto se llama "mantener la integridad referencial de tus datos".
+
+CREATE TABLE cities (
+city varchar(80) primary key,
+location point
+);
+
+CREATE TABLE weather (
+city varchar(80) references cities(city),
+temp_lo int,
+temp_hi int,
+prcp real,
+date date
+);
+
+Ahora, si intentamos introducir un récord inválido, obtenemos un error:
+INSERT INTO weather VALUES (’Berkeley’, 45, 53, 0.0, ’1994-11-28’);
+ERROR: insert or update on table "weather" violates foreign key constraint "weather_city_fkey"
+DETAIL: Key (city)=(Berkeley) is not present in table "cities".
+
+
+Transacciones en SQL. Nos permiten ejecutar un grupo de comandos y asegurar que todos o ninguno
+de ellos son ejecutados, de manera consistente, y atómica.
+BEGIN;
+// ...
+COMMIT;
+
+ROLLBACK sirve para "rajarse de la transacción"
+Algunas librerías emiten comandos BEGIN y COMMIT implíciamente por lo que puede que obtengas el
+efecto de una transacción y no lo sepas.
+
+Savepoints:
+BEGIN;
+UPDATE accounts SET balance = balance - 100.00
+WHERE name = ’Alice’;
+SAVEPOINT my_savepoint;
+UPDATE accounts SET balance = balance + 100.00
+WHERE name = ’Bob’;
+-- oops ... forget that and use Wally’s account
+ROLLBACK TO my_savepoint;
+UPDATE accounts SET balance = balance + 100.00
+WHERE name = ’Wally’;
+COMMIT;
+
+

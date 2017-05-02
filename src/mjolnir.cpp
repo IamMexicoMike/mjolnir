@@ -21,7 +21,7 @@ using namespace cv;
 
 /* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
 /* Oooohh!! */
-/* TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC*/
+/* TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC*/ /* TAC */
 
 void iniciar_creacion_objeto(Objetos); //enum representado el tipo del objeto a crear
 void terminar_creacion_objeto();
@@ -733,7 +733,7 @@ void dibujar_objeto_temporal()
 
 }
 
-void preparar_memoria()
+void preparar_memoria() //muy sospechoso
 {
   objetos.reserve(1024);
 }

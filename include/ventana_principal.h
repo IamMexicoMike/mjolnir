@@ -31,4 +31,41 @@ void alerta_cierre_programa(std::string msg);
 void crear_dialogo_objeto(objeto* pobj);
 void mensaje(std::string msg, std::string titulo);
 
+
+class ventana
+{
+public:
+  WNDCLASSEX wc;
+  HWND hwnd;
+  HINSTANCE hInstance;
+  cv::Mat diagrama;
+  const char* nombre_;
+
+  void registrarClase(WNDCLASSEX& clase);
+  void crearVentana();
+  void inicializar_diagrama();
+  void configuramos_parametros_diagrama();
+
+  ventana(HINSTANCE h_instancia, const char* nombre):
+    hInstance(h_instancia),
+    nombre_(nombre)
+  {
+    registrarClase(wc);
+    crearVentana();
+    inicializar_diagrama();
+    configuramos_parametros_diagrama();
+
+    ShowWindow(hwnd, SW_MAXIMIZE);
+    UpdateWindow(hwnd);
+
+    auto t30 = SetTimer(hwnd, ID_T30, 30, NULL);
+    if(t30 == 0)
+      throw "Error estableciendo timer";
+
+    auto t5000 = SetTimer(hwnd, ID_T5000, 5000, NULL);
+    if(t5000 == 0)
+      throw "Error estableciendo timer";
+  }
+};
+
 #endif // VENTANA_PRINCIPAL_H

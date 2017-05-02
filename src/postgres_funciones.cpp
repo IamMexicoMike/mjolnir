@@ -12,7 +12,7 @@ PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
 
 void db::conectar_db()
 {
-  conexion = PQconnectdb("dbname=heredera hostaddr=192.168.1.10 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
+  conexion = PQconnectdb("dbname=heredera host=127.0.0.1 port=5432 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';

@@ -19,7 +19,7 @@ extern void procesar_queue_cntrl();
 
 const char* nombreClase= "claseVentanaPrincipal";
 
-bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance)
+void ventana::registrarClase(WNDCLASSEX& clase)
 {
   wc.cbSize        = sizeof(WNDCLASSEX);
   wc.style         = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
@@ -35,15 +35,10 @@ bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance)
   wc.hIconSm       = /*LoadIcon(NULL, IDI_APPLICATION);*/(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR), IMAGE_ICON, 16, 16, 0);
 
   if(!RegisterClassEx(&wc))
-  {
-      MessageBox(NULL, "Error en registrar la clase de la ventana!", "Error!",
-          MB_ICONEXCLAMATION | MB_OK);
-      return false;
-  }
-  return true;
+      throw "Error en registrar la clase de la ventana!";
 }
 
-bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
+void ventana::crearVentana()
 {
   const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
   RECT escritorio;
@@ -51,24 +46,19 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance)
   hwnd = CreateWindowEx(
       WS_EX_CONTEXTHELP,
       nombreClase,
-      "MJOLNIR",
+      nombre_,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom,
       NULL, NULL, hInstance, NULL);
 
   if(hwnd == NULL)
-  {
-    MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
-    return false;
-  }
+    throw "Error creando ventana";
 
-  MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-50, TRUE);
+  MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-50, TRUE); //demasiada magia
   hVentanaPrincipal = hwnd;
-
-  return true;
 }
 
-void inicializar_diagrama(HWND& hwnd)
+void ventana::inicializar_diagrama()
 {
   RECT rVentana;                              //es para guardar el tamaño de la ventana principal temporalmente
   GetWindowRect(hwnd, &rVentana);             //guarda el tamaño de la ventana principal
@@ -85,7 +75,7 @@ void inicializar_diagrama(HWND& hwnd)
   rellenar_zona_telares();
 }
 
-void configuramos_parametros_diagrama(HWND& hwnd)
+void ventana::configuramos_parametros_diagrama()
 {
   cv::namedWindow(nombreDiagrama, CV_WINDOW_AUTOSIZE);
   HWND hWnd2 = (HWND) cvGetWindowHandle(nombreDiagrama);

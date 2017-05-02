@@ -53,14 +53,14 @@ CREATE TABLE MovimientoInventario(
 );
 
 CREATE TABLE Objeto(
-  id int4 PRIMARY KEY,
+  id int4 PRIMARY KEY
 
-)
+);
 
 INSERT INTO Usuario(username, email, password, nombre, apellido) VALUES
-('emp1', 'emp1@gmail.com', 'here123', 'Migue', 'Lorenzo'),
-('emp2', 'emp2@gmail.com', 'here123', 'Maru', 'Pujol'),
-('emp3', 'emp3@gmail.com', 'here123', 'Martin', 'Rojas')
+('emp1', 'emp1@gmail.com', 'here123', 'Migue', 'Lorenzo')
+,('emp2', 'emp2@gmail.com', 'here123', 'Maru', 'Pujol')
+,('emp3', 'emp3@gmail.com', 'here123', 'Martin', 'Rojas')
 ;
 
 INSERT INTO Almacen(id) values
