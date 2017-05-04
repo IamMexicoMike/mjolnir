@@ -30,7 +30,7 @@ public:
     iniciar_temporizador(); //para verificar estado del queue de mensajes
   }
   static std::string puerto_temporal_; //esta solución no es elegante, no me encanta. El causante fue la incapacidad de obtener
-  static int baudios_temporales_; //valores de retorno a partir de un callback de windows
+  static unsigned int baudios_temporales_; //valores de retorno a partir de un callback de windows
   virtual void dialogo_objeto() override { crear_dialogo_puerto(this); }
 
   void leer();
@@ -49,7 +49,7 @@ private:
   int periodo_=2500;
   asio::steady_timer temporizador_;
   std::string nombre_puerto_;
-  int baudios_;
+  unsigned int baudios_;
 
   //constexpr static unsigned int PERIODO=1;
   bool b_cerrar_ps=false;

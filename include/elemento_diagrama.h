@@ -44,7 +44,7 @@ public:
   virtual ~objeto();
 
   cv::Point centro() const {return centro_;} //absoluto
-  int id() const {return id_;}
+  virtual int id() const {return id_;}
   unsigned int area() const {return area_;}
   std::string nombre() const {return nombre_;}
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual

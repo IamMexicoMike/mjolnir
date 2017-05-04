@@ -11,15 +11,21 @@ string to_string(Point& p)
   return string('(' + to_string(p.x) + ',' + to_string(p.y) + ')');
 }
 
+string descomponer_punto(Point& p)
+{
+  return string(to_string(p.x) + ',' + to_string(p.y) );
+}
+
 sync::sync(Point inicio, Point fin):
   rectangulo(inicio,fin)
 {
-  string q = "INSERT INTO rectangulo VALUES \'" + to_string(inicio) + ',' + to_string(fin) + '\'';
+  string q = "INSERT INTO rectangulo (p1x, p1y, p2x, p2y) VALUES (" + descomponer_punto(inicio) + ',' + descomponer_punto(fin) + ')';
+  cout << q;
   PGresult* res = PQexec(conexion, q.c_str());
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     PQclear(res);
-    throw "error construyendo objeto compartido";
+    throw runtime_error("error construyendo objeto compartido");
   }
   PQclear(res);
 

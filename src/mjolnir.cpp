@@ -12,6 +12,7 @@
 #include "zonas.hpp"
 #include "puerto_serial.h"
 #include "dialogos.h"
+#include "sync.h"
 
 extern void mensaje(std::string, std::string);
 
@@ -613,6 +614,13 @@ void terminar_creacion_objeto()
   b_dibujando_objeto = false;
   switch(Tipo_Objeto_Dibujando)
   {
+  case (Objetos::Sincronizado):
+  {
+    Point p1=puntoOrigenobjeto;
+    Point p2=puntoFinobjeto;
+    sync s(p1, p2);
+    crear_objeto(s);
+  }
   case(Objetos::Rectangulo):
     {
       rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
