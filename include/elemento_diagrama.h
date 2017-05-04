@@ -9,7 +9,6 @@
 
 void ordenar_objetos();
 void destruir_objeto(int id);
-void destruir_objeto_seleccionado();
 
 extern void crear_dialogo_objeto(objeto* pobj);
 
@@ -65,6 +64,7 @@ public:
   virtual void recalcular_dimensiones() {}
   virtual void guardar(std::ofstream& ofs) const {};
   virtual void dialogo_objeto() { crear_dialogo_objeto(this);}
+  virtual void destruir();
   static int sid;
 
 protected:
@@ -238,6 +238,7 @@ void crear_objeto(T& t)
   //cout << paq << '\n';
   //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }
+
 
 template <typename T>
 void crear_objeto_delicado(std::unique_ptr<T>&& pt)

@@ -386,18 +386,14 @@ void manejarInputTeclado(int k)
     iniciar_creacion_objeto(Objetos::Rectangulo);
     break;
 
-  case 83: //s - simulacion
+  case 83: //s - sincronizado
     iniciar_creacion_objeto(Objetos::Sincronizado);
     break;
 
   case 46: //suprimir, borrar objeto
     if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
     {
-      const type_info& tipo_zona = typeid(zona);
-      const type_info& tipo_objeto = typeid(*(*itr_seleccionado));
-      if(tipo_zona.hash_code() == tipo_objeto.hash_code()) //no queremos borrar zonas
-        break;
-      destruir_objeto_seleccionado();
+      (*itr_seleccionado)->destruir();
       determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
     break;

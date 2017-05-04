@@ -19,16 +19,16 @@ string descomponer_punto(Point& p)
 sync::sync(Point inicio, Point fin):
   rectangulo(inicio,fin)
 {
-  string q = "INSERT INTO rectangulo (p1x, p1y, p2x, p2y) VALUES (" + descomponer_punto(inicio) + ',' + descomponer_punto(fin) + ')';
-  cout << q;
+  string q = "INSERT INTO rectangulo (p1x, p1y, p2x, p2y) VALUES ("
+    + descomponer_punto(inicio) + ',' + descomponer_punto(fin) + ") RETURNING id";
   PGresult* res = PQexec(conexion, q.c_str());
-  if (PQresultStatus(res) != PGRES_COMMAND_OK)
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
     PQclear(res);
     throw runtime_error("error construyendo objeto compartido");
   }
+  id_ = stoi(PQgetvalue(res, 0, 0));
   PQclear(res);
-
 }
 
 sync::sync(int id, Point inicio, Point fin):
@@ -69,4 +69,19 @@ void sync::actualizar_db()
 sync::~sync()
 {
   //dtor
+}
+
+void sync::destruir()
+{
+  eliminar_de_la_db<sync>(id_);
+  lock_guard<mutex> lck(mtx_objetos);
+  string paq = "ro" + to_string(id_);
+  //avisamos a las lineas que ese objeto ya no existe
+  for(auto& o : objetos)
+    o->avisar_objeto_destruido((*itr_seleccionado).get()); //get retorna el ptr al cual protege el unique_ptr
+  objetos.erase(itr_seleccionado);
+  itr_seleccionado=objetos.end();
+  itr_highlight=objetos.end();
+  empujar_queue_saliente(paq);
+  b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }

@@ -8,7 +8,7 @@
 #include <elemento_diagrama.h>
 
 #define ID_T30 1001
-#define ID_T5000 1002
+#define ID_T1000 1002
 #define ID_PB1 5001
 #define ID_RB1 5101
 #define ID_RB2 5102
@@ -60,11 +60,11 @@ public:
 
     auto t30 = SetTimer(hwnd, ID_T30, 30, NULL);
     if(t30 == 0)
-      throw "Error estableciendo timer";
+      throw runtime_error("Error estableciendo timer");
 
-    auto t5000 = SetTimer(hwnd, ID_T5000, 5000, NULL);
-    if(t5000 == 0)
-      throw "Error estableciendo timer";
+    auto t1000 = SetTimer(hwnd, ID_T1000, 1000, NULL);
+    if(t1000 == 0)
+      throw runtime_error("Error estableciendo timer");
   }
 };
 

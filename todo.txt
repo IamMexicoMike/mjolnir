@@ -15,3 +15,9 @@ de diseño cambian.
 *catálogo de fichas técnicas. Poder ver una lista de todas ellas. Dentro de la ficha ver una
  imagen también de la toalla
 
+*necesitas implementar una estructura de datos que te permita llevar control de los objetos
+ sincronizados. Esto puede ser con un map que contenga de cierta manera el id y la dirección del
+ objeto. Pero, cómo lograrlo?
+ Qué tan volátiles son las direcciones de memoria que guarda vector? Realmente, lo son?
+ Vector puede reasignar a otras zonas de memoria los objetos que guarda, pero sólo los que guarda.
+ En este caso son unique_ptrs, que a su vez son responsables por

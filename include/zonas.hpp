@@ -35,6 +35,7 @@ public:
   virtual void arrastrar(const cv::Point) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
+  virtual void destruir() override {} // =)
 
 private:
   std::vector<cv::Point> puntos_;

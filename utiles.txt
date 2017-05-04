@@ -1,1 +1,2 @@
 select pg_notify('nombre_del_canal', to_char(current_timestamp, 'HH12:MI:SS') );
+notify inventario, to_char(current_timestamp, 'HH12:MI:SS'); --no jala

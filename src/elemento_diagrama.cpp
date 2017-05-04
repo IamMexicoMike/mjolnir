@@ -53,24 +53,6 @@ void destruir_objeto(int id)
   }
 }
 
-void destruir_objeto_seleccionado()
-{
-  lock_guard<mutex> lck(mtx_objetos);
-  if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
-  {
-    //cout << "\tobjetos.begin()\tobjetos.end()\titr_highlight\titr_seleccion\n";
-    //cout << '\t' << &*objetos.begin() << '\t' << &*objetos.end() << '\t' << &*itr_highlight << '\t' << &*itr_seleccionado << '\n';
-    string paq = "ro" + to_string((*itr_seleccionado)->id());
-    //avisamos a las lineas que ese objeto ya no existe
-    for(auto& o : objetos)
-      o->avisar_objeto_destruido((*itr_seleccionado).get());
-    objetos.erase(itr_seleccionado);
-    itr_seleccionado=objetos.end();
-    itr_highlight=objetos.end();
-    empujar_queue_saliente(paq);
-    b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
-  }
-}
 //-----------------------------------------------------------------------------------------------------------------
 
 void objeto::dibujar_nombre(Mat& m) const
@@ -106,6 +88,22 @@ bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
   punto_arrastrado_ = nullptr;
   return false;
 }
+
+/*el itr apunta a un unique_ptr que apunta a al objeto. "this" apunta al objeto. Debes borrar el unique_ptr. Reflexionar*/
+void objeto::destruir()
+{
+  lock_guard<mutex> lck(mtx_objetos);
+  string paq = "ro" + to_string(id());
+  //avisamos a las lineas que ese objeto ya no existe
+  for(auto& o : objetos)
+    o->avisar_objeto_destruido((*itr_seleccionado).get()); //get retorna el ptr al cual protege el unique_ptr
+  objetos.erase(itr_seleccionado);
+  itr_seleccionado=objetos.end();
+  itr_highlight=objetos.end();
+  empujar_queue_saliente(paq);
+  b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
+}
+
 
 void rectangulo::dibujarse(Mat& m)
 {

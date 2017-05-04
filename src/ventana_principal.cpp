@@ -18,7 +18,7 @@ extern Mat region;
 extern void renderizarDiagrama(cv::Mat&);
 extern void procesar_queue_cntrl();
 
-const char* nombreClase= "claseVentanaPrincipal";
+const char* nombreClaseVentanaPrincipal= "claseVentanaPrincipal";
 
 void ventana::registrarClase(WNDCLASSEX& clase)
 {
@@ -32,7 +32,7 @@ void ventana::registrarClase(WNDCLASSEX& clase)
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
   wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MYMENU);
-  wc.lpszClassName = nombreClase;
+  wc.lpszClassName = nombreClaseVentanaPrincipal;
   wc.hIconSm       = /*LoadIcon(NULL, IDI_APPLICATION);*/(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR), IMAGE_ICON, 16, 16, 0);
 
   if(!RegisterClassEx(&wc))
@@ -46,7 +46,7 @@ void ventana::crearVentana()
   GetWindowRect(hEscritorio, &escritorio);// guarda el tamaño de la pantalla a la variable escritorio
   hwnd = CreateWindowEx(
       WS_EX_CONTEXTHELP,
-      nombreClase,
+      nombreClaseVentanaPrincipal,
       nombre_,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom,
@@ -157,6 +157,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         procesar_queue_cntrl();
         db::checar_input_db();
+        break;
+
+      case ID_T1000:
         if(sync::b_sync_cambio)
         {
           for(sync* p : sync::set_modificados)
@@ -164,9 +167,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
           sync::set_modificados.clear();
           sync::b_sync_cambio = false;
         }
-        break;
-
-      case ID_T5000:
         break;
     }
     break;
