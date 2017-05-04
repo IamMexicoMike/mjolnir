@@ -1,3 +1,8 @@
+Diseñar una capa que separe la infraestructura de las implementaciones. Easier said than done.
+Los documentos que enlazan la interface con una base de datos son específicos de la implementación.
+Los mecanismos mediante los cuales se enlazan estos documentos son generales y no están amarrados
+a ninguna implementación.
+
 Views en SQL:
 CREATE VIEW myview AS
 SELECT city, temp_lo, temp_hi, prcp, date, location
@@ -51,4 +56,4 @@ UPDATE accounts SET balance = balance + 100.00
 WHERE name = ’Wally’;
 COMMIT;
 
-
+Funciones agregadas (?) (aggregate)

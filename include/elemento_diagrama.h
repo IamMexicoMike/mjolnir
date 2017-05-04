@@ -29,7 +29,8 @@ enum class Objetos
   Zona,
   Linea,
   Cuadrado_Isometrico,
-  Puerto_Serial
+  Puerto_Serial,
+  Sincronizado
 };
 
 class objeto

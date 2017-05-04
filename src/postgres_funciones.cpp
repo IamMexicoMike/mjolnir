@@ -1,6 +1,9 @@
 #include "postgres_funciones.h"
+#include "sync.h"
 
 #include <iostream>
+#include <sstream>
+#include <array>
 
 /*libpq es reentrante y thread-safe por default*/
 
@@ -12,7 +15,7 @@ PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
 
 void db::conectar_db()
 {
-  conexion = PQconnectdb("dbname=heredera host=127.0.0.1 port=5432 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
+  conexion = PQconnectdb("dbname=heredera host=201.139.98.214 port=5432 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
@@ -25,7 +28,7 @@ void db::conectar_db()
 
 void db::prueba_db()
 {
-  PGresult* res = PQexec(conexion, "SELECT * FROM public.User"); //se ejecuta una query
+  PGresult* res = PQexec(conexion, "SELECT * FROM Usuario"); //se ejecuta una query
   auto campos = PQnfields(res);
   for(int i=0; i<campos; ++i)
     cout << PQfname(res, i) << '\t';
@@ -57,7 +60,7 @@ void db::query_db(string query)
 
 void db::entablar_escuchador_db()
 {
-  PGresult* res = PQexec(conexion, "LISTEN TBL2");
+  PGresult* res = PQexec(conexion, "LISTEN rectangulo");
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     cerr << "Error entablando LISTEN: " << PQerrorMessage(conexion) << "\n";
@@ -78,5 +81,23 @@ void db::checar_input_db()
   }
 }
 
+void db::construir_objetos_sincronizados()
+{
+  PGresult* res = PQexec(conexion, "SELECT * FROM rectangulo"); //se ejecuta una query
+  for(int i=0; i<PQntuples(res); ++i)
+  {
+    int id = stoi(PQgetvalue(res, i, 0));
+    array<int,4> coords;
+    coords[0] = stoi(PQgetvalue(res, i, 1)); //solo por ser rectangulos
+    coords[1] = stoi(PQgetvalue(res, i, 2)); //solo por ser rectangulos
+    coords[2] = stoi(PQgetvalue(res, i, 3)); //solo por ser rectangulos
+    coords[3] = stoi(PQgetvalue(res, i, 4)); //solo por ser rectangulos
+    cv::Point p1(coords[0], coords[1]);
+    cv::Point p2(coords[2], coords[3]);
+    sync s(id, p1, p2);
+    crear_objeto(s);
+  }
+  PQclear(res);
+}
 
 

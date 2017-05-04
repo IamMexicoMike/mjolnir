@@ -6,6 +6,7 @@
 #include "ficha_tecnica.h"
 #include "commdlg.h"
 #include "wingdi.h"
+#include "sync.h"
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
@@ -156,6 +157,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         procesar_queue_cntrl();
         db::checar_input_db();
+        if(sync::b_sync_cambio)
+        {
+          for(sync* p : sync::set_modificados)
+            p->actualizar_db();
+          sync::set_modificados.clear();
+          sync::b_sync_cambio = false;
+        }
         break;
 
       case ID_T5000:

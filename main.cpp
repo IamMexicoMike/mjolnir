@@ -32,6 +32,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
   ventana v(hInstance, "Mjolnir");
 
+  db::construir_objetos_sincronizados();
+
   MSG Msg;
   while(GetMessage(&Msg, NULL, 0, 0) > 0)
   {

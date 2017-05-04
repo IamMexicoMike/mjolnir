@@ -4,10 +4,9 @@
 #include <algorithm>
 #include <bitset> //borrame si no debuggeas
 
-#include "redes.h"
-
 #include <opencv2/opencv.hpp>
 
+#include "redes.h"
 #include "elemento_diagrama.h"
 #include "mjolnir.hpp"
 #include "zonas.hpp"
@@ -18,10 +17,6 @@ extern void mensaje(std::string, std::string);
 
 using namespace std;
 using namespace cv;
-
-/* No intentar tus ideas es la forma más triste de no verlas tener éxito*/
-/* Oooohh!! */
-/* TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC TIC TAC*/ /* TAC */
 
 void iniciar_creacion_objeto(Objetos); //enum representado el tipo del objeto a crear
 void terminar_creacion_objeto();
@@ -346,7 +341,7 @@ void manejarInputTeclado(int k)
       cout << &*itr << '\t' << (*itr)->id() << '\n';
     }
 
-  case 71: //g de guardar
+  case 71: //g de guardar, pero no de ganar.
     {
       ofstream ofs("objetos.txt");
       for(auto& o : objetos)
@@ -375,7 +370,7 @@ void manejarInputTeclado(int k)
     break;
   }
   case 79: //o - ordenar
-    ordenar_objetos();
+    ordenar_objetos(); //es segura
     establecer_mensaje("objetos ordenados");
     break;
   case 80: //p - puerto serial
@@ -391,20 +386,7 @@ void manejarInputTeclado(int k)
     break;
 
   case 83: //s - simulacion
-  {
-    Point p = transformacion_inversa(puntoActualMouse);
-    for(int i=0; i<100; ++i)
-    {
-      for(int j=0; j<100; ++j)
-      {
-        Point p1(p.x + i*(-10000), p.y + j*(-10000));
-        Point p2(p.x + i*(-10000)-5000, p.y + j*(-10000)-5000);
-        circulo c(p1, (p2.x-p1.x)/2);
-        crear_objeto(c);
-      }
-    }
-  }
-    determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
+    iniciar_creacion_objeto(Objetos::Sincronizado);
     break;
 
   case 46: //suprimir, borrar objeto
@@ -620,6 +602,8 @@ void iniciar_creacion_objeto(Objetos o)
     break;
   case(Objetos::Puerto_Serial):
     break;
+  case(Objetos::Sincronizado):
+    break;
   }
 
 }
@@ -703,6 +687,7 @@ void dibujar_objeto_temporal()
 {
   switch(Tipo_Objeto_Dibujando)
   {
+  case(Objetos::Sincronizado):
   case(Objetos::Puerto_Serial):
   case(Objetos::Rectangulo):
     rectangle(region, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
@@ -736,4 +721,20 @@ void dibujar_objeto_temporal()
 void preparar_memoria() //muy sospechoso
 {
   objetos.reserve(1024);
+}
+
+void simulacion()
+{
+  Point p = transformacion_inversa(puntoActualMouse);
+  for(int i=0; i<100; ++i)
+  {
+    for(int j=0; j<100; ++j)
+    {
+      Point p1(p.x + i*(-10000), p.y + j*(-10000));
+      Point p2(p.x + i*(-10000)-5000, p.y + j*(-10000)-5000);
+      circulo c(p1, (p2.x-p1.x)/2);
+      crear_objeto(c);
+    }
+  }
+  determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
 }

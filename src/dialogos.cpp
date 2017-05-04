@@ -93,6 +93,7 @@ bool CALLBACK callback_query(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       hEditIP = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
         WS_CHILD | WS_VISIBLE,
         15,25,650,20, hwnd, (HMENU)id_query, GetModuleHandle(NULL), NULL); //no están en la misma escala que en los .rc
+      SetFocus(hEditIP);
       break;
     return true;
 

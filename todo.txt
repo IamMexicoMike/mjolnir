@@ -1,0 +1,17 @@
+Este archivo es modificado conforme los requerimientos van siendo cumplidos o las decisiones
+de diseño cambian.
+
+*Crear una herramienta o mecanismo que me permita a mí como diseñador generar documentos arbitrarios
+ Esto es para ahorrar tiempo diseñando 80000 documentos.
+ No reinventar la rueda, de seguro existe algo similar.
+ Los campos en los documentos irán asociados a la base de datos
+
+*Entender el concepto de las desviaciones de ficha técnica, y los cambios que las originan.
+{
+  Contienen Folio de Desviacion (ID desv?), fecha, tipo (el id de la ficha tecnica), medidas largo,
+  pesos, composición de ficha, composición real, prealimentador
+}
+
+*catálogo de fichas técnicas. Poder ver una lista de todas ellas. Dentro de la ficha ver una
+ imagen también de la toalla
+

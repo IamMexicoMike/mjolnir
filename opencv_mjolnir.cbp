@@ -54,6 +54,7 @@
 		<Unit filename="include/postgres_funciones.h" />
 		<Unit filename="include/puerto_serial.h" />
 		<Unit filename="include/redes.h" />
+		<Unit filename="include/sync.h" />
 		<Unit filename="include/ventana_principal.h" />
 		<Unit filename="include/zonas.hpp" />
 		<Unit filename="main.cpp" />
@@ -70,6 +71,7 @@
 		<Unit filename="src/postgres_funciones.cpp" />
 		<Unit filename="src/puerto_serial.cpp" />
 		<Unit filename="src/redes.cpp" />
+		<Unit filename="src/sync.cpp" />
 		<Unit filename="src/ventana_principal.cpp" />
 		<Unit filename="src/zonas.cpp" />
 		<Extensions>
