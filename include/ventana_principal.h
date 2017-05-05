@@ -60,11 +60,11 @@ public:
 
     auto t30 = SetTimer(hwnd, ID_T30, 30, NULL);
     if(t30 == 0)
-      throw runtime_error("Error estableciendo timer");
+      throw std::runtime_error("Error estableciendo timer");
 
     auto t1000 = SetTimer(hwnd, ID_T1000, 1000, NULL);
     if(t1000 == 0)
-      throw runtime_error("Error estableciendo timer");
+      throw std::runtime_error("Error estableciendo timer");
   }
 };
 

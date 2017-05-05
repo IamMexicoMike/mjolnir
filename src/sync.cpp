@@ -78,10 +78,11 @@ void sync::destruir()
   string paq = "ro" + to_string(id_);
   //avisamos a las lineas que ese objeto ya no existe
   for(auto& o : objetos)
-    o->avisar_objeto_destruido((*itr_seleccionado).get()); //get retorna el ptr al cual protege el unique_ptr
+    o->avisar_objeto_destruido(ptr_seleccionado);
+  auto itr_seleccionado = find_if(objetos.begin(), objetos.end(), [&](unique_ptr<objeto> const& obj)
+    { return obj.get() == ptr_seleccionado; }); //este lambda solo es necesario por que erase requiere un iterador
   objetos.erase(itr_seleccionado);
-  itr_seleccionado=objetos.end();
-  itr_highlight=objetos.end();
+  ptr_seleccionado=ptr_highlight=nullptr;
   empujar_queue_saliente(paq);
   b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }

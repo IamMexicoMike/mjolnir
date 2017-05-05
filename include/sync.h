@@ -16,11 +16,14 @@ class sincronizado
 
 };
 
-
+/**Debes descomponer esta clase en dos:
+1. La interfaz y clase abstracta sync, con sus respectivos miembros estáticos
+2. La clase derivada sync_rect o sync::rect?*/
 class sync : public rectangulo, public sincronizado
 {
   public:
-    static map<int, objeto*> objetos_sincronizados;
+    //la dirección de los objetos no es inestable, pues unique_ptr la maneja y mover a unique_ptr no es problema
+    static std::map<int, objeto*> objetos_sincronizados;
     static constexpr char const* nombreclase="rectangulo"; //PARADOXXXX jaja
     static constexpr char const* classname() { return sync::nombreclase; }
     static std::set<sync*> set_modificados;
@@ -36,6 +39,8 @@ class sync : public rectangulo, public sincronizado
   private:
 };
 
+/**Esta plantilla pinta bien: el unico requisito es que la clase sincronizada tenga el mismo nombre que en la
+   base de datos. */
 template<typename S>
 void eliminar_de_la_db(int id)
 {

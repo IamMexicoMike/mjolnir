@@ -20,34 +20,27 @@ const Point objeto::offset_puntos_clave_(3,3);
 void ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
 {
   lock_guard<mutex> lck(mtx_objetos);
-  if(itr_highlight>=objetos.begin() && itr_highlight!=objetos.end())
-    (*itr_highlight)->highlightear(false);
-  if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
-    (*itr_seleccionado)->seleccionar(false);
+  if(ptr_highlight != nullptr)
+    ptr_highlight->highlightear(false);
+  if(ptr_seleccionado != nullptr)
+    ptr_seleccionado->seleccionar(false);
   sort(objetos.begin(),objetos.end(),[&](const unique_ptr<objeto>& a, const unique_ptr<objeto>& b) {return a->area() < b->area();});
-  itr_seleccionado=objetos.end();
-  itr_highlight=objetos.end();
+  ptr_seleccionado=ptr_highlight=nullptr;
   b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }
 
 void destruir_objeto(int id)
 {
   lock_guard<mutex> lck(mtx_objetos);
-  auto encontrarItrId = [&]() -> vector<unique_ptr<objeto>>::iterator
-  {
-    for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
-      if((*itr)->id() == id) //si el id existe retornamos el iterador que apunta a este
-        return itr;
-    return objetos.end();
-  };
-  auto itr = encontrarItrId();
+  auto itr = find_if(objetos.begin(), objetos.end(), [&](unique_ptr<objeto> const& obj)
+    { return obj->id() == id; });
   if(itr != objetos.end())
   {
+    objeto* ptr = (*itr).get();
     for(auto& o : objetos)
-      o->avisar_objeto_destruido((*itr).get());
-    objetos.erase(itr);
-    itr_seleccionado=objetos.end();
-    itr_highlight=objetos.end();
+      o->avisar_objeto_destruido(ptr); //atento a los usos de ptr y de itr
+    objetos.erase(itr); //itr solo es necesario para llamar a esta función
+    ptr_seleccionado=ptr_highlight=nullptr;
     string paq = "ro" + to_string(id);
     empujar_queue_saliente(paq);
   }
@@ -89,17 +82,18 @@ bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
   return false;
 }
 
-/*el itr apunta a un unique_ptr que apunta a al objeto. "this" apunta al objeto. Debes borrar el unique_ptr. Reflexionar*/
+/*Reflexionar*/
 void objeto::destruir()
 {
   lock_guard<mutex> lck(mtx_objetos);
   string paq = "ro" + to_string(id());
   //avisamos a las lineas que ese objeto ya no existe
   for(auto& o : objetos)
-    o->avisar_objeto_destruido((*itr_seleccionado).get()); //get retorna el ptr al cual protege el unique_ptr
+    o->avisar_objeto_destruido(ptr_seleccionado); //avisamos que el objeto con esa dirección será destruido
+  auto itr_seleccionado = find_if(objetos.begin(), objetos.end(), [&](unique_ptr<objeto> const& obj)
+    { return obj.get() == ptr_seleccionado; });
   objetos.erase(itr_seleccionado);
-  itr_seleccionado=objetos.end();
-  itr_highlight=objetos.end();
+  ptr_seleccionado=ptr_highlight=nullptr;
   empujar_queue_saliente(paq);
   b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }

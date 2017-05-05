@@ -24,11 +24,8 @@ const cv::Point HEADER2(300,20);
 extern cv::Point HEADER_MSG;
 extern cv::Scalar Bckgnd;
 
-/**apuntador a un elemento de un vector de apuntadores. OK. SWAG.*/
-using Apuntador = std::vector<std::unique_ptr<objeto>>::iterator;
-
-extern Apuntador itr_seleccionado;
-extern Apuntador itr_highlight;
+extern objeto* ptr_seleccionado;
+extern objeto* ptr_highlight;
 extern bool b_drag;
 extern cv::Point ptInicioArrastre;
 extern cv::Point ptFinArrastre;
@@ -37,7 +34,7 @@ extern std::vector<std::unique_ptr<objeto>> objetos_invisibles;
 extern std::atomic<bool> b_cache_valida, b_puntos_relativos_validos;
 
 enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
-Apuntador determinar_propiedades_ubicacion(cv::Point);
+objeto* determinar_propiedades_ubicacion(cv::Point);
 
 void renderizarDiagrama(cv::Mat& matriz);
 void manejarInputTeclado(int k);

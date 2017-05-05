@@ -56,8 +56,8 @@ Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
 
 Point despl(4000,1300); //originalmente desplazamientoOrigen
 
-Apuntador itr_seleccionado = objetos.end();
-Apuntador itr_highlight = objetos.end();
+objeto* ptr_seleccionado = nullptr;
+objeto* ptr_highlight = nullptr;
 bool b_drag=false;
 Point ptInicioArrastre(0,0);
 Point ptFinArrastre(0,0);
@@ -80,12 +80,12 @@ atomic<bool> b_puntos_relativos_validos{false};
 
 Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
 
-Apuntador encontrar_itr_area(cv::Point& p)
+objeto* encontrar_ptr_area(cv::Point& p)
 {
-  for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
-    if((*itr)->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
-      return itr;
-  return objetos.end();
+  for(const auto& uptr : objetos)
+    if(uptr->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
+      return uptr.get();
+  return nullptr;
 };
 
 Point operator/(Point p, const int d)
@@ -238,8 +238,8 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
 
   mat_header = BLANCO;
 
-  if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
-    putText(matriz, string("" + (*itr_seleccionado)->nombre()),
+  if(ptr_seleccionado != nullptr)
+    putText(matriz, string("" + ptr_seleccionado->nombre()),
             HEADER2, FONT_HERSHEY_PLAIN, 1, COLOR_NEGRO, 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
@@ -322,10 +322,10 @@ void manejarInputTeclado(int k)
   case 68: //d de debug
     cout << "\nDEBUG:\n";
     cout << "objetos.size() == " << objetos.size() << '\n';
-    if(itr_seleccionado>=objetos.begin() && itr_seleccionado!=objetos.end())
-      cout << "seleccionado=" << (*itr_seleccionado)->id();
-    if(itr_highlight>=objetos.begin() && itr_highlight!=objetos.end())
-      cout << "\thighlighteado=" << (*itr_highlight)->id() << '\n';
+    if(ptr_seleccionado != nullptr)
+      cout << "seleccionado=" << ptr_seleccionado->id();
+    if(ptr_highlight != nullptr)
+      cout << "\thighlighteado=" << ptr_highlight->id() << '\n';
     cout << '\n';
     for(auto& p : objetos) {
       cout << p->id() << " : ";
@@ -333,14 +333,6 @@ void manejarInputTeclado(int k)
       cout << '\n';
     }
     break;
-
-  case 69:
-    cout << "\tobjetos.begin()\tobjetos.end()\titr_highlight\titr_seleccion\n";
-    cout << '\t' << &*objetos.begin() << '\t' << &*objetos.end() << '\t' << &*itr_highlight << '\t' << &*itr_seleccionado << '\n';
-    for(auto itr=objetos.begin(); itr!=objetos.end(); ++itr)
-    {
-      cout << &*itr << '\t' << (*itr)->id() << '\n';
-    }
 
   case 71: //g de guardar, pero no de ganar.
     {
@@ -361,11 +353,9 @@ void manejarInputTeclado(int k)
 
   case 78: //n
   {
-    if(itr_seleccionado >= objetos.begin() && itr_seleccionado < objetos.end() )
+    if(ptr_seleccionado != nullptr)
     {
-      objeto* psel = (*itr_seleccionado).get();
-      if (psel != nullptr)
-        crear_dialogo_objeto(psel);
+      crear_dialogo_objeto(ptr_seleccionado);
     }
 
     break;
@@ -391,9 +381,9 @@ void manejarInputTeclado(int k)
     break;
 
   case 46: //suprimir, borrar objeto
-    if(itr_seleccionado>=objetos.begin() && itr_seleccionado != objetos.end())
+    if(ptr_seleccionado != nullptr)
     {
-      (*itr_seleccionado)->destruir();
+      ptr_seleccionado->destruir();
       determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
     break;
@@ -433,15 +423,15 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     /*no estábamos dibujando un objeto, evaluamos el punto y establecemos condiciones para la selección y el arrastre*/
     else
     {
-      auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+      auto ptr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
-      if(itr>= objetos.begin() and itr!=objetos.end()) //estamos dentro del área de un objeto y dimos click
+      if(ptr != nullptr) //estamos dentro del área de un objeto y dimos click
       {
-        if(itr_seleccionado>objetos.begin() && itr_seleccionado!=objetos.end()) //si había otro brother seleccionado antes...
-          (*itr_seleccionado)->seleccionar(false); //des-seleccionamos al anterior
+        if(ptr_seleccionado != nullptr) //si había otro brother seleccionado antes...
+          ptr_seleccionado->seleccionar(false); //des-seleccionamos al anterior
 
-        (*itr)->seleccionar(true); //seleccionamos al brother
-        itr_seleccionado = itr; //actualizamos al seleccionado
+        ptr->seleccionar(true); //seleccionamos al brother
+        ptr_seleccionado = ptr; //actualizamos al seleccionado
 
         if(flags & CV_EVENT_FLAG_CTRLKEY) //vamos a dibujar flecha, no a arrastrar
         {
@@ -462,10 +452,10 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
         //hay espacio para alt y shift. Afortunadamente drag y dibujar flecha son mutuamente excluyentes
       }
 
-      else if(itr_seleccionado!=objetos.end()) //no caimos en nadie, pero había un brother seleccionado
+      else if(ptr_seleccionado!=nullptr) //no caimos en nadie, pero había un brother seleccionado
       {
-        (*itr_seleccionado)->seleccionar(false); //lo des-seleccionamos
-        itr_seleccionado=objetos.end(); //y reseteamos el id de selección
+        ptr_seleccionado->seleccionar(false); //lo des-seleccionamos
+        ptr_seleccionado=nullptr; //y reseteamos el id de selección
       }
     }
   }
@@ -476,16 +466,16 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
     b_drag = false; //terminan las condiciones de arrastre y resize
 
     //si estaba resizeando una linea y caí en otro objeto, hago el centro de ese objeto el vértice de la línea
-    auto itr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
+    auto ptr = determinar_propiedades_ubicacion(transformacion_inversa(puntoActualMouse));
 
 
-    if(b_dibujando_flecha) //esto se va a revampear
+    if(b_dibujando_flecha) //esto se va a revampear. 6 meses después no se ha "revampeado"
     {
-      if(itr_seleccionado!=objetos.end() && itr != itr_seleccionado && itr!=objetos.end())
+      if(ptr_seleccionado!=nullptr && ptr != ptr_seleccionado && ptr!=nullptr)
       {
         /**Se entabla una relación entre dos objetos*/
-        cout << "interaccion entre " << (*itr)->id() << " y " << (*itr_seleccionado)->id() << "\n";
-        crear_relacion(itr->get(), itr_seleccionado->get());
+        cout << "interaccion entre " << ptr->id() << " y " << ptr_seleccionado->id() << "\n";
+        crear_relacion(ptr, ptr_seleccionado);
       }
       b_dibujando_flecha = false;
     }
@@ -506,7 +496,7 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
       {
         Point pt = transformacion_inversa(puntoActualMouse);
         Point dif = pt - ptInicioArrastre;
-        (*itr_seleccionado)->arrastrar(dif);
+        ptr_seleccionado->arrastrar(dif);
         ptInicioArrastre = pt;
       }
 
@@ -530,11 +520,9 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
   if(event==CV_EVENT_LBUTTONDBLCLK) //doble_click -> vemos informacion del objeto
   {
-    if(itr_seleccionado >= objetos.begin() && itr_seleccionado < objetos.end() )
+    if(ptr_seleccionado != nullptr)
     {
-      objeto* psel = (*itr_seleccionado).get();
-      if (psel != nullptr)
-        psel->dialogo_objeto();
+      ptr_seleccionado->dialogo_objeto();
     }
   }
 
@@ -543,40 +531,39 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
 /**Debe determinar propiedades del punto en función de la dimensión en la que está.
  No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
-Apuntador determinar_propiedades_ubicacion(cv::Point p)
+objeto* determinar_propiedades_ubicacion(cv::Point p)
 {
-  if(itr_seleccionado>=objetos.begin() and itr_seleccionado<objetos.end())
+  if(ptr_seleccionado != nullptr)
   {
     //checar si es un punto clave
-    if( (*itr_seleccionado)->pertenece_a_punto_clave(p) ) //esto es mal diseño porque esta función modifica a los objetos
-      return (itr_seleccionado);
-
+    if(ptr_seleccionado->pertenece_a_punto_clave(p)) //esto es mal diseño porque esta función modifica a los objetos
+      return ptr_seleccionado;
   }
 
-  Apuntador itr = encontrar_itr_area(p); //obtenemos un apuntador al objeto que es dueño de esa área
+  objeto* ptr = encontrar_ptr_area(p); //obtenemos un apuntador al objeto que es dueño de esa área
 
-  if(itr == itr_highlight) //no hacemos cambios, seguimos hovereando dentro del area del mismo objeto
-    return itr;
+  if(ptr == ptr_highlight) //no hacemos cambios, seguimos hovereando dentro del area del mismo objeto
+    return ptr;
 
   /*Segundo caso: Había algo highlighteado pero ya no*/
-  if(itr==objetos.end())
+  if(ptr==nullptr)
   {
-    if(itr_highlight>=objetos.begin() && itr_highlight!=objetos.end()) //al inicio del programa vale 0
-      (*itr_highlight)->highlightear(false);//des-highlighteamos el anterior
-    itr_highlight = objetos.end();
-    return itr;
+    if(ptr_highlight!=nullptr) //al inicio del programa vale 0
+      ptr_highlight->highlightear(false);//des-highlighteamos el anterior
+    ptr_highlight = nullptr;
+    return ptr;
   }
 
   /*Tercer caso: hay algo highlighteable*/
-  (*itr)->highlightear(true); //highlighteamos al nuevo
+  ptr->highlightear(true); //highlighteamos al nuevo
 
   /*Si es que había otro highlighteado antes lo deshighlighteamos*/
-  if(itr_highlight!=objetos.end())
-    (*itr_highlight)->highlightear(false);
+  if(ptr_highlight!=nullptr)
+    ptr_highlight->highlightear(false);
 
-  itr_highlight = itr; //actualizamos la llave highlight
+  ptr_highlight = ptr; //actualizamos la llave highlight
 
-  return itr;
+  return ptr;
 }
 
 void iniciar_creacion_objeto(Objetos o)
