@@ -601,7 +601,7 @@ void terminar_creacion_objeto()
   {
     Point p1=puntoOrigenobjeto;
     Point p2=puntoFinobjeto;
-    sync s(p1, p2);
+    sync_rect s(p1, p2);
     crear_objeto(s);
   }
   case(Objetos::Rectangulo):

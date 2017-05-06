@@ -60,7 +60,7 @@ void db::query_db(string query)
 
 void db::entablar_escuchador_db()
 {
-  PGresult* res = PQexec(conexion, "LISTEN rectangulo");
+  PGresult* res = PQexec(conexion, "LISTEN sync_rect");
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     cerr << "Error entablando LISTEN: " << PQerrorMessage(conexion) << "\n";
@@ -75,15 +75,20 @@ void db::checar_input_db()
   PQconsumeInput(conexion);
   while( (noti = PQnotifies(conexion)) != NULL)
   {
-    cout << "Notificacion de la DB recibida: " << noti->relname << "(pid=" << noti->be_pid<< ")\n";
-    cout << "extras: " << noti->extra << "\t\n";// << noti->next()
+    string tabla_modificada = noti->relname;
+    string extras = noti->extra;
+    cout << "Notificacion de la DB recibida: "
+    << tabla_modificada << " extras: " << extras << "\n";// << noti->next()
+    pair<string,int> tabla_y_id(tabla_modificada, stoi(extras) );
+    sync::objetos_sincronizados[tabla_y_id]->actualizarse();
     PQfreemem(noti);
+    b_cache_valida = false;
   }
 }
 
 void db::construir_objetos_sincronizados()
 {
-  PGresult* res = PQexec(conexion, "SELECT * FROM rectangulo"); //se ejecuta una query
+  PGresult* res = PQexec(conexion, "SELECT * FROM sync_rect"); //se ejecuta una query
   for(int i=0; i<PQntuples(res); ++i)
   {
     int id = stoi(PQgetvalue(res, i, 0));
@@ -94,8 +99,10 @@ void db::construir_objetos_sincronizados()
     coords[3] = stoi(PQgetvalue(res, i, 4)); //solo por ser rectangulos
     cv::Point p1(coords[0], coords[1]);
     cv::Point p2(coords[2], coords[3]);
-    sync s(id, p1, p2);
-    crear_objeto(s);
+    sync_rect s(id, p1, p2);
+    auto ptr = crear_objeto(s);
+    pair<string,int> par(string("sync_rect"), id);
+    sync::objetos_sincronizados[par]=ptr;
   }
   PQclear(res);
 }

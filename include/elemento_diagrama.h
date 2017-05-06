@@ -223,7 +223,7 @@ private:
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
 template <typename T>
-void crear_objeto(T& t)
+T* crear_objeto(T& t)
 {
   std::string nombre_tipo = typeid(t).name();
   std::lock_guard<std::mutex> lck(mtx_objetos);
@@ -231,9 +231,11 @@ void crear_objeto(T& t)
   if(ptr_seleccionado != nullptr)
     ptr_seleccionado->seleccionar(false);
   std::unique_ptr<T> po = std::make_unique<T>(t);
+  T* ptr = po.get();
   po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
   objetos.emplace_back(std::move(po));
   ptr_highlight=ptr_seleccionado=nullptr;
+  return ptr;
   //cout << paq << '\n';
   //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }

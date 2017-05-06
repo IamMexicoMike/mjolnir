@@ -3,6 +3,7 @@
 using namespace std;
 using namespace cv;
 
+map<pair<string,int>, sync*> sync::objetos_sincronizados;
 set<sync*> sync::set_modificados;
 atomic<bool> sync::b_sync_cambio{false};
 
@@ -16,7 +17,7 @@ string descomponer_punto(Point& p)
   return string(to_string(p.x) + ',' + to_string(p.y) );
 }
 
-sync::sync(Point inicio, Point fin):
+sync_rect::sync_rect(Point inicio, Point fin):
   rectangulo(inicio,fin)
 {
   string q = "INSERT INTO rectangulo (p1x, p1y, p2x, p2y) VALUES ("
@@ -31,16 +32,17 @@ sync::sync(Point inicio, Point fin):
   PQclear(res);
 }
 
-sync::sync(int id, Point inicio, Point fin):
+sync_rect::sync_rect(int id, Point inicio, Point fin):
   rectangulo(inicio,fin)
 {
   id_ = id;
 }
 
-void sync::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
+
+void sync_rect::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
 {
-  sync::b_sync_cambio=true; //ya levantaste una flag de que hubo un cambio en los sincronizados, ahora notifia que fuiste tu
-  sync::set_modificados.insert(this);
+  sync::b_sync_cambio=true; //ya levantaste una flag de que hubo un cambio en los sincronizados
+  sync::set_modificados.insert(this); //ahora notifica que este objeto fue modificado
   if(resizeando_)
   {
     (*punto_arrastrado_) += pt;
@@ -53,27 +55,37 @@ void sync::arrastrar(const Point pt) //no es realmente un punto, sino una difere
   centro_ += pt;
 }
 
-void sync::actualizar_db()
+void sync_rect::actualizar_db()
 {
-  string q = "UPDATE rectangulo SET p1x=" + to_string(inicio_.x) + ",p1y=" + to_string(inicio_.y)
+  string q = "UPDATE sync_rect SET p1x=" + to_string(inicio_.x) + ",p1y=" + to_string(inicio_.y)
     + ",p2x=" + to_string(fin_.x) + ",p2y=" + to_string(fin_.y) + " WHERE id=" + to_string(id_); //usar un hashcode?
   PGresult* res = PQexec(conexion, q.c_str());
-  if (PQresultStatus(res) != PGRES_COMMAND_OK)
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
     PQclear(res);
-    throw "error actualizando objeto" + to_string(id_);
+    throw runtime_error("error actualizando objeto" + to_string(id_));
   }
   PQclear(res);
 }
 
-sync::~sync()
+void sync_rect::actualizarse()
 {
-  //dtor
+  string query = "SELECT * FROM sync_rect WHERE id = " + to_string(id_);
+  PGresult* res = PQexec(conexion, query.c_str() ); //se ejecuta una query
+  for(int i=0; i<PQntuples(res); ++i) //este loop es un bug detecter? probablemente sospechoso
+  {
+    array<int,4> coords;
+    inicio_.x = stoi(PQgetvalue(res, i, 1)); //solo por ser rectangulos
+    inicio_.y = stoi(PQgetvalue(res, i, 2)); //solo por ser rectangulos
+    fin_.x = stoi(PQgetvalue(res, i, 3)); //solo por ser rectangulos
+    fin_.y = stoi(PQgetvalue(res, i, 4)); //solo por ser rectangulos
+  }
+  PQclear(res);
 }
 
-void sync::destruir()
+void sync_rect::destruir()
 {
-  eliminar_de_la_db<sync>(id_);
+  eliminar_de_la_db<sync_rect>(id_);
   lock_guard<mutex> lck(mtx_objetos);
   string paq = "ro" + to_string(id_);
   //avisamos a las lineas que ese objeto ya no existe
