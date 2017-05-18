@@ -38,8 +38,7 @@ public:
 class sync_rect : public rectangulo, public sync
 {
   public:
-    static constexpr char const* nombreclase="sync_rect";
-    static constexpr char const* classname() { return sync_rect::nombreclase; } //sospechoso
+    static const std::string nombreclase;
     virtual void actualizar_db() override;
     sync_rect(cv::Point inicio, cv::Point fin); //para construirse a partir del diagrama y ser insertado en la base de datos
     sync_rect(int id, cv::Point inicio, cv::Point fin); //para construirse a partir de la base de datos
@@ -57,7 +56,7 @@ class sync_rect : public rectangulo, public sync
 template<typename S>
 void eliminar_de_la_db(int id)
 {
-  std::string q = "DELETE FROM " + std::string(S::classname()) + " WHERE id = " + std::to_string(id);
+  std::string q = "DELETE FROM " + S::nombreclase + " WHERE id = " + std::to_string(id);
   PGresult* res = PQexec(conexion, q.c_str());
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
   {
