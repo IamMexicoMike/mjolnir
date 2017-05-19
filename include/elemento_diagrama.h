@@ -240,7 +240,6 @@ T* crear_objeto(T& t)
   //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
 }
 
-
 template <typename T>
 void crear_objeto_delicado(std::unique_ptr<T>&& pt)
 {

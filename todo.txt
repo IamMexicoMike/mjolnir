@@ -21,3 +21,10 @@ de diseño cambian.
  Qué tan volátiles son las direcciones de memoria que guarda vector? Realmente, lo son?
  Vector puede reasignar a otras zonas de memoria los objetos que guarda, pero sólo los que guarda.
  En este caso son unique_ptrs, que a su vez son responsables por
+
+
+************************************************************
+Hace falta diseñar un template, o clase, o algo que sirva genéricamente para capturar inputs al
+sistema.
+Ejemplo: El pesado de materia prima o cualquier tipo de insumo que proviene del exterior.
+Ejemplo: El control del traspaso de kilos entre partes del proceso.

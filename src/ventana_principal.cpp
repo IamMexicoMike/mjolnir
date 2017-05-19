@@ -11,6 +11,8 @@
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
 
+RECT ventana::rEscritorio;
+
 HWND hVentanaPrincipal;
 HWND hEdit;
 HWND hTool;
@@ -20,14 +22,14 @@ extern void procesar_queue_cntrl();
 
 const char* nombreClaseVentanaPrincipal= "claseVentanaPrincipal";
 
-void ventana::registrarClase(WNDCLASSEX& clase)
+void ventana::registrarClase()
 {
   wc.cbSize        = sizeof(WNDCLASSEX);
   wc.style         = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
-  wc.lpfnWndProc   = WndProc;
+  wc.lpfnWndProc   = WndProc; //aquí se asigna el nombre del callback de la clase
   wc.cbClsExtra    = 0;
   wc.cbWndExtra    = 0;
-  wc.hInstance     = hInstance;
+  wc.hInstance     = hInstance_;
   wc.hIcon         = /*LoadIcon(NULL, IDI_APPLICATION);*/LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR));
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
@@ -41,28 +43,25 @@ void ventana::registrarClase(WNDCLASSEX& clase)
 
 void ventana::crearVentana()
 {
-  const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
-  RECT escritorio;
-  GetWindowRect(hEscritorio, &escritorio);// guarda el tamaño de la pantalla a la variable escritorio
-  hwnd = CreateWindowEx(
+  hwnd_ = CreateWindowEx(
       WS_EX_CONTEXTHELP,
       nombreClaseVentanaPrincipal,
       nombre_,
       WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, escritorio.right, escritorio.bottom,
-      NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, CW_USEDEFAULT, rEscritorio.right, rEscritorio.bottom,
+      NULL, NULL, hInstance_, NULL);
 
-  if(hwnd == NULL)
+  if(hwnd_ == NULL)
     throw "Error creando ventana";
 
-  MoveWindow(hwnd, 0, 0, escritorio.right, escritorio.bottom-50, TRUE); //demasiada magia
-  hVentanaPrincipal = hwnd;
+  mover(0, 0, ventana::rEscritorio.right, ventana::rEscritorio.bottom-50); //demasiada magia
+  hVentanaPrincipal = hwnd_;
 }
 
 void ventana::inicializar_diagrama()
 {
   RECT rVentana;                              //es para guardar el tamaño de la ventana principal temporalmente
-  GetWindowRect(hwnd, &rVentana);             //guarda el tamaño de la ventana principal
+  GetWindowRect(hwnd_, &rVentana);             //guarda el tamaño de la ventana principal
   ancho_region = (rVentana.right - 200);      //hacemos al diagrama ligeramente más delgado que la ventana principal
   altura_region = (rVentana.bottom);
   dxy = Point(ancho_region/2, ancho_region/2);
@@ -71,7 +70,7 @@ void ventana::inicializar_diagrama()
   mat_header = Mat(region.colRange(0, region.cols).rowRange(0,30)); //instanciamos la submatriz del header
   HEADER_MSG = Point(region.cols-300, HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
 
-  preparar_memoria(); //incluir elemento_diagrama.h añadiría costos al tiempo de compilacion
+  preparar_memoria(); //sospechoso
   anexar_zonas();
   rellenar_zona_telares();
 }
@@ -81,7 +80,7 @@ void ventana::configuramos_parametros_diagrama()
   cv::namedWindow(nombreDiagrama, CV_WINDOW_AUTOSIZE);
   HWND hWnd2 = (HWND) cvGetWindowHandle(nombreDiagrama);
   HWND hDiagrama = ::GetParent(hWnd2);
-  ::SetParent(hDiagrama, hwnd);
+  ::SetParent(hDiagrama, hwnd_);
   //EnableMenuItem(GetSystemMenu(hDiagrama, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED);
   /***************/
   LONG lStyle = GetWindowLong(hDiagrama, GWL_STYLE);
@@ -90,11 +89,11 @@ void ventana::configuramos_parametros_diagrama()
   /***************/
   RECT sz_dia;
   GetWindowRect(hDiagrama, &sz_dia);// guarda el tamaño de la pantalla a la variable escritorio
-  //SetWindowPos(hDiagrama, 0, 0, 0, sz_dia.right, sz_dia.bottom, SWP_NOSIZE);
-  MoveWindow(hDiagrama, 0, -20, sz_dia.right, sz_dia.bottom, TRUE);
+  SetWindowPos(hDiagrama, 0, 0, 0, sz_dia.right, sz_dia.bottom, SWP_NOSIZE);
+  //mover( 0, -20, sz_dia.right, sz_dia.bottom);
   SendMessage(hDiagrama, WM_SETICON, ICON_BIG, IDI_MJOLNIR);
-  cv::setMouseCallback(nombreDiagrama, manejarInputMouse);
-  cv::setKeyboardCallback(nombreDiagrama, manejarInputTeclado);
+  cv::setMouseCallback(nombreDiagrama, manejarInputMouse); //probablemente esto por cada instancia, en lugar de en el constructor
+  cv::setKeyboardCallback(nombreDiagrama, manejarInputTeclado);// "
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -186,16 +185,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
   static objeto* pobj;
-  static HWND hEdit1=0;
 
   switch(Message)
   {
     case WM_INITDIALOG:
       pobj = reinterpret_cast<objeto*>(lParam);
       SetDlgItemTextA(hwnd, IDT_NVONOMBRE, pobj->nombre().c_str());
-      hEdit1 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+      {
+        /*
+        cout << "huh\n";
+      HWND hEdit1 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
         WS_CHILD | WS_VISIBLE |  ES_NUMBER,
-        30,60,144,100, hwnd, (HMENU)IDT_HEDIT1, GetModuleHandle(NULL), NULL);
+        30,60,144,100, hwnd, (HMENU)IDT_HEDIT1, GetModuleHandle(NULL), NULL);*/
+      }
       break;
 
     return TRUE;

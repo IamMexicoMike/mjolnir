@@ -2,7 +2,6 @@
 #include <chrono> //para profiles
 #include <ctime> //para profiles
 #include <algorithm>
-#include <bitset> //borrame si no debuggeas
 
 #include <opencv2/opencv.hpp>
 
@@ -36,11 +35,9 @@ class zona;
 extern vector<zona> superzonas;
 
 Mat region;
-Mat mat_header;
+Mat mat_header; //estas variables se deben hacer variables miembro de una clase
 Point HEADER_MSG;
 
-bool botonMouseIzquierdoAbajo=false; //flechas, drag, drag n drop
-bool botonMouseDerechoAbajo=false; //panning
 Point puntoClickMouseDerecho(0,0); //panning
 Point puntoInicioDesplazamiento(0,0); //panning
 
@@ -395,6 +392,9 @@ void manejarInputTeclado(int k)
 
 void manejarInputMouse(int event, int x, int y, int flags, void*)
 {
+  static bool botonMouseIzquierdoAbajo(false); //flechas, drag, drag n drop
+  static bool botonMouseDerechoAbajo(false); //panning
+
   puntoActualMouse = cv::Point(x,y); //esta variable siempre lleva el rastro de dónde está el mouse
   //cout << (flags & CV_EVENT_FLAG_CTRLKEY) << endl;
   //cout << event << " " << flags << endl;
@@ -602,7 +602,8 @@ void terminar_creacion_objeto()
     Point p1=puntoOrigenobjeto;
     Point p2=puntoFinobjeto;
     sync_rect s(p1, p2);
-    crear_objeto(s);
+    crear_sincronizado(s);
+    break;
   }
   case(Objetos::Rectangulo):
     {

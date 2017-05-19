@@ -57,3 +57,6 @@ WHERE name = ’Wally’;
 COMMIT;
 
 Funciones agregadas (?) (aggregate)
+
+Ya entendí. Necesito diseñar un conjunto de interfaces de transformación de inventarios que
+correspondan a los procesos.

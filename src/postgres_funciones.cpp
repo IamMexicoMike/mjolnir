@@ -88,7 +88,7 @@ void db::checar_input_db()
 
 void db::construir_objetos_sincronizados()
 {
-  PGresult* res = PQexec(conexion, "SELECT * FROM sync_rect"); //se ejecuta una query
+  PGresult* res = PQexec(conexion, string("SELECT * FROM " + sync_rect::nombreclase).c_str()); //se ejecuta una query
   for(int i=0; i<PQntuples(res); ++i)
   {
     int id = stoi(PQgetvalue(res, i, 0));
@@ -101,7 +101,7 @@ void db::construir_objetos_sincronizados()
     cv::Point p2(coords[2], coords[3]);
     sync_rect s(id, p1, p2);
     auto ptr = crear_objeto(s);
-    pair<string,int> par(string("sync_rect"), id);
+    pair<string,int> par(sync_rect::nombreclase, id);
     sync::objetos_sincronizados[par]=ptr;
   }
   PQclear(res);

@@ -34,35 +34,44 @@ void mensaje(std::string msg, std::string titulo);
 
 class ventana
 {
-public:
+private:
   WNDCLASSEX wc;
-  HWND hwnd;
-  HINSTANCE hInstance;
-  cv::Mat diagrama;
+  HWND hwnd_;
+  HINSTANCE hInstance_;
+  cv::Mat diagrama_;
   const char* nombre_;
 
-  void registrarClase(WNDCLASSEX& clase);
+
+public:
+  static RECT rEscritorio;
+
+  void registrarClase();
   void crearVentana();
   void inicializar_diagrama();
   void configuramos_parametros_diagrama();
+  void mover(int x, int y, int w, int h) { MoveWindow(hwnd_, x, y, w, h, TRUE); }
 
   ventana(HINSTANCE h_instancia, const char* nombre):
-    hInstance(h_instancia),
+    hInstance_(h_instancia),
     nombre_(nombre)
   {
-    registrarClase(wc);
+    //al arrancar el programa calculamos las dimensioens de la pantalla(escritorio) y las guardamos como una variable estática
+    //const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
+    GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio
+
+    registrarClase();
     crearVentana();
     inicializar_diagrama();
     configuramos_parametros_diagrama();
 
-    ShowWindow(hwnd, SW_MAXIMIZE);
-    UpdateWindow(hwnd);
+    ShowWindow(hwnd_, SW_MAXIMIZE);
+    UpdateWindow(hwnd_);
 
-    auto t30 = SetTimer(hwnd, ID_T30, 30, NULL);
+    auto t30 = SetTimer(hwnd_, ID_T30, 30, NULL);
     if(t30 == 0)
       throw std::runtime_error("Error estableciendo timer");
 
-    auto t1000 = SetTimer(hwnd, ID_T1000, 1000, NULL);
+    auto t1000 = SetTimer(hwnd_, ID_T1000, 1000, NULL);
     if(t1000 == 0)
       throw std::runtime_error("Error estableciendo timer");
   }

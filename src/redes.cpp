@@ -204,7 +204,7 @@ void cliente::conectar()
       if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos? esto es un buen comentario
       {
         /*este codigo esta sucio, pero basicamente lidia con que el usuario introduzca valores para conectarse con el host*/
-
+        /*
         auto h = dialogo_seleccion_host(); //retorna un par con {ip,puerto}
         if(h.first.empty() && h.second.empty())
         {
@@ -224,6 +224,7 @@ void cliente::conectar()
           gui::alerta("La combinación de IP y Puerto produjo una excepción");
           conectar();
         }
+        */
       }
 
       /*Error 10056: Se solicitó conexión en socket ya conectado*/
@@ -236,8 +237,8 @@ void cliente::conectar()
         else
           std::cout << "Error cerrando y conectando: " << ec_cerrar.value() <<  ": " <<  ec_cerrar.message() << std::endl;
       }
-          //...
-    }
+        //...
+      }
   });
 } //conectar
 

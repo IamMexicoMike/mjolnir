@@ -17,7 +17,7 @@ public:
   //la dirección de los objetos no es inestable, pues unique_ptr la maneja y mover a unique_ptr no es problema
   /*cuando un objeto es creado se pasa la direccion que maneja el unique_ptr, y cuando
     sea borrado se asigna la direccion a nullptr*/
-  static std::map<std::pair<std::string,int>, sync*> objetos_sincronizados;
+  static std::map<std::pair<std::string,int>, sync*> objetos_sincronizados; /**La llave es un par string int (nombre de la tabla, id)*/
   static std::set<sync*> set_modificados;
   static std::atomic<bool> b_sync_cambio;
 
@@ -38,8 +38,7 @@ public:
 class sync_rect : public rectangulo, public sync
 {
   public:
-    static constexpr char const* nombreclase="sync_rect";
-    static constexpr char const* classname() { return sync_rect::nombreclase; } //sospechoso
+    static const std::string nombreclase;
     virtual void actualizar_db() override;
     sync_rect(cv::Point inicio, cv::Point fin); //para construirse a partir del diagrama y ser insertado en la base de datos
     sync_rect(int id, cv::Point inicio, cv::Point fin); //para construirse a partir de la base de datos
@@ -57,13 +56,31 @@ class sync_rect : public rectangulo, public sync
 template<typename S>
 void eliminar_de_la_db(int id)
 {
-  std::string q = "DELETE FROM " + std::string(S::classname()) + " WHERE id = " + std::to_string(id);
+  std::string q = "DELETE FROM " + S::nombreclase + " WHERE id = " + std::to_string(id);
   PGresult* res = PQexec(conexion, q.c_str());
   if (PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     PQclear(res);
     throw std::runtime_error("error eliminando objeto sincronizado");
   }
+}
+
+template<typename T>
+T* crear_sincronizado(T& t)
+{
+  std::string nombre_tipo = typeid(t).name();
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  std::string paq = "objeto syncronizado " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
+  if(ptr_seleccionado != nullptr)
+    ptr_seleccionado->seleccionar(false);
+  std::unique_ptr<T> po = std::make_unique<T>(t);
+  T* ptr = po.get();
+  po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
+  std::pair<std::string,int> tabla_y_id(T::nombreclase, po->id() );
+  sync::objetos_sincronizados[tabla_y_id]=ptr;
+  objetos.emplace_back(std::move(po));
+  ptr_highlight=ptr_seleccionado=nullptr;
+  return ptr;
 }
 
 #endif // SYNC_H

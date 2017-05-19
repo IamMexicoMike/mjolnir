@@ -6,11 +6,12 @@
 #include "mjolnir.hpp"
 #include "elemento_diagrama.h"
 #include "postgres_funciones.h"
+#include "sync.h"
 
 using namespace std;
 using namespace cv;
 
-/** Symbols for long term thinking */
+/** Symbols for long term thinking */ /* qué acidos me metí cuando escribí eso?!*/
 
 extern void cargar_variables_configuracion();
 extern void mostrar_gif(string);
@@ -31,6 +32,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   db::entablar_escuchador_db();
 
   ventana v(hInstance, "Mjolnir");
+  //ventana v2(hInstance, "ventana dos");
+  //v.mover(0,0,ventana::rEscritorio.right, ventana::rEscritorio.bottom);
 
   db::construir_objetos_sincronizados();
 

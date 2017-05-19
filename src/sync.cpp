@@ -3,6 +3,8 @@
 using namespace std;
 using namespace cv;
 
+const std::string sync_rect::nombreclase="sync_rect";
+
 map<pair<string,int>, sync*> sync::objetos_sincronizados;
 set<sync*> sync::set_modificados;
 atomic<bool> sync::b_sync_cambio{false};
@@ -20,7 +22,7 @@ string descomponer_punto(Point& p)
 sync_rect::sync_rect(Point inicio, Point fin):
   rectangulo(inicio,fin)
 {
-  string q = "INSERT INTO rectangulo (p1x, p1y, p2x, p2y) VALUES ("
+  string q = "INSERT INTO " + nombreclase + " (p1x, p1y, p2x, p2y) VALUES ("
     + descomponer_punto(inicio) + ',' + descomponer_punto(fin) + ") RETURNING id";
   PGresult* res = PQexec(conexion, q.c_str());
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
