@@ -204,6 +204,7 @@ void cliente::conectar()
       if(ec.value() == 10061) //levantar dialogo de seleccion de ip y puertos? esto es un buen comentario
       {
         /*este codigo esta sucio, pero basicamente lidia con que el usuario introduzca valores para conectarse con el host*/
+
         /*
         auto h = dialogo_seleccion_host(); //retorna un par con {ip,puerto}
         if(h.first.empty() && h.second.empty())
