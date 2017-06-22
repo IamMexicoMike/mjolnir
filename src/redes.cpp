@@ -11,6 +11,7 @@ using namespace std;
 using namespace asio;
 
 extern void establecer_mensaje(string);
+extern configurador cfg;
 
 io_service iosvc;
 queue<string> queue_saliente;
@@ -25,8 +26,6 @@ const string NOMBRE_APLICACION = "opencv_mjolnir32.exe";
 #endif // _WIN64
 
 const string CODIGO_ABORTAR = "xas343wraASrqwr36"; //mal estilo. Diseña algo mejor bruh
-
-void generar_cliente_ftp(string); //no es accesible para el mundo externo a este archivo
 
 void empujar_queue_cntrl(string s)
 {
@@ -60,17 +59,8 @@ void procesar_queue_cntrl()
 
 void empujar_queue_saliente(string s)
 {
-  if(s.substr(0,3) == "ftp") //las peticiones ftp las mandamos por otro socket temporal, por eso no se añaden al queue
-  {
-    string archivo = s.substr(4);
-    std::thread t(generar_cliente_ftp, archivo);
-    t.detach();
-  }
-  else
-  {
-    lock_guard<mutex> lck(mtx_saliente);
-    queue_saliente.push(s);
-  }
+  lock_guard<mutex> lck(mtx_saliente);
+  queue_saliente.push(s);
 }
 
 string extraer_queue_saliente()
@@ -87,69 +77,6 @@ string extraer_queue_saliente()
     return std::string{};
 }
 
-void generar_cliente_ftp(string archivo) //toda esta función requiere mantenimiento severo, muchas cosas desagradables
-{
-  io_service servicio_ftp;
-  asio::error_code ec;
-
-  if(archivo == NOMBRE_APLICACION)
-    establecer_mensaje("Actualizando...");
-
-  ip::tcp::resolver resolutor(servicio_ftp);
-  ip::tcp::resolver::query consulta(ip_servidor, "1339");
-  ip::tcp::resolver::iterator iterador_endpoint = resolutor.resolve(consulta);
-
-  ip::tcp::socket socket_ftp(servicio_ftp);
-  asio::connect(socket_ftp, iterador_endpoint,ec);
-
-  string peticion = "ftp " + archivo;
-  asio::write(socket_ftp, asio::buffer(peticion, peticion.size()), ec);
-  if(ec)
-  {
-    establecer_mensaje("Error FTP");
-    cerr << "error cliente creando/enviando" << ec.value() << ec.message() << endl;
-    return;
-  }
-
-  string buffer_total;
-  buffer_total.reserve(4096*4096*4); // 4 MiB Mike
-  for(;;)
-  {
-    char buf[4096];
-
-    size_t len = socket_ftp.read_some(asio::buffer(buf), ec);
-    buffer_total.append(buf, len);
-    cout << "recibi " << len << " bytes\n";
-
-    if(ec == asio::error::eof)
-    {
-      ofstream ofs("descargas/" + archivo, std::ios::binary);
-      ofs.write(&buffer_total[0], buffer_total.size());
-      cout << archivo << " recibido " << buffer_total.size() << " bytes\n";
-      socket_ftp.close();
-      if(buffer_total.size() == 0)
-      {
-        cerr << "ERR: el archvo " << archivo << " está vacío\n";
-        establecer_mensaje("Error: Archivo vacio");
-        break;
-      }
-
-      if(archivo == NOMBRE_APLICACION)
-      {
-        escribir_valor_configuracion("version", version);
-        establecer_mensaje("Reiniciando");
-        empujar_queue_cntrl("reboot");
-      }
-
-      break;
-    }
-    else if(ec)
-    {
-      cerr << "error cliente recibiendo" << ec.value() << ec.message() << endl;
-      break;
-    }
-  }
-}
 
 /**Función miembro que verifica cada 25ms si hay algo que debamos enviar al servidor*/
 void cliente::timer_queue()
@@ -271,9 +198,9 @@ void cliente::procesar_lectura()
   if(lectura.substr(0,7) == "version")
   {
     string version_serv = lectura.substr(8);
-    if(version_serv != version)
+    if(version_serv != cfg.get_version())
     {
-      version = version_serv;
+      cfg.version = version_serv;
       empujar_queue_saliente("ftp " + NOMBRE_APLICACION);
     }
   }
@@ -304,7 +231,7 @@ void redes_main()
 {
   try
   {
-    cliente tu_cliente(iosvc, ip_servidor, puerto_servidor); //"127.0.0.1" no sé si excluya conexiones externas
+    cliente tu_cliente(iosvc, cfg.get_ip_servidor(), cfg.get_puerto()); //"127.0.0.1" no sé si excluya conexiones externas
 
     iosvc.run();
     std::cout << "Saliendo de ciclo de iosvc\n";

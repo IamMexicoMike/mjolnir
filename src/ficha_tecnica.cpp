@@ -70,9 +70,9 @@ BOOL CALLBACK DialogoFichaTecnicaProc(HWND hwnd, UINT Message, WPARAM wParam, LP
   return TRUE;
 }
 
-void dialogo_ficha_tecnica()
+void dialogo_ficha_tecnica(ventana& padre)
 {
-  int ret = DialogBox/*Param*/(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FICHA_TECNICA), hVentanaPrincipal,
+  int ret = DialogBox/*Param*/(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FICHA_TECNICA), padre.get_hwnd(),
                            (DLGPROC)DialogoFichaTecnicaProc/*, reinterpret_cast<LPARAM>(pobj)*/);
   if(ret == IDOK)
   {
@@ -85,6 +85,6 @@ void dialogo_ficha_tecnica()
   }
 
   else if(ret == -1)
-    MessageBox(hVentanaPrincipal, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(padre.get_hwnd(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 
 }

@@ -2,13 +2,17 @@
 #define ELEMENTO_DIAGRAMA_H
 
 #include "redes.h"
-#include "mjolnir.hpp"
+//#include "mjolnir.hpp"
 
 #include <typeinfo>
 #include <fstream>
+#include <opencv2/opencv.hpp>
 
 void ordenar_objetos();
 void destruir_objeto(int id);
+cv::Point operator/(cv::Point p, const int d);
+
+class objeto;
 
 extern void crear_dialogo_objeto(objeto* pobj);
 
@@ -220,41 +224,6 @@ private:
   std::vector<cv::Point> vertices_;
   //std::array<cv::Point,4> vertices_; //std::array no es un argumento aceptable para pointPolygonTest...
 };
-
-/** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
-template <typename T>
-T* crear_objeto(T& t)
-{
-  std::string nombre_tipo = typeid(t).name();
-  std::lock_guard<std::mutex> lck(mtx_objetos);
-  //std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
-  if(ptr_seleccionado != nullptr)
-    ptr_seleccionado->seleccionar(false);
-  std::unique_ptr<T> po = std::make_unique<T>(t);
-  T* ptr = po.get();
-  po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
-  objetos.emplace_back(std::move(po));
-  ptr_highlight=ptr_seleccionado=nullptr;
-  return ptr;
-  //cout << paq << '\n';
-  //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
-}
-
-template <typename T>
-void crear_objeto_delicado(std::unique_ptr<T>&& pt)
-{
-  std::string nombre_tipo = typeid(*pt).name();
-  std::lock_guard<std::mutex> lck(mtx_objetos);
-  std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(pt->id());
-  if(ptr_seleccionado != nullptr)
-    ptr_seleccionado->seleccionar(false);
-  pt->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
-  objetos.emplace_back(std::move(pt));
-  ptr_highlight=nullptr;
-  ptr_seleccionado=nullptr;
-  //cout << paq << '\n';
-  //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
-}
 
 void crear_relacion(objeto* o1, objeto* o2);
 

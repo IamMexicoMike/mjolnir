@@ -1,5 +1,6 @@
 #include "postgres_funciones.h"
 #include "sync.h"
+#include "configuracion.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -9,13 +10,15 @@
 
 using namespace std;
 
+extern configurador cfg;
 PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
 
 //static int miProcesadorEventos(PGEventId evtid, void* evtInfo, void* pasar /*??*/);
 
 void db::conectar_db()
 {
-  conexion = PQconnectdb("dbname=heredera host=201.139.98.214 port=5432 user=turambar"); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
+  string str_con = "dbname=heredera host=" + cfg.get_ip_servidor() + " port=5432 user=turambar";
+  conexion = PQconnectdb(str_con.c_str()); //el archivo pg_hba.txt está en la instalación de postgres/data ATTN
   if(PQstatus(conexion) != CONNECTION_OK)
   {
     cerr << "Error al conectar a la base de datos: " << PQerrorMessage(conexion) << '\n';
@@ -24,22 +27,6 @@ void db::conectar_db()
     exit(-1);
   }
   cout << "Conectado a la base de datos\n";
-}
-
-void db::prueba_db()
-{
-  PGresult* res = PQexec(conexion, "SELECT * FROM Usuario"); //se ejecuta una query
-  auto campos = PQnfields(res);
-  for(int i=0; i<campos; ++i)
-    cout << PQfname(res, i) << '\t';
-  cout << '\n';
-  for(int i=0; i<PQntuples(res); ++i)
-  {
-    for(int j=0; j<campos; ++j)
-      cout << PQgetvalue(res, i, j) << '\t';
-    cout << '\n';
-  }
-  PQclear(res);
 }
 
 void db::query_db(string query)
@@ -86,6 +73,7 @@ void db::checar_input_db()
   }
 }
 
+/**this is not sufficiently abstract*/
 void db::construir_objetos_sincronizados()
 {
   PGresult* res = PQexec(conexion, string("SELECT * FROM " + sync_rect::nombreclase).c_str()); //se ejecuta una query
@@ -107,4 +95,20 @@ void db::construir_objetos_sincronizados()
   PQclear(res);
 }
 
+/**pruebas:*/
+void db::prueba_db()
+{
+  PGresult* res = PQexec(conexion, "SELECT * FROM Usuario"); //se ejecuta una query
+  auto campos = PQnfields(res);
+  for(int i=0; i<campos; ++i)
+    cout << PQfname(res, i) << '\t';
+  cout << '\n';
+  for(int i=0; i<PQntuples(res); ++i)
+  {
+    for(int j=0; j<campos; ++j)
+      cout << PQgetvalue(res, i, j) << '\t';
+    cout << '\n';
+  }
+  PQclear(res);
+}
 

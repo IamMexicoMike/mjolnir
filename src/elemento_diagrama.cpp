@@ -11,11 +11,13 @@
 using namespace std;
 using namespace cv;
 
-mutex mtx_objetos;
 int objeto::sid = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
-const Point objeto::offset_puntos_clave_(3,3);
+const Point objeto::offset_puntos_clave_(3,3); //comentame
 
-//void comparar_por_area(const un)
+Point operator/(Point p, const int d)
+{
+  return Point(p.x/d, p.y/d);
+}
 
 void ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
 {

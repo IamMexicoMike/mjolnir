@@ -1,3 +1,5 @@
-servidor 201.139.98.214
-puerto 1337
+servidor 201.139.127.78
+puerto 3214
 version 2
+ipfabricav 201.139.98.214
+ipfabrican 201.139.127.78

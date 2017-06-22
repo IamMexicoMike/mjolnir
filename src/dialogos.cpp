@@ -5,8 +5,6 @@
 
 using namespace std;
 
-extern HWND hVentanaPrincipal;
-
 namespace dialogos
 {
   string ip;
@@ -64,9 +62,9 @@ bool CALLBACK callback_seleccionar_host(HWND hwnd, UINT Message, WPARAM wParam, 
   return true;
 }
 
-pair<string, string> dialogo_seleccion_host()
+pair<string, string> dialogo_seleccion_host(ventana& v)
 {
-  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SELECCIONAR_HOST), hVentanaPrincipal,
+  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SELECCIONAR_HOST), v.get_hwnd(),
                       (DLGPROC)callback_seleccionar_host);
   if(ret == IDOK)
   {
@@ -79,7 +77,7 @@ pair<string, string> dialogo_seleccion_host()
   }
 
   else if(ret == -1)
-    MessageBox(hVentanaPrincipal, "Error creando dialogo", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(v.get_hwnd(), "Error creando dialogo", "Error", MB_OK | MB_ICONINFORMATION);
 }
 
 bool CALLBACK callback_query(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)

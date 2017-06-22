@@ -13,23 +13,23 @@ using namespace std;
 
 RECT ventana::rEscritorio;
 
-HWND hVentanaPrincipal;
-HWND hEdit;
-HWND hTool;
 extern Mat region;
 extern void renderizarDiagrama(cv::Mat&);
 extern void procesar_queue_cntrl();
 
 const char* nombreClaseVentanaPrincipal= "claseVentanaPrincipal";
+static WNDCLASSEX wc;
+HINSTANCE ventana::instancia_programa_;
 
-void ventana::registrarClase()
+void ventana::registrarClase(HINSTANCE hInstance)
 {
+  ventana::instancia_programa_ = hInstance; //se use en createwindowEx
   wc.cbSize        = sizeof(WNDCLASSEX);
   wc.style         = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
   wc.lpfnWndProc   = WndProc; //aquí se asigna el nombre del callback de la clase
   wc.cbClsExtra    = 0;
   wc.cbWndExtra    = 0;
-  wc.hInstance     = hInstance_;
+  wc.hInstance     = hInstance;
   wc.hIcon         = /*LoadIcon(NULL, IDI_APPLICATION);*/LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR));
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
@@ -38,8 +38,9 @@ void ventana::registrarClase()
   wc.hIconSm       = /*LoadIcon(NULL, IDI_APPLICATION);*/(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR), IMAGE_ICON, 16, 16, 0);
 
   if(!RegisterClassEx(&wc))
-      throw "Error en registrar la clase de la ventana!";
+      throw std::except("Error en registrar la clase de la ventana!");
 }
+
 
 void ventana::crearVentana()
 {
@@ -49,13 +50,12 @@ void ventana::crearVentana()
       nombre_,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, rEscritorio.right, rEscritorio.bottom,
-      NULL, NULL, hInstance_, NULL);
+      NULL, NULL, ventana::instancia_programa_, NULL);
 
   if(hwnd_ == NULL)
     throw "Error creando ventana";
 
   mover(0, 0, ventana::rEscritorio.right, ventana::rEscritorio.bottom-50); //demasiada magia
-  hVentanaPrincipal = hwnd_;
 }
 
 void ventana::inicializar_diagrama()
@@ -66,8 +66,8 @@ void ventana::inicializar_diagrama()
   altura_region = (rVentana.bottom);
   dxy = Point(ancho_region/2, ancho_region/2);
 
-  region = Mat(altura_region, ancho_region, CV_8UC4, Scalar(200,200,200));  //instanciamos la matriz del diagrama principal
-  mat_header = Mat(region.colRange(0, region.cols).rowRange(0,30)); //instanciamos la submatriz del header
+  mjol_.diagrama_ = Mat(altura_region, ancho_region, CV_8UC4, Scalar(200,200,200));  //instanciamos la matriz del diagrama principal
+  mjol_.encabezado_ = Mat(region.colRange(0, region.cols).rowRange(0,30)); //instanciamos la submatriz del header
   HEADER_MSG = Point(region.cols-300, HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
 
   preparar_memoria(); //sospechoso
@@ -77,8 +77,8 @@ void ventana::inicializar_diagrama()
 
 void ventana::configuramos_parametros_diagrama()
 {
-  cv::namedWindow(nombreDiagrama, CV_WINDOW_AUTOSIZE);
-  HWND hWnd2 = (HWND) cvGetWindowHandle(nombreDiagrama);
+  cv::namedWindow(nombre_, CV_WINDOW_AUTOSIZE);
+  HWND hWnd2 = (HWND) cvGetWindowHandle(nombre_);
   HWND hDiagrama = ::GetParent(hWnd2);
   ::SetParent(hDiagrama, hwnd_);
   //EnableMenuItem(GetSystemMenu(hDiagrama, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED);
@@ -92,8 +92,8 @@ void ventana::configuramos_parametros_diagrama()
   SetWindowPos(hDiagrama, 0, 0, 0, sz_dia.right, sz_dia.bottom, SWP_NOSIZE);
   //mover( 0, -20, sz_dia.right, sz_dia.bottom);
   SendMessage(hDiagrama, WM_SETICON, ICON_BIG, IDI_MJOLNIR);
-  cv::setMouseCallback(nombreDiagrama, manejarInputMouse); //probablemente esto por cada instancia, en lugar de en el constructor
-  cv::setKeyboardCallback(nombreDiagrama, manejarInputTeclado);// "
+  cv::setMouseCallback(nombre_, manejarInputMouse); //probablemente esto por cada instancia, en lugar de en el constructor
+  cv::setKeyboardCallback(nombre_, manejarInputTeclado);// "
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -113,20 +113,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case ID_PB1:
     {
       LPWSTR buffer[256];
-      SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
-      MessageBox(NULL, (LPCSTR)buffer, "Click boton", MB_ICONINFORMATION);
+      //SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
+      MessageBox(NULL, (LPCSTR)"diseñame", "Click boton", MB_ICONINFORMATION);
       break;
     }
     case ID_ACCION1:
     {
       LPWSTR buffer[256];
-      SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
-      MessageBox(NULL, (LPCSTR)buffer, "Informacion!", MB_ICONINFORMATION);
+      //SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
+      MessageBox(NULL, (LPCSTR)/*buffer*/"accion1", "Informacion!", MB_ICONINFORMATION);
       break;
     }
     case IDM_CREAR_FICHA:
     {
-      dialogo_ficha_tecnica();
+      dialogo_ficha_tecnica(hwnd);
       break;
     }
 
@@ -151,7 +151,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if(!b_cache_valida)
         {
           renderizarDiagrama(region); //actualizamos el contenido de la matriz
-          imshow(nombreDiagrama, region);
           b_cache_valida = true;
         }
         procesar_queue_cntrl();
@@ -228,9 +227,9 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
   return TRUE;
 }
 
-void crear_dialogo_objeto(objeto* pobj)
+void crear_dialogo_objeto(objeto* pobj, ventana& padre)
 {
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), hVentanaPrincipal,
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), padre.get_hwnd(),
                            (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
   if(ret == IDOK)
   {
@@ -243,7 +242,7 @@ void crear_dialogo_objeto(objeto* pobj)
   }
 
   else if(ret == -1)
-    MessageBox(hVentanaPrincipal, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(padre.get_hwnd(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 
 }
 
@@ -253,7 +252,7 @@ void alerta_cierre_programa(string msg)
   exit(0);
 }
 
-void mensaje(string msg, string titulo)
+void mensaje(ventana& padre, string msg, string titulo)
 {
-  MessageBox(hVentanaPrincipal, msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
+  MessageBox(padre.get_hwnd(), msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
 }

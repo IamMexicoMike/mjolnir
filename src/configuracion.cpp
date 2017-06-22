@@ -4,23 +4,24 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <configuracion.hpp>
 
 extern void alerta_cierre_programa(std::string msg);
 
 using namespace std;
 
-string ip_servidor;
-string puerto_servidor;
-string version;
-
 mutex mtx_config;
+configurador cfg;
 
-string cargar_valor(const string& arg)
+string configurador::cargar_valor(const string& arg)
 {
   lock_guard<mutex> lck(mtx_config);
   ifstream ifs("config.txt");
   if(!ifs.is_open())
-    alerta_cierre_programa("Error al abrir archivo de configuracion: config.txt\nEste archivo es necesario para determinar la direccion IP del servidor\n\nVerifique que el archivo existe");
+    alerta_cierre_programa("Error al abrir archivo de configuracion: \
+                           config.txt\nEste archivo es necesario para \
+                           determinar la direccion IP del servidor\n\n\
+                           Verifique que el archivo existe");
   string simbolo, valor;
   while(ifs >> simbolo >> valor)
   {
@@ -32,7 +33,7 @@ string cargar_valor(const string& arg)
   return string();
 }
 
-void cargar_variables_configuracion()
+void configurador::cargar_variables_configuracion()
 {
   ip_servidor = cargar_valor("servidor");
   puerto_servidor = cargar_valor("puerto");
@@ -40,7 +41,7 @@ void cargar_variables_configuracion()
 }
 
 /** El simbolo y su valor que se quieren sobreescribir en el archivo de configuración. Reescribe todo el archivo*/
-void escribir_valor_configuracion(const string& simbolo, const string& valor)
+void configurador::escribir_valor_configuracion(const string& simbolo, const string& valor)
 {
   lock_guard<mutex> lck(mtx_config);
   fstream iofs("config.txt", ios::in);

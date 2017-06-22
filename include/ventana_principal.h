@@ -5,6 +5,7 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include <mjolnir.hpp>
 #include <elemento_diagrama.h>
 
 #define ID_T30 1001
@@ -14,10 +15,6 @@
 #define ID_RB2 5102
 #define ID_CB1 5201
 #define IDC_MAIN_EDIT 6000
-
-extern HWND hVentanaPrincipal;
-extern HWND hEdit;
-extern HWND hTool;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance);
@@ -35,31 +32,29 @@ void mensaje(std::string msg, std::string titulo);
 class ventana
 {
 private:
-  WNDCLASSEX wc;
   HWND hwnd_;
-  HINSTANCE hInstance_;
-  cv::Mat diagrama_;
   const char* nombre_;
-
+  Mjolnir mjol_;
 
 public:
   static RECT rEscritorio;
+  static HINSTANCE instancia_programa_;
 
-  void registrarClase();
+  static void registrarClase(HINSTANCE hInstance);
+  HWND get_hwnd() const { return hwnd_; }
   void crearVentana();
   void inicializar_diagrama();
   void configuramos_parametros_diagrama();
   void mover(int x, int y, int w, int h) { MoveWindow(hwnd_, x, y, w, h, TRUE); }
 
-  ventana(HINSTANCE h_instancia, const char* nombre):
-    hInstance_(h_instancia),
-    nombre_(nombre)
+  ventana(const char* nombre):
+    nombre_(nombre),
+    mjol_(nombre)
   {
     //al arrancar el programa calculamos las dimensioens de la pantalla(escritorio) y las guardamos como una variable estática
     //const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
     GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio
 
-    registrarClase();
     crearVentana();
     inicializar_diagrama();
     configuramos_parametros_diagrama();

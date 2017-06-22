@@ -18,72 +18,11 @@ extern void mensaje(std::string, std::string);
 using namespace std;
 using namespace cv;
 
-void iniciar_creacion_objeto(Objetos); //enum representado el tipo del objeto a crear
-void terminar_creacion_objeto();
-void dibujar_objeto_temporal();
-
-const char* nombreDiagrama="diagrama de planta";
-
 const Scalar BLANCO(255,255,255);
 const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
 const Scalar AZUL_PALIDO(240,200,200);
-//const Scalar Bckgnd(46,169,230);
-Scalar Bckgnd(30,100,20);
 
-class zona;
-extern vector<zona> superzonas;
-
-Mat region;
-Mat mat_header; //estas variables se deben hacer variables miembro de una clase
-Point HEADER_MSG;
-
-Point puntoClickMouseDerecho(0,0); //panning
-Point puntoInicioDesplazamiento(0,0); //panning
-
-bool b_dibujando_flecha; //flechas temporales
-Point puntoInicioFlecha(0,0); //flechas temporales
-Point puntoTerminoFlecha(0,0); //flechas temporales
-
-bool b_dibujando_objeto; //objeto temporal
-Point puntoOrigenobjeto(0,0); //objeto temporal
-Point puntoFinobjeto(0,0); //objeto temporal
-
-Point puntoActualMouse(0,0); //se actualiza en cada evento del mouse
-
-Point despl(4000,1300); //originalmente desplazamientoOrigen
-
-objeto* ptr_seleccionado = nullptr;
-objeto* ptr_highlight = nullptr;
-bool b_drag=false;
-Point ptInicioArrastre(0,0);
-Point ptFinArrastre(0,0);
-vector<unique_ptr<objeto>> objetos;
-vector<unique_ptr<objeto>> objetos_invisibles;
-
-int ancho_region; //w = 2dx
-int altura_region; //h = 2dy
-Point dxy; // (w/2, h/2)
-int zoom(32);
-bool b_dibujar_nombres=false; //es en funcion del zoom
-int tamanio_texto;
-int ancho_texto;
-
-string mensaje_derecho_superior;
-mutex mtx_mensaje_derecho_superior;
-
-atomic<bool> b_cache_valida{false};
-atomic<bool> b_puntos_relativos_validos{false};
-
-Objetos Tipo_Objeto_Dibujando; //para qué era esto? un global conteniendo el tipo de objeto dibujando verdad?
-
-objeto* encontrar_ptr_area(cv::Point& p)
-{
-  for(const auto& uptr : objetos)
-    if(uptr->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
-      return uptr.get();
-  return nullptr;
-};
 
 Point operator/(Point p, const int d)
 {
@@ -113,26 +52,26 @@ dx = w/2, es decir el ancho de diagrama entre dos.
 d = desplazamiento del origen
 z es el factor zoom */
 
-Point transformar(const Point p)
+Point Mjolnir::transformar(const Point p)
 {
   Point pp = dxy + (p - dxy - despl)/zoom; //dxy es la mitad del tamaño del diagrama
   return pp;
 }
 
-Point transformacion_inversa(const Point pp) /*magia*/
+Point Mjolnir::transformacion_inversa(const Point pp) /*magia*/
 {
   Point p = zoom*(pp - dxy) + dxy + despl;
   return p;
 }
 
-int transformar_escalar(int i)
+int Mjolnir::transformar_escalar(int i)
 {
   return (i)/zoom;
 }
 
-int transformar_escalar_inverso(int i) { return i*zoom; }
+int Mjolnir::transformar_escalar_inverso(int i) { return i*zoom; }
 
-void efecto_cuadricula(Mat& matriz)
+void Mjolnir::efecto_cuadricula(Mat& matriz)
 {
   static vector<chrono::duration<double>> tiempos(100);
   static int cnt;
@@ -181,14 +120,14 @@ void efecto_cuadricula(Mat& matriz)
 
 
 //demasiados magic numbers
-void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
+void Mjolnir::renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
 {
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
 
   Point pabs = transformacion_inversa(puntoActualMouse);
 
-  matriz = Bckgnd;
+  matriz = bckgnd_;
 
   for(auto& zz : superzonas) //relleno de superzonas
   {
@@ -233,7 +172,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   if(b_dibujando_objeto) //dibujamos un objeto temporal
     dibujar_objeto_temporal();
 
-  mat_header = BLANCO;
+  encabezado_ = BLANCO;
 
   if(ptr_seleccionado != nullptr)
     putText(matriz, string("" + ptr_seleccionado->nombre()),
@@ -255,7 +194,7 @@ void renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una re
   //static VideoCapture cap(0);
   //cap >> region;
 
-  //imshow("Mjolnir"); //actualizamos el diagrama
+  imshow(nombre_, matriz); //actualizamos el diagrama
 }
 
 //falta agregar los equivalentes con bloq mayus activadas
@@ -708,11 +647,6 @@ void dibujar_objeto_temporal()
 
   }
 
-}
-
-void preparar_memoria() //muy sospechoso
-{
-  objetos.reserve(1024);
 }
 
 void simulacion()

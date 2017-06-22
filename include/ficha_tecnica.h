@@ -16,6 +16,6 @@ class ficha_tecnica
   private:
 };
 
-void dialogo_ficha_tecnica();
+void dialogo_ficha_tecnica(HWND padre);
 
 #endif // FICHA_TECNICA_H
