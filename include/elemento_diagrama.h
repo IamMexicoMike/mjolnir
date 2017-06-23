@@ -13,6 +13,7 @@ void destruir_objeto(int id);
 cv::Point operator/(cv::Point p, const int d);
 
 class objeto;
+class Mjolnir;
 
 extern void crear_dialogo_objeto(objeto* pobj);
 
@@ -53,10 +54,10 @@ public:
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
   bool operator<(const objeto& o2) const {return (this->area() < o2.area());}
-  void dibujar_nombre(cv::Mat&) const;
+  void dibujar_nombre(Mjolnir&) const;
   void nombre(std::string nuevo_nombre) { nombre_ = nuevo_nombre; }
 
-  virtual void dibujarse(cv::Mat& m)=0;
+  virtual void dibujarse(Mjolnir&)=0;
   virtual void arrastrar(const cv::Point pt)=0;
   virtual bool pertenece_a_area(const cv::Point pt) const=0;
   bool pertenece_a_punto_clave(const cv::Point pt);
@@ -68,7 +69,6 @@ public:
   virtual void recalcular_dimensiones() {}
   virtual void guardar(std::ofstream& ofs) const {};
   virtual void dialogo_objeto() { crear_dialogo_objeto(this);}
-  virtual void destruir();
   static int sid;
 
 protected:
@@ -105,7 +105,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&) override;
+  virtual void dibujarse(Mjolnir&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -127,7 +127,7 @@ public:
     color_ = cv::Scalar(200,65,100);
     nombre_ = "C"+std::to_string(id_);
   }
-  virtual void dibujarse(cv::Mat&) override;
+  virtual void dibujarse(Mjolnir&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -155,7 +155,7 @@ public:
     acepta_drops_ = false;
     es_dropeable_ = true;
   }
-  virtual void dibujarse(cv::Mat&) override;
+  virtual void dibujarse(Mjolnir&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -194,7 +194,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(cv::Mat&) override;
+  virtual void dibujarse(Mjolnir&) override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -207,19 +207,15 @@ public:
   virtual void guardar(std::ofstream& ofs) const;
 private:
   float calcular_l(cv::Point ini, cv::Point fin) { return std::abs( float(fin.x-ini.x)/std::sqrt(3) ); };
-  void calcular_vertices() { //vaya cuanta verbosidad
+
+  void calcular_vertices()
+  {
     vertices_[0] = inicio_;
     vertices_[1] = cv::Point((inicio_.x + fin_.x)/2,inicio_.y-l_/2);
     vertices_[2] = fin_;
     vertices_[3] = cv::Point((inicio_.x + fin_.x)/2,inicio_.y+l_/2);
   };
-  std::vector<cv::Point> puntos_desplazados() const
-  {
-    std::vector<cv::Point> poff; //p'
-    for(auto p : vertices_)
-      poff.emplace_back(transformar(p));
-    return poff;
-  }
+
   float l_;
   std::vector<cv::Point> vertices_;
   //std::array<cv::Point,4> vertices_; //std::array no es un argumento aceptable para pointPolygonTest...

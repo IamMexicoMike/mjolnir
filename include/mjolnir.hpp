@@ -8,7 +8,7 @@
 #include <atomic>
 
 #include <opencv2/opencv.hpp>
-
+//#include <sync.h>
 
 
 class objeto;
@@ -107,7 +107,10 @@ public:
   void dibujar_objeto_temporal();
 
   template <typename T> T* crear_objeto(T& t);
-  template <typename T> void crear_objeto_delicado(std::unique_ptr<T>&& pt)
+  template <typename T> void crear_objeto_delicado(std::unique_ptr<T>&& pt);
+  void destruir_objeto_seleccionado();
+  void destruir_objeto(const int id);
+  template<typename T> T* crear_sincronizado(T& t);
 };
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
@@ -143,6 +146,60 @@ void Mjolnir::crear_objeto_delicado(std::unique_ptr<T>&& pt)
   ptr_seleccionado=nullptr;
   //cout << paq << '\n';
   //empujar_queue_saliente(paq); //dentro de una función lockeada llamas a otra que usa locks. aguas
+}
+
+void Mjolnir::destruir_objeto_seleccionado()
+{
+  if(ptr_seleccionado!=nullptr)
+  {
+    std::lock_guard<std::mutex> lck(mtx_objetos);
+    std::string paq = "ro" + std::to_string(ptr_seleccionado->id());
+    //avisamos a las lineas que ese objeto ya no existe
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido(ptr_seleccionado); //avisamos que el objeto con esa dirección será destruido
+    auto itr_seleccionado = std::find_if(objetos.begin(), objetos.end(), [&](std::unique_ptr<objeto> const& obj)
+      { return obj.get() == ptr_seleccionado; });
+    objetos.erase(itr_seleccionado);
+    ptr_seleccionado=ptr_highlight=nullptr;
+    empujar_queue_saliente(paq);
+    b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
+  }
+
+}
+
+void Mjolnir::destruir_objeto(int id)
+{
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  auto itr = std::find_if(objetos.begin(), objetos.end(), [&](std::unique_ptr<objeto> const& obj)
+    { return obj->id() == id; });
+  if(itr != objetos.end())
+  {
+    objeto* ptr = (*itr).get();
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido(ptr); //atento a los usos de ptr y de itr
+    objetos.erase(itr); //itr solo es necesario para llamar a esta función
+    ptr_seleccionado=ptr_highlight=nullptr;
+    std::string paq = "ro" + std::to_string(id);
+    empujar_queue_saliente(paq);
+  }
+}
+
+template<typename T>
+T* Mjolnir::crear_sincronizado(T& t)
+{
+  std::string nombre_tipo = typeid(t).name();
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  std::string paq = "objeto syncronizado " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
+  if(ptr_seleccionado != nullptr)
+    ptr_seleccionado->seleccionar(false);
+  std::unique_ptr<T> po = std::make_unique<T>(t);
+  T* ptr = po.get();
+  po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
+  std::pair<std::string,int> tabla_y_id(T::nombreclase, po->id() );
+  sync::objetos_sincronizados[tabla_y_id]=ptr;
+  objetos.emplace_back(std::move(po));
+  ptr_highlight=ptr_seleccionado=nullptr;
+  return ptr;
 }
 
 enum class Flags {Vacia, Objeto, SinCambios}; //no me convence

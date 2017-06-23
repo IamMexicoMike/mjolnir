@@ -44,7 +44,6 @@ class sync_rect : public rectangulo, public sync
     sync_rect(int id, cv::Point inicio, cv::Point fin); //para construirse a partir de la base de datos
 
     virtual void actualizarse() override;
-    virtual void destruir() override;
 
   protected:
     virtual void arrastrar(const cv::Point pt) override;
@@ -63,24 +62,6 @@ void eliminar_de_la_db(int id)
     PQclear(res);
     throw std::runtime_error("error eliminando objeto sincronizado");
   }
-}
-
-template<typename T>
-T* crear_sincronizado(T& t)
-{
-  std::string nombre_tipo = typeid(t).name();
-  std::lock_guard<std::mutex> lck(mtx_objetos);
-  std::string paq = "objeto syncronizado " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
-  if(ptr_seleccionado != nullptr)
-    ptr_seleccionado->seleccionar(false);
-  std::unique_ptr<T> po = std::make_unique<T>(t);
-  T* ptr = po.get();
-  po->actualizar_pointers(); //los pointers a los miembros apuntaban a la stack si los actualizabas en el ctor
-  std::pair<std::string,int> tabla_y_id(T::nombreclase, po->id() );
-  sync::objetos_sincronizados[tabla_y_id]=ptr;
-  objetos.emplace_back(std::move(po));
-  ptr_highlight=ptr_seleccionado=nullptr;
-  return ptr;
 }
 
 #endif // SYNC_H
