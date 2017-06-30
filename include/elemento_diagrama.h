@@ -1,8 +1,6 @@
 #ifndef ELEMENTO_DIAGRAMA_H
 #define ELEMENTO_DIAGRAMA_H
 
-
-//#include "mjolnir.hpp"
 #include "redes.h"
 
 #include <typeinfo>
@@ -15,10 +13,6 @@ cv::Point operator/(cv::Point p, const int d);
 
 class objeto;
 class Mjolnir;
-
-extern void crear_dialogo_objeto(objeto* pobj);
-
-extern std::mutex mtx_objetos;
 
 const cv::Scalar COLOR_FLECHA_DIBUJANDO(105, 205, 25);
 const cv::Scalar COLOR_RECT_DIBUJANDO(150, 65, 150);
@@ -70,7 +64,7 @@ public:
   virtual void actualizar_pointers() { puntos_clave_.push_back(&inicio_); puntos_clave_.push_back(&fin_); }
   virtual void recalcular_dimensiones() {}
   virtual void guardar(std::ofstream& ofs) const {};
-  virtual void dialogo_objeto() { crear_dialogo_objeto(this);}
+  virtual void dialogo_objeto();
   static int sid;
 
 protected:

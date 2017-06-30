@@ -1,4 +1,5 @@
 #include "puerto_serial.h"
+#include "mjolnir.hpp"
 #include "../recurso.h"
 
 using namespace asio;
@@ -54,8 +55,6 @@ void puerto_serial::escribir(string& s) //es asíncrono pero no hacemos nada al t
   });
 }
 
-extern HWND hVentanaPrincipal;
-
 BOOL CALLBACK DialogoSerial(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
   vector<string>* puertos_disponibles = reinterpret_cast<vector<string>*>(lParam);
@@ -88,7 +87,7 @@ BOOL CALLBACK DialogoSerial(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
           string sbaudios(buf);
           if(puerto.empty() || sbaudios.empty())
           {
-            MessageBox(hVentanaPrincipal, "Puerto o baudios vacio, reintenta", "Error", MB_OK | MB_ICONINFORMATION);
+            MessageBox(hwnd, "Puerto o baudios vacio, reintenta", "Error", MB_OK | MB_ICONINFORMATION);
             break;
           }
 
@@ -114,13 +113,13 @@ BOOL CALLBACK DialogoSerial(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 bool crear_dialogo_serial(vector<string>* puertos_disponibles)
 {
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_SERIAL), hVentanaPrincipal,
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_SERIAL), nullptr,
                            (DLGPROC)DialogoSerial, reinterpret_cast<LPARAM>(puertos_disponibles));
- /*int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), hVentanaPrincipal,
+ /*int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), mjol_->padre(),
       (DLGPROC)DialogoTextoProc, 0);*/
   if(ret==-1)
   {
-    MessageBox(hVentanaPrincipal, "Error al crear props de Puerto Serial", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(nullptr, "Error al crear props de Puerto Serial", "Error", MB_OK | MB_ICONINFORMATION);
     return false;
   }
   return true;
@@ -164,10 +163,10 @@ BOOL CALLBACK DialogoPuerto(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
   return TRUE;
 }
 
-void crear_dialogo_puerto(puerto_serial* pobj)
+void puerto_serial::crear_dialogo_puerto()
 {
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_INPUT_OUTPUT), hVentanaPrincipal,
-                           (DLGPROC)DialogoPuerto, reinterpret_cast<LPARAM>(pobj));
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_INPUT_OUTPUT), mjol_->padre(),
+                           (DLGPROC)DialogoPuerto, reinterpret_cast<LPARAM>(this));
   if(ret == IDOK)
   {
     //has algo?
@@ -179,5 +178,5 @@ void crear_dialogo_puerto(puerto_serial* pobj)
   }
 
   else if(ret == -1)
-    MessageBox(hVentanaPrincipal, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(mjol_->padre(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 }

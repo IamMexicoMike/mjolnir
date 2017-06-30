@@ -7,6 +7,9 @@
 #include "commdlg.h"
 #include "wingdi.h"
 #include "sync.h"
+#include "zonas.hpp"
+
+#include <stdexcept>
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
@@ -19,14 +22,18 @@ extern void procesar_queue_cntrl();
 static WNDCLASSEX wc;
 HINSTANCE ventana::instancia_programa_;
 
+LRESULT CALLBACK WndProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+
+}
+
 void ventana::registrarClase()
 {
-  std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)> fnwnprox;
   fnwnprox = std::bind(&ventana::WndProc, this, _1, _2, _3, _4);
 
   wc.cbSize        = sizeof(WNDCLASSEX);
   wc.style         = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
-  wc.lpfnWndProc   = fnwnprox.target<LRESULT(HWND,UINT,WPARAM,LPARAM)>(); //WndProc; //aquí se asigna el nombre del callback de la clase
+  wc.lpfnWndProc   = fnwnprox.target<LRESULT(HWND,UINT,WPARAM,LPARAM)>(); //aquí se asigna el nombre del callback de la clase
   wc.cbClsExtra    = 0;
   wc.cbWndExtra    = 0;
   wc.hInstance     = ventana::instancia_programa_;
@@ -34,7 +41,7 @@ void ventana::registrarClase()
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
   wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MYMENU);
-  wc.lpszClassName = nombre_;
+  wc.lpszClassName = nombre_clase_win32_;
   wc.hIconSm       = /*LoadIcon(NULL, IDI_APPLICATION);*/(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR), IMAGE_ICON, 16, 16, 0);
 
   if(!RegisterClassEx(&wc))
@@ -46,14 +53,17 @@ void ventana::crearVentana()
 {
   hwnd_ = CreateWindowEx(
       WS_EX_CONTEXTHELP,
-      nombre_,
+      nombre_clase_win32_,
       nombre_,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, rEscritorio.right, rEscritorio.bottom,
       NULL, NULL, ventana::instancia_programa_, NULL);
 
   if(hwnd_ == NULL)
-    throw "Error creando ventana";
+  {
+    throw std::runtime_error("Error creando ventana");
+  }
+
 
   mover(0, 0, ventana::rEscritorio.right, ventana::rEscritorio.bottom-50); //demasiada magia
 }
@@ -70,8 +80,8 @@ void ventana::inicializar_diagrama()
   mjol_.encabezado_ = Mat(mjol_.diagrama_.colRange(0, mjol_.diagrama_.cols).rowRange(0,30)); //instanciamos la submatriz del header
   mjol_.HEADER_MSG = Point(mjol_.diagrama_.cols-300, mjol_.HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
 
-  mjol_.anexar_zonas();
-  mjol_.rellenar_zona_telares();
+  zonas_fabrica(&mjol_);
+  rellenar_zona_telares(&mjol_);
 }
 
 void ventana::configuramos_parametros_diagrama()
@@ -108,6 +118,7 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
   switch(msg)
   {
   case WM_CREATE:
+    cout << "creando?";
     break;
 
   case WM_COMMAND:
@@ -133,7 +144,7 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
     }
     case IDM_CREAR_FICHA:
     {
-      dialogo_ficha_tecnica(hwnd);
+      //dialogo_ficha_tecnica(hwnd);
       break;
     }
 
@@ -234,32 +245,9 @@ BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
   return TRUE;
 }
 
-void crear_dialogo_objeto(objeto* pobj, ventana& padre)
-{
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), padre.get_hwnd(),
-                           (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
-  if(ret == IDOK)
-  {
-    //has algo?
-  }
-
-  else if(ret == IDCANCEL)
-  {
-
-  }
-
-  else if(ret == -1)
-    MessageBox(padre.get_hwnd(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
-
-}
 
 void alerta_cierre_programa(string msg)
 {
   MessageBox(NULL, msg.c_str(), "Cerrando programa", MB_OK);
   exit(0);
-}
-
-void mensaje(ventana& padre, string msg, string titulo)
-{
-  MessageBox(padre.get_hwnd(), msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
 }

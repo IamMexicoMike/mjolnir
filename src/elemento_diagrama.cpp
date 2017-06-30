@@ -10,6 +10,7 @@
 #include "elemento_diagrama.h"
 #include "mjolnir.hpp"
 
+
 using namespace std;
 using namespace cv;
 
@@ -58,6 +59,10 @@ bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
   return false;
 }
 
+void objeto::dialogo_objeto()
+{
+  mjol_->crear_dialogo_objeto(this);
+}
 
 void rectangulo::dibujarse()
 {
@@ -340,7 +345,7 @@ ostream& operator<<(ostream& os, objeto& o)
 
 unique_ptr<linea> crear_relacion(Mjolnir* m, objeto* o1, objeto* o2)
 {
-  lock_guard<mutex> lck(mtx_objetos);
+  //lock_guard<mutex> lck(mtx_objetos);
   auto ptrl = make_unique<linea>(m, o1->centro(),o2->centro()); //es solo para construir algo
   ptrl->punto_inicial(o1);
   ptrl->punto_final(o2);

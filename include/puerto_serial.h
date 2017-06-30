@@ -4,10 +4,9 @@
 #include "elemento_diagrama.h"
 #include "redes.h"
 
-class puerto_serial;
-
+/**levanta un dialogo de seleccion de puertos. Es correcto que sea ajena a cualquier instancia
+tanto de mjolnir como de puerto serial*/
 bool crear_dialogo_serial(std::vector<std::string>*);
-void crear_dialogo_puerto(puerto_serial* pobj);
 
 class puerto_serial : public rectangulo
 {
@@ -32,7 +31,7 @@ public:
   }
   static std::string puerto_temporal_; //esta solución no es elegante, no me encanta. El causante fue la incapacidad de obtener
   static unsigned int baudios_temporales_; //valores de retorno a partir de un callback de windows
-  virtual void dialogo_objeto() override { crear_dialogo_puerto(this); }
+  virtual void dialogo_objeto() override { crear_dialogo_puerto(); }
 
   void leer();
   void iniciar_temporizador();
@@ -41,6 +40,7 @@ public:
   void salir_limpiamente() { puerto_.close(); }
   std::string nombre_puerto() const { return nombre_puerto_; }
   unsigned int baudios() const { return baudios_; }
+  void crear_dialogo_puerto();
 
 private:
   asio::io_service& iosvc_;

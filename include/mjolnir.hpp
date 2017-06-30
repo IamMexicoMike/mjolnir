@@ -10,7 +10,7 @@
 
 #include <opencv2/opencv.hpp>
 
-
+class ventana;
 class objeto;
 class zona;
 enum class Objetos;
@@ -20,13 +20,15 @@ const cv::Scalar COLOR_BLANCO{255,255,255};
 class Mjolnir{
 public:
 
-  Mjolnir(const char* nombre):
+  Mjolnir(const char* nombre, ventana* padre_):
     nombre_(nombre)
   {
     objetos.reserve(1024); //realmente no es necesario, pero evita memallocs en startup
   }
 
   const char* nombre_;
+  ventana* padre_;
+
   cv::Mat diagrama_;
   cv::Mat encabezado_;
   cv::Scalar bckgnd_;
@@ -93,9 +95,6 @@ public:
   int transformar_escalar(int i);
   int transformar_escalar_inverso(int i);
 
-  void rellenar_zona_telares(); //zonas
-  void anexar_zonas();
-
   objeto* encontrar_ptr_area(cv::Point& p)
   {
     for(const auto& uptr : objetos)
@@ -122,6 +121,9 @@ public:
   void renderizarDiagrama();
   void manejarInputTeclado(int k);
   void manejarInputMouse(int event, int x, int y, int flags, void*);
+  void crear_dialogo_objeto(objeto* pobj);
+  void mensaje(std::string msg, std::string titulo);
+  HWND padre() const;
 };
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/

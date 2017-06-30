@@ -11,8 +11,7 @@
 #include "zonas.hpp"
 #include "puerto_serial.h"
 #include "dialogos.h"
-
-extern void mensaje(std::string, std::string);
+#include "../recurso.h"
 
 using namespace std;
 using namespace cv;
@@ -398,7 +397,7 @@ void Mjolnir::manejarInputMouse(int event, int x, int y, int flags, void*)
       {
         /**Se entabla una relación entre dos objetos*/
         cout << "interaccion entre " << ptr->id() << " y " << ptr_seleccionado->id() << "\n";
-        lock_guard<mutex> lck(mtx_objetos);
+        //lock_guard<mutex> lck(mtx_objetos);
         auto ptrl = crear_relacion(this,ptr, ptr_seleccionado);
         objetos.emplace_back(std::move(ptrl));
       }
@@ -656,7 +655,7 @@ void Mjolnir::destruir_objeto_seleccionado()
 {
   if(ptr_seleccionado!=nullptr)
   {
-    std::lock_guard<std::mutex> lck(mtx_objetos);
+    //std::lock_guard<std::mutex> lck(mtx_objetos);
     std::string paq = "ro" + std::to_string(ptr_seleccionado->id());
     //avisamos a las lineas que ese objeto ya no existe
     for(auto& o : objetos)
@@ -673,7 +672,7 @@ void Mjolnir::destruir_objeto_seleccionado()
 
 void Mjolnir::destruir_objeto(int id)
 {
-  std::lock_guard<std::mutex> lck(mtx_objetos);
+  //std::lock_guard<std::mutex> lck(mtx_objetos);
   auto itr = std::find_if(objetos.begin(), objetos.end(), [&](std::unique_ptr<objeto> const& obj)
     { return obj->id() == id; });
   if(itr != objetos.end())
@@ -690,7 +689,7 @@ void Mjolnir::destruir_objeto(int id)
 
 void Mjolnir::ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
 {
-  std::lock_guard<std::mutex> lck(mtx_objetos);
+  //std::lock_guard<std::mutex> lck(mtx_objetos);
   if(ptr_highlight != nullptr)
     ptr_highlight->highlightear(false);
   if(ptr_seleccionado != nullptr)
@@ -701,3 +700,31 @@ void Mjolnir::ordenar_objetos() //debe ser llamada explícitamente por el usuario
   ptr_seleccionado=ptr_highlight=nullptr;
   b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }
+
+void Mjolnir::crear_dialogo_objeto(objeto* pobj)
+{
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), padre_->get_hwnd(),
+                           (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
+  if(ret == IDOK)
+  {
+    //has algo?
+  }
+
+  else if(ret == IDCANCEL)
+  {
+
+  }
+
+  else if(ret == -1)
+    MessageBox(padre_->get_hwnd(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+}
+
+void Mjolnir::mensaje(string msg, string titulo)
+{
+  MessageBox(padre_->get_hwnd(), msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
+}
+
+HWND Mjolnir::padre() const
+{
+  return padre_->get_hwnd();
+}bool crear_dialogo_serial(std::vector<std::string>*);

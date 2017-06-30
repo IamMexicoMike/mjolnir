@@ -7,7 +7,9 @@
 #include <opencv2/opencv.hpp>
 
 #include "elemento_diagrama.h"
-#include "mjolnir.hpp"
+
+class Mjolnir;
+class objeto;
 
 class zona : public objeto
 {
@@ -35,5 +37,9 @@ public:
 private:
   std::vector<cv::Point> puntos_;
 };
+
+
+void zonas_fabrica(Mjolnir* pm);
+void rellenar_zona_telares(Mjolnir* pm);
 
 #endif // ZONAS_HPP

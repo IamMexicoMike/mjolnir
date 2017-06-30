@@ -22,10 +22,9 @@ bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);
 void inicializar_diagrama(HWND& hwnd);
 void configuramos_parametros_diagrama(HWND& hwnd);
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void crear_dialogo_objeto(objeto* pobj);
+
 void alerta_cierre_programa(std::string msg);
 
-void crear_dialogo_objeto(objeto* pobj);
 void mensaje(std::string msg, std::string titulo);
 
 class ventana
@@ -33,15 +32,17 @@ class ventana
 private:
   HWND hwnd_;
   const char* nombre_;
+  const char* nombre_clase_win32_;
   Mjolnir mjol_;
   std::function<void(int)> f_teclado_;
   std::function<void(int,int,int,int,void*)> f_mouse_;
+  std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)> fnwnprox;
 
 public:
   static RECT rEscritorio;
   static HINSTANCE instancia_programa_;
 
-  LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
   void registrarClase();
   HWND get_hwnd() const { return hwnd_; }
   void crearVentana();
@@ -51,7 +52,12 @@ public:
 
   ventana(const char* nombre):
     nombre_(nombre),
-    mjol_(nombre)
+    mjol_(nombre, this)
+  {
+    nombre_clase_win32_ = std::string("c_" + std::string(nombre)).c_str();
+  }
+
+  void iniciar()
   {
     registrarClase();
     //al arrancar el programa calculamos las dimensioens de la pantalla(escritorio) y las guardamos como una variable estática
