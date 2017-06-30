@@ -2,6 +2,7 @@
 #define SYNC_H
 
 #include <map>
+#include <atomic>
 #include "elemento_diagrama.h"
 #include "postgres_funciones.h"
 
@@ -17,9 +18,9 @@ public:
   //la dirección de los objetos no es inestable, pues unique_ptr la maneja y mover a unique_ptr no es problema
   /*cuando un objeto es creado se pasa la direccion que maneja el unique_ptr, y cuando
     sea borrado se asigna la direccion a nullptr*/
-  static std::map<std::pair<std::string,int>, sync*> objetos_sincronizados; /**La llave es un par string int (nombre de la tabla, id)*/
-  static std::set<sync*> set_modificados;
-  static std::atomic<bool> b_sync_cambio;
+  std::map<std::pair<std::string,int>, sync*> objetos_sincronizados; /**La llave es un par string int (nombre de la tabla, id)*/
+  std::set<sync*> set_modificados;
+  std::atomic<bool> b_sync_cambio;
 
   virtual void actualizar_db()=0; //transmite los cambios efectuados en el cliente a la db
   virtual void actualizarse()=0; //busca en la db sus propios cambios y se actualiza en el cliente
@@ -38,10 +39,10 @@ public:
 class sync_rect : public rectangulo, public sync
 {
   public:
-    static const std::string nombreclase;
+    static constexpr char const * nombreclase{"sync_rect"};
     virtual void actualizar_db() override;
-    sync_rect(cv::Point inicio, cv::Point fin); //para construirse a partir del diagrama y ser insertado en la base de datos
-    sync_rect(int id, cv::Point inicio, cv::Point fin); //para construirse a partir de la base de datos
+    sync_rect(Mjolnir* ptrm, cv::Point inicio, cv::Point fin); //para construirse a partir del diagrama y ser insertado en la base de datos
+    sync_rect(Mjolnir* ptrm, int id, cv::Point inicio, cv::Point fin); //para construirse a partir de la base de datos
 
     virtual void actualizarse() override;
 

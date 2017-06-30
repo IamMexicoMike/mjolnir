@@ -2,18 +2,20 @@
 #define MJOLNIRHPP
 
 #include "elemento_diagrama.h"
+#include "zonas.hpp"
 
 #include <vector>
 #include <memory>
 #include <atomic>
 
 #include <opencv2/opencv.hpp>
-//#include <sync.h>
 
 
 class objeto;
 class zona;
 enum class Objetos;
+
+const cv::Scalar COLOR_BLANCO{255,255,255};
 
 class Mjolnir{
 public:
@@ -33,7 +35,6 @@ public:
   int altura_region; //h = 2dy
   cv::Point dxy;     // (w/2, h/2)
 
-  const cv::Scalar COLOR_BLANCO{255,255,255};
   /*se ven feos*/
   const cv::Point HEADER0{5,20};
   const cv::Point HEADER1{100,20};
@@ -44,8 +45,8 @@ public:
   cv::Point puntoInicioDesplazamiento{0,0}; //panning
 
   bool b_dibujando_flecha{false}; //flechas temporales
-  cv::Point puntoInicioFlecha{(0,0)}; //flechas temporales
-  cv::Point puntoTerminoFlecha{(0,0)}; //flechas temporales
+  cv::Point puntoInicioFlecha{0,0}; //flechas temporales
+  cv::Point puntoTerminoFlecha{0,0}; //flechas temporales
 
   bool b_dibujando_objeto{false}; //objeto temporal
   cv::Point puntoOrigenobjeto{0,0}; //objeto temporal
@@ -53,7 +54,7 @@ public:
 
   cv::Point puntoActualMouse{0,0}; //se actualiza en cada evento del mouse
 
-  cv::Point despl{(4000,1300)}; //originalmente desplazamientoOrigen
+  cv::Point despl{4000,1300}; //originalmente desplazamientoOrigen
 
   objeto* ptr_seleccionado{nullptr};
   objeto* ptr_highlight{nullptr};
@@ -68,11 +69,12 @@ public:
   int ancho_texto;
 
   std::string mensaje_derecho_superior;
-  std::mutex mtx_mensaje_derecho_superior;
-  std::mutex mtx_objetos_;
+  //std::mutex mtx_objetos_;
 
-  std::atomic<bool> b_cache_valida{false};
-  std::atomic<bool> b_puntos_relativos_validos{false};
+  //std::atomic<bool> b_cache_valida{false};
+  bool b_cache_valida{false};
+  //std::atomic<bool> b_puntos_relativos_validos{false};
+  bool b_puntos_relativos_validos{false};
 
   Objetos Tipo_Objeto_Dibujando; //para qué era esto? el tipo de objeto dibujando verdad?
 
@@ -110,7 +112,16 @@ public:
   template <typename T> void crear_objeto_delicado(std::unique_ptr<T>&& pt);
   void destruir_objeto_seleccionado();
   void destruir_objeto(const int id);
-  template<typename T> T* crear_sincronizado(T& t);
+  //template<typename T> T* crear_sincronizado(T& t);
+  void ordenar_objetos();
+  void simulacion();
+  objeto* determinar_propiedades_ubicacion(cv::Point);
+  std::string obtener_mensaje();
+  void establecer_mensaje(std::string m);
+  void efecto_cuadricula();
+  void renderizarDiagrama();
+  void manejarInputTeclado(int k);
+  void manejarInputMouse(int event, int x, int y, int flags, void*);
 };
 
 /** Crea un unique_ptr del objeto y se lo pasa al vector de apuntadores a objetos del diagrama*/
@@ -118,7 +129,7 @@ template <typename T>
 T* Mjolnir::crear_objeto(T& t)
 {
   std::string nombre_tipo = typeid(t).name();
-  std::lock_guard<std::mutex> lck(mtx_objetos_);
+  //std::lock_guard<std::mutex> lck(mtx_objetos_);
   //std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(t.id());
   if(ptr_seleccionado != nullptr)
     ptr_seleccionado->seleccionar(false);
@@ -136,7 +147,7 @@ template <typename T>
 void Mjolnir::crear_objeto_delicado(std::unique_ptr<T>&& pt)
 {
   std::string nombre_tipo = typeid(*pt).name();
-  std::lock_guard<std::mutex> lck(mtx_objetos_);
+  //std::lock_guard<std::mutex> lck(mtx_objetos_);
   std::string paq = "objeto " + nombre_tipo + " creado, con id==" + std::to_string(pt->id());
   if(ptr_seleccionado != nullptr)
     ptr_seleccionado->seleccionar(false);
@@ -184,6 +195,7 @@ void Mjolnir::destruir_objeto(int id)
   }
 }
 
+/*
 template<typename T>
 T* Mjolnir::crear_sincronizado(T& t)
 {
@@ -200,15 +212,24 @@ T* Mjolnir::crear_sincronizado(T& t)
   objetos.emplace_back(std::move(po));
   ptr_highlight=ptr_seleccionado=nullptr;
   return ptr;
+}*/
+
+void Mjolnir::ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
+{
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  if(ptr_highlight != nullptr)
+    ptr_highlight->highlightear(false);
+  if(ptr_seleccionado != nullptr)
+    ptr_seleccionado->seleccionar(false);
+  std::sort(objetos.begin(),objetos.end(),[&]
+            (const std::unique_ptr<objeto>& a, const std::unique_ptr<objeto>& b)
+            {return a->area() < b->area();});
+  ptr_seleccionado=ptr_highlight=nullptr;
+  b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
 }
 
 enum class Flags {Vacia, Objeto, SinCambios}; //no me convence
-objeto* determinar_propiedades_ubicacion(cv::Point);
 
-void efecto_cuadricula(cv::Mat& matriz);
-void renderizarDiagrama(cv::Mat& matriz);
-void manejarInputTeclado(int k);
-void manejarInputMouse(int event, int x, int y, int flags, void*);
 cv::Point operator/(cv::Point p, const int d);
 
 #endif // MJOLNIRHPP

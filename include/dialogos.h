@@ -11,12 +11,12 @@
 
 namespace gui
 {
-  void alerta(std::string);
+  void alerta(std::string, HWND);
 }
 
 /**Retorna el IP y Puerto del host seleccionado*/
 std::pair<std::string, std::string> dialogo_seleccion_host(ventana& v);
-void dialogo_query();
+void dialogo_query(HWND padre);
 
 #endif // DIALOGOS_H
 #endif // __cplusplus

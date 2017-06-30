@@ -12,8 +12,9 @@ void crear_dialogo_puerto(puerto_serial* pobj);
 class puerto_serial : public rectangulo
 {
 public:
-  puerto_serial(cv::Point inicio, cv::Point fin, asio::io_service& ios, std::string puerto, unsigned int baudios) :
-    rectangulo(inicio, fin),
+  puerto_serial(Mjolnir* ptrm, cv::Point inicio, cv::Point fin,
+                asio::io_service& ios, std::string puerto, unsigned int baudios) :
+    rectangulo(ptrm, inicio, fin),
     iosvc_(ios),
     puerto_(iosvc_, puerto),
     temporizador_(ios),

@@ -67,15 +67,15 @@ void db::checar_input_db()
     cout << "Notificacion de la DB recibida: "
     << tabla_modificada << " extras: " << extras << "\n";// << noti->next()
     pair<string,int> tabla_y_id(tabla_modificada, stoi(extras) );
-    sync::objetos_sincronizados[tabla_y_id]->actualizarse();
+    //sync::objetos_sincronizados[tabla_y_id]->actualizarse();
     PQfreemem(noti);
-    b_cache_valida = false;
+    //b_cache_valida = false;
   }
 }
 
 /**this is not sufficiently abstract*/
 void db::construir_objetos_sincronizados()
-{
+{/*
   PGresult* res = PQexec(conexion, string("SELECT * FROM " + sync_rect::nombreclase).c_str()); //se ejecuta una query
   for(int i=0; i<PQntuples(res); ++i)
   {
@@ -93,6 +93,7 @@ void db::construir_objetos_sincronizados()
     sync::objetos_sincronizados[par]=ptr;
   }
   PQclear(res);
+  */
 }
 
 /**pruebas:*/

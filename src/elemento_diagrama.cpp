@@ -1,5 +1,4 @@
-#include "elemento_diagrama.h"
-#include <windows.h>
+//#include <windows.h>
 
 #include <iostream>
 #include <fstream>
@@ -7,6 +6,9 @@
 #include <mutex>
 #include <string>
 #include <algorithm>
+
+#include "elemento_diagrama.h"
+#include "mjolnir.hpp"
 
 using namespace std;
 using namespace cv;
@@ -19,36 +21,25 @@ Point operator/(Point p, const int d)
   return Point(p.x/d, p.y/d);
 }
 
-void ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
-{
-  lock_guard<mutex> lck(mtx_objetos);
-  if(ptr_highlight != nullptr)
-    ptr_highlight->highlightear(false);
-  if(ptr_seleccionado != nullptr)
-    ptr_seleccionado->seleccionar(false);
-  sort(objetos.begin(),objetos.end(),[&](const unique_ptr<objeto>& a, const unique_ptr<objeto>& b) {return a->area() < b->area();});
-  ptr_seleccionado=ptr_highlight=nullptr;
-  b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
-}
-
 //-----------------------------------------------------------------------------------------------------------------
 
-void objeto::dibujar_nombre(Mjolnir& m) const
+void objeto::dibujar_nombre() const
 {
   static const int factor = 10;
-  Point cc = m.transformar(centro_);
+  Point cc = mjol_->transformar(centro_);
   Point pt = Point(cc.x - (nombre_.size()/2)*factor, cc.y + factor/2);
-  putText(m.diagrama_, nombre(), pt, FONT_HERSHEY_PLAIN, tamanio_texto, COLOR_NEGRO, ancho_texto, CV_AA);
+  putText(mjol_->diagrama_, nombre(), pt, FONT_HERSHEY_PLAIN, mjol_->tamanio_texto, COLOR_NEGRO, mjol_->ancho_texto, CV_AA);
   if(b_subrayar_)
   {
     Point pt2 = Point(cc.x + (nombre_.size()/2)*factor, cc.y + factor/2);
-    line(m.diagrama_, pt, pt2, COLOR_NEGRO);
+    line(mjol_->diagrama_, pt, pt2, COLOR_NEGRO);
   }
 }
 
+/**Mover uno de los vértices (puntos clave) del objeto*/
 bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
 {
-  int tolerancia = transformar_escalar_inverso(tolerancia_); //tolerancia es adaptiva
+  int tolerancia = mjol_->transformar_escalar_inverso(tolerancia_); //tolerancia es adaptiva
   for(auto u : puntos_clave_)
   {
     bool pertenece = (pt.x > u->x-tolerancia
@@ -68,26 +59,26 @@ bool objeto::pertenece_a_punto_clave(const cv::Point pt) //pt es absoluto
 }
 
 
-void rectangulo::dibujarse(Mjolnir& m)
+void rectangulo::dibujarse()
 {
   Point inicio, fin;
-  inicio = m.transformar(inicio_); fin = m.transformar(fin_);
-  rectangle(m.diagrama_, Rect(inicio, fin), color_, -2, CV_AA);
-  rectangle(m.diagrama_, Rect(inicio, fin), COLOR_NEGRO, 1, CV_AA);
+  inicio = mjol_->transformar(inicio_); fin = mjol_->transformar(fin_);
+  rectangle(mjol_->diagrama_, Rect(inicio, fin), color_, -2, CV_AA);
+  rectangle(mjol_->diagrama_, Rect(inicio, fin), COLOR_NEGRO, 1, CV_AA);
 
   if(b_seleccionado_)
   {
-    rectangle(m.diagrama_, Rect(inicio, fin), COLOR_SELECCION, 2, CV_AA); //selección
+    rectangle(mjol_->diagrama_, Rect(inicio, fin), COLOR_SELECCION, 2, CV_AA); //selección
     for(auto p : puntos_clave_)
     {
-      Point pc = m.transformar(*p);
+      Point pc = mjol_->transformar(*p);
       //cout  << "p: "<< *p << " p': " << pc << '\t';
-      rectangle(m.diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+      rectangle(mjol_->diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
     }
   }
 
   if(b_highlighteado_)
-    rectangle(m.diagrama_, Rect(inicio, fin), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
+    rectangle(mjol_->diagrama_, Rect(inicio, fin), COLOR_HIGHLIGHT_, 1, CV_AA); //highlight
 }
 
 //se llama continuamente cuando haces drag, no sólo una vez
@@ -123,27 +114,27 @@ void rectangulo::guardar(ofstream& ofs) const
   ofs << 'r' << id() << ':' << inicio_ << ',' << fin_ << "\r\n";
 }
 
-void circulo::dibujarse(Mjolnir& m)
+void circulo::dibujarse()
 {
-  Point centro = m.transformar(centro_);
-  int radio = m.transformar_escalar(radio_);
-  cv::circle(m.diagrama_, centro, radio, color_, -2, CV_AA);
-  cv::circle(m.diagrama_, centro, radio, COLOR_NEGRO, 1, CV_AA);
+  Point centro = mjol_->transformar(centro_);
+  int radio = mjol_->transformar_escalar(radio_);
+  cv::circle(mjol_->diagrama_, centro, radio, color_, -2, CV_AA);
+  cv::circle(mjol_->diagrama_, centro, radio, COLOR_NEGRO, 1, CV_AA);
 
   if(b_seleccionado_)
   {
-    cv::circle(m.diagrama_, centro, radio, COLOR_SELECCION, 2, CV_AA);
+    cv::circle(mjol_->diagrama_, centro, radio, COLOR_SELECCION, 2, CV_AA);
     for(auto p : puntos_clave_)
     {
-      Point pc = m.transformar(*p);
+      Point pc = mjol_->transformar(*p);
       //cout  << "p: "<< *p << " p': " << pc << '\t';
-      rectangle(m.diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+      rectangle(mjol_->diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
     }
   }
 
 
   if(b_highlighteado_)
-    cv::circle(m.diagrama_, centro, radio, COLOR_HIGHLIGHT_, 1, CV_AA);
+    cv::circle(mjol_->diagrama_, centro, radio, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void circulo::arrastrar(const Point pt)
@@ -178,7 +169,7 @@ void circulo::guardar(ofstream& ofs) const
   ofs << 'c' << id() << ':' << centro_ << ',' << radio_ << "\r\n";
 }
 
-void linea::dibujarse(Mjolnir& m)
+void linea::dibujarse()
 {
   Point tinicio=inicio_;
   Point tfin=fin_;
@@ -195,25 +186,25 @@ void linea::dibujarse(Mjolnir& m)
     recalcular_dimensiones();
   }
 
-  tinicio = m.transformar(inicio_);
-  tfin = m.transformar(fin_);
+  tinicio = mjol_->transformar(inicio_);
+  tfin = mjol_->transformar(fin_);
 
-  cv::line(m.diagrama_, tinicio, tfin, COLOR_BLANCO, 1, CV_AA);
+  cv::line(mjol_->diagrama_, tinicio, tfin, COLOR_BLANCO, 1, CV_AA);
 
 
   if(b_seleccionado_)
   {
-    cv::line(m, tinicio, tfin, COLOR_SELECCION, 2, CV_AA);
+    cv::line(mjol_->diagrama_, tinicio, tfin, COLOR_SELECCION, 2, CV_AA);
     for(auto p : puntos_clave_)
     {
-      Point pc = m.transformar(*p);
+      Point pc = mjol_->transformar(*p);
       //cout  << "p: "<< *p << " p': " << pc << '\t';
-      rectangle(m.diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+      rectangle(mjol_->diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
     }
   }
 
   if(b_highlighteado_)
-    cv::line(m.diagrama_, tinicio, tfin, COLOR_HIGHLIGHT_, 1, CV_AA);
+    cv::line(mjol_->diagrama_, tinicio, tfin, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void linea::arrastrar(const Point pt)
@@ -235,10 +226,10 @@ void linea::arrastrar(const Point pt)
 }
 
 /**Sólo si el punto satisface la ecuación de la línea determinamos si cae dentro de la región acotada*/
-bool linea::pertenece_a_area(const Mjolnir& m, const Point pt) const
+bool linea::pertenece_a_area(const Point pt) const
 {
   int y = efe_de_x(pt.x);
-  int tolerancia = m.transformar_escalar_inverso(tolerancia_);
+  int tolerancia = mjol_->transformar_escalar_inverso(tolerancia_);
   if(pt.y < y-tolerancia || pt.y > y+tolerancia)
     return false;
 
@@ -278,26 +269,26 @@ void linea::guardar(ofstream& ofs) const
   ofs << 'l' << id() << ':' << inicio_ << ',' << fin_ << "\r\n";
 }
 
-void cuadrado_isometrico::dibujarse(Mjolnir& m)
+void cuadrado_isometrico::dibujarse()
 {
   vector<Point> ps;
   for(auto p : vertices_)
-    ps.emplace_back(m.transformar(p));
-  fillConvexPoly(m, ps.data(), ps.size(), color_);
-  polylines(m.diagrama_, ps, true, COLOR_NEGRO, 1, CV_AA);
+    ps.emplace_back(mjol_->transformar(p));
+  fillConvexPoly(mjol_->diagrama_, ps.data(), ps.size(), color_);
+  polylines(mjol_->diagrama_, ps, true, COLOR_NEGRO, 1, CV_AA);
   if(b_seleccionado_)
   {
-    polylines(m.diagrama_, ps, true, COLOR_SELECCION, 2, CV_AA);
+    polylines(mjol_->diagrama_, ps, true, COLOR_SELECCION, 2, CV_AA);
     for(auto p : puntos_clave_)
     {
-      Point pc = transformar(*p);
+      Point pc = mjol_->transformar(*p);
       //cout  << "p: "<< *p << " p': " << pc << '\t';
-      rectangle(m.diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
+      rectangle(mjol_->diagrama_, Rect(pc-offset_puntos_clave_, pc+offset_puntos_clave_), COLOR_BLANCO, 1, CV_AA );
     }
   }
 
   if(b_highlighteado_)
-    polylines(m, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA);
+    polylines(mjol_->diagrama_, ps, true, COLOR_HIGHLIGHT_, 1, CV_AA);
 }
 
 void cuadrado_isometrico::arrastrar(const cv::Point pt)
@@ -347,14 +338,15 @@ ostream& operator<<(ostream& os, objeto& o)
   return os << 'o' << o.id() << '\t' << typeid(o).name() << '\n';
 }
 
-void crear_relacion(objeto* o1, objeto* o2)
+unique_ptr<linea> crear_relacion(Mjolnir* m, objeto* o1, objeto* o2)
 {
   lock_guard<mutex> lck(mtx_objetos);
-  auto up = make_unique<linea>(o1->centro(),o2->centro()); //es solo para construir algo
-  up->punto_inicial(o1);
-  up->punto_final(o2);
-  up->actualizar_pointers();
-  objetos.emplace_back(move(up));
+  auto ptrl = make_unique<linea>(m, o1->centro(),o2->centro()); //es solo para construir algo
+  ptrl->punto_inicial(o1);
+  ptrl->punto_final(o2);
+  ptrl->actualizar_pointers();
+  return ptrl;
+  //objetos.emplace_back(move(up));
 }
 
 //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo

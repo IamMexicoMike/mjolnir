@@ -3,6 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN //se supone que hace muchos headers derivados no sean incluidos, y por ende acelerar compilación
 
+#include <functional>
 #include <windows.h>
 #include <windowsx.h>
 #include <mjolnir.hpp>
@@ -17,7 +18,6 @@
 #define IDC_MAIN_EDIT 6000
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-bool registrarClase(WNDCLASSEX& wc, HINSTANCE& hInstance);
 bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);
 void inicializar_diagrama(HWND& hwnd);
 void configuramos_parametros_diagrama(HWND& hwnd);
@@ -28,6 +28,34 @@ void alerta_cierre_programa(std::string msg);
 void crear_dialogo_objeto(objeto* pobj);
 void mensaje(std::string msg, std::string titulo);
 
+class CallbackBase
+{
+public:
+  virtual void operator()() const { };
+  virtual ~CallbackBase() = 0;
+};
+
+CallbackBase::~CallbackBase() { }
+
+template<typename T>
+class Callback : public CallbackBase
+{
+public:
+  typedef void (T::*F)();
+
+  Callback( T& t, F f ) : t_(&t), f_(f) { }
+  void operator()() const { (t_->*f_)(); }
+
+private:
+  T* t_;
+  F  f_;
+};
+
+template<typename T>
+Callback<T> make_callback( T& t, void (T::*f) () )
+{
+  return Callback<T>( t, f );
+}
 
 class ventana
 {
@@ -35,12 +63,15 @@ private:
   HWND hwnd_;
   const char* nombre_;
   Mjolnir mjol_;
+  std::function<void(int)> f_teclado_;
+  std::function<void(int,int,int,int,void*)> f_mouse_;
 
 public:
   static RECT rEscritorio;
   static HINSTANCE instancia_programa_;
 
-  static void registrarClase(HINSTANCE hInstance);
+  LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  void registrarClase();
   HWND get_hwnd() const { return hwnd_; }
   void crearVentana();
   void inicializar_diagrama();
@@ -51,6 +82,7 @@ public:
     nombre_(nombre),
     mjol_(nombre)
   {
+    registrarClase();
     //al arrancar el programa calculamos las dimensioens de la pantalla(escritorio) y las guardamos como una variable estática
     //const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
     GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio

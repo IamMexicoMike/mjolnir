@@ -5,13 +5,12 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "mjolnir.hpp"
 #include "redes.h"
 #include "elemento_diagrama.h"
-#include "mjolnir.hpp"
 #include "zonas.hpp"
 #include "puerto_serial.h"
 #include "dialogos.h"
-#include "sync.h"
 
 extern void mensaje(std::string, std::string);
 
@@ -29,16 +28,13 @@ Point operator/(Point p, const int d)
   return Point(p.x/d, p.y/d);
 }
 
-string obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
+string Mjolnir::obtener_mensaje() /*Mensaje informativo en esquina superior derecha del diagrama*/
 {
-  lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
-  string s = mensaje_derecho_superior;
-  return s;
+  return mensaje_derecho_superior;
 }
 
-void establecer_mensaje(string m) /*Mensaje informativo en esquina superior derecha del diagrama*/
+void Mjolnir::establecer_mensaje(string m) /*Mensaje informativo en esquina superior derecha del diagrama*/
 {
-  lock_guard<mutex> lck(mtx_mensaje_derecho_superior);
   mensaje_derecho_superior = m;
 }
 
@@ -71,12 +67,12 @@ int Mjolnir::transformar_escalar(int i)
 
 int Mjolnir::transformar_escalar_inverso(int i) { return i*zoom; }
 
-void Mjolnir::efecto_cuadricula(Mat& matriz)
+void Mjolnir::efecto_cuadricula()
 {
   static vector<chrono::duration<double>> tiempos(100);
   static int cnt;
-  int h = matriz.cols;
-  int v = matriz.rows;
+  int h = diagrama_.cols;
+  int v = diagrama_.rows;
   Point pt1, pt2; //probablemente esto ayude a que la caché esté caliente con este valor durante estos ciclos
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
@@ -89,16 +85,16 @@ void Mjolnir::efecto_cuadricula(Mat& matriz)
     {
       pt1.x=i, pt1.y=0; //Esto lo hacemos con la intención de que no se creen Puntos temporales en cada iteración
       pt2.x=i, pt2.y=v; //y que de esta manera las llamadas a malloc(si es que existen) desaparezcan
-      line(matriz, pt1, pt2, BLANCO, 1, 4, 0);
-      //line(matriz, Point(i,0), Point(i,v), BLANCO, 1, 4, 0); //cuadrícula, vertical
+      line(diagrama_, pt1, pt2, BLANCO, 1, 4, 0);
+      //line(diagrama_, Point(i,0), Point(i,v), BLANCO, 1, 4, 0); //cuadrícula, vertical
     }
 
     for(int i=szlado-(despl.y/zoom)%szlado; i<v; i+=szlado) //Mat::cols es int, no uint
     {
       pt1.x=0, pt1.y=i;
       pt2.x=h, pt2.y=i;
-      line(matriz, pt1, pt2, BLANCO, 1, 4, 0);
-      //line(matriz, Point(0,i), Point(h,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
+      line(diagrama_, pt1, pt2, BLANCO, 1, 4, 0);
+      //line(diagrama_, Point(0,i), Point(h,i), BLANCO, 1, 4, 0); //cuadrícula, horizontal
     }
   }
   t_final = chrono::system_clock::now();
@@ -120,22 +116,16 @@ void Mjolnir::efecto_cuadricula(Mat& matriz)
 
 
 //demasiados magic numbers
-void Mjolnir::renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibujar una región que no pertenece a matriz
+void Mjolnir::renderizarDiagrama() //No hay pedo si tratamos de dibujar una región que no pertenece a diagrama_
 {
   chrono::time_point<chrono::system_clock> t_inicial, t_final; //empezamos a medir tiempo
   t_inicial = chrono::system_clock::now();
 
   Point pabs = transformacion_inversa(puntoActualMouse);
 
-  matriz = bckgnd_;
+  diagrama_ = bckgnd_;
 
-  for(auto& zz : superzonas) //relleno de superzonas
-  {
-    vector<Point> ps = zz.puntos_desplazados();
-    fillConvexPoly(matriz, ps.data(), ps.size(), zz.color());
-  }
-
-  //efecto_cuadricula(matriz);
+  //efecto_cuadricula(diagrama_);
 
   if(zoom<=8)
   {
@@ -145,27 +135,22 @@ void Mjolnir::renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibuj
   else
     b_dibujar_nombres = false;
 
+  for(auto& zz : superzonas) //relleno de superzonas
+  {
+    zz.dibujarse();
+  }
+
 
   //dibujamos todos los objetos
   for(auto p = objetos.end()-1; p>=objetos.begin(); --p)
   {
-    (*p)->dibujarse(matriz);
+    (*p)->dibujarse();
     if(b_dibujar_nombres)
-      (*p)->dibujar_nombre(matriz);
-  }
-
-
-  for(auto& zz : superzonas) //contorno y nombre de superzonas
-  {
-    auto ps = zz.puntos_desplazados();
-    //polylines(matriz, ps.data(), ps.size(), 1, true, BLANCO);
-    polylines(matriz, ps, true, BLANCO, 1, CV_AA); //selección
-    if(b_dibujar_nombres)
-      putText(matriz, zz.nombre(), ps[0], FONT_HERSHEY_PLAIN, tamanio_texto, Scalar(0,0,0), ancho_texto, CV_AA);
+      (*p)->dibujar_nombre();
   }
 
   if(b_dibujando_flecha) //dibujamos una flecha temporal
-    arrowedLine(matriz, transformar(puntoInicioFlecha),
+    arrowedLine(diagrama_, transformar(puntoInicioFlecha),
                 transformar(puntoTerminoFlecha),
                 COLOR_FLECHA_DIBUJANDO, 2, CV_AA);
 
@@ -175,16 +160,16 @@ void Mjolnir::renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibuj
   encabezado_ = BLANCO;
 
   if(ptr_seleccionado != nullptr)
-    putText(matriz, string("" + ptr_seleccionado->nombre()),
+    putText(diagrama_, string("" + ptr_seleccionado->nombre()),
             HEADER2, FONT_HERSHEY_PLAIN, 1, COLOR_NEGRO, 1, CV_AA);
 
   string spabs = '(' + to_string(pabs.x) + ',' + to_string(pabs.y) + ')';
-  putText(matriz, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
+  putText(diagrama_, spabs, HEADER0, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA); //PLAIN es más pequeña que SIMPLEX
 
-  putText(matriz, obtener_mensaje(), HEADER_MSG, FONT_HERSHEY_PLAIN, 1, Scalar(100,0,255), 1, CV_AA);
+  putText(diagrama_, obtener_mensaje(), HEADER_MSG, FONT_HERSHEY_PLAIN, 1, Scalar(100,0,255), 1, CV_AA);
 
   //string sprueba = "kanban urdido";
-  //putText(matriz, sprueba, HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
+  //putText(diagrama_, sprueba, HEADER1, FONT_HERSHEY_PLAIN, 1, Scalar(230,100,0), 1, CV_AA);
 
 
   // medimos tiempo
@@ -194,11 +179,11 @@ void Mjolnir::renderizarDiagrama(Mat& matriz) //No hay pedo si tratamos de dibuj
   //static VideoCapture cap(0);
   //cap >> region;
 
-  imshow(nombre_, matriz); //actualizamos el diagrama
+  imshow(nombre_, diagrama_); //actualizamos el diagrama
 }
 
 //falta agregar los equivalentes con bloq mayus activadas
-void manejarInputTeclado(int k)
+void Mjolnir::manejarInputTeclado(int k)
 {
   cout << k << "!\n"; //borrame si no debugeas, o coméntame mejor!
 
@@ -305,7 +290,7 @@ void manejarInputTeclado(int k)
     break;
 
   case 81: //q - query
-    dialogo_query();
+    dialogo_query((HWND)cvGetWindowHandle(nombre_));
     break;
 
   case 82: //r
@@ -319,17 +304,16 @@ void manejarInputTeclado(int k)
   case 46: //suprimir, borrar objeto
     if(ptr_seleccionado != nullptr)
     {
-      ptr_seleccionado->destruir();
+      destruir_objeto_seleccionado();
       determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
     }
     break;
 
   }
   b_cache_valida=false;
-    //cout << desplazamientoOrigen << endl;
 }
 
-void manejarInputMouse(int event, int x, int y, int flags, void*)
+void Mjolnir::manejarInputMouse(int event, int x, int y, int flags, void*)
 {
   static bool botonMouseIzquierdoAbajo(false); //flechas, drag, drag n drop
   static bool botonMouseDerechoAbajo(false); //panning
@@ -414,7 +398,9 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
       {
         /**Se entabla una relación entre dos objetos*/
         cout << "interaccion entre " << ptr->id() << " y " << ptr_seleccionado->id() << "\n";
-        crear_relacion(ptr, ptr_seleccionado);
+        lock_guard<mutex> lck(mtx_objetos);
+        auto ptrl = crear_relacion(this,ptr, ptr_seleccionado);
+        objetos.emplace_back(std::move(ptrl));
       }
       b_dibujando_flecha = false;
     }
@@ -469,12 +455,12 @@ void manejarInputMouse(int event, int x, int y, int flags, void*)
 
 
 /**Debe determinar propiedades del punto en función de la dimensión en la que está.
- No debe determinar si debe dibujarse. Actualmente highlightea... y muestra x,y del mouse*/
-objeto* determinar_propiedades_ubicacion(cv::Point p)
+ No debe determinar si debe dibujarse. Actualmente highlightea*/
+objeto* Mjolnir::determinar_propiedades_ubicacion(cv::Point p)
 {
   if(ptr_seleccionado != nullptr)
   {
-    //checar si es un punto clave
+    //checar si es un punto clave. pasamos un pointer a esta instancia de mjolnir
     if(ptr_seleccionado->pertenece_a_punto_clave(p)) //esto es mal diseño porque esta función modifica a los objetos
       return ptr_seleccionado;
   }
@@ -505,7 +491,7 @@ objeto* determinar_propiedades_ubicacion(cv::Point p)
   return ptr;
 }
 
-void iniciar_creacion_objeto(Objetos o)
+void Mjolnir::iniciar_creacion_objeto(Objetos o)
 {
   b_dibujando_objeto = true;
   Tipo_Objeto_Dibujando = o;
@@ -531,22 +517,22 @@ void iniciar_creacion_objeto(Objetos o)
 
 }
 
-void terminar_creacion_objeto()
+void Mjolnir::terminar_creacion_objeto()
 {
   b_dibujando_objeto = false;
   switch(Tipo_Objeto_Dibujando)
   {
-  case (Objetos::Sincronizado):
+  /*case (Objetos::Sincronizado):
   {
     Point p1=puntoOrigenobjeto;
     Point p2=puntoFinobjeto;
     sync_rect s(p1, p2);
     crear_sincronizado(s);
     break;
-  }
+  }*/
   case(Objetos::Rectangulo):
     {
-      rectangulo r(puntoOrigenobjeto, puntoFinobjeto);
+      rectangulo r(this, puntoOrigenobjeto, puntoFinobjeto);
       crear_objeto(r); //deben ser p y no p'
     }
     break;
@@ -578,7 +564,8 @@ void terminar_creacion_objeto()
       if(crear_dialogo_serial(&puertos_disponibles))
       {
         try {
-        auto ps = make_unique<puerto_serial>(puntoOrigenobjeto, puntoFinobjeto, iosvc, puerto_serial::puerto_temporal_, puerto_serial::baudios_temporales_);
+        auto ps = make_unique<puerto_serial>(this, puntoOrigenobjeto, puntoFinobjeto,
+                  iosvc, puerto_serial::puerto_temporal_, puerto_serial::baudios_temporales_);
         crear_objeto_delicado(std::move(ps));
         } catch (std::exception& e)
         {
@@ -593,7 +580,7 @@ void terminar_creacion_objeto()
     {
       Point hipot = puntoFinobjeto - puntoOrigenobjeto;
       int radio = hypot(hipot.x, hipot.y);
-      circulo c(puntoOrigenobjeto, radio);
+      circulo c(this, puntoOrigenobjeto, radio);
       crear_objeto(c);
     }
     break;
@@ -601,34 +588,34 @@ void terminar_creacion_objeto()
     break;
   case(Objetos::Linea):
     {
-      linea l(puntoOrigenobjeto, puntoFinobjeto);
+      linea l(this, puntoOrigenobjeto, puntoFinobjeto);
       crear_objeto(l);
     }
     break;
   case(Objetos::Cuadrado_Isometrico):
     {
-      cuadrado_isometrico ci(puntoOrigenobjeto, puntoFinobjeto);
+      cuadrado_isometrico ci(this, puntoOrigenobjeto, puntoFinobjeto);
       crear_objeto(ci);
     }
   }
 
 }
 
-void dibujar_objeto_temporal()
+void Mjolnir::dibujar_objeto_temporal()
 {
   switch(Tipo_Objeto_Dibujando)
   {
   case(Objetos::Sincronizado):
   case(Objetos::Puerto_Serial):
   case(Objetos::Rectangulo):
-    rectangle(region, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
+    rectangle(diagrama_, Rect(transformar(puntoOrigenobjeto), transformar(puntoFinobjeto)),
               COLOR_RECT_DIBUJANDO, 2, CV_AA);
     break;
   case(Objetos::Circulo):
     {
       Point hipot = puntoFinobjeto - puntoOrigenobjeto;
       int radio = hypot(hipot.x, hipot.y);
-      cv::circle(region, transformar(puntoOrigenobjeto), transformar_escalar(radio),
+      cv::circle(diagrama_, transformar(puntoOrigenobjeto), transformar_escalar(radio),
                COLOR_RECT_DIBUJANDO, 2, CV_AA);
     }
 
@@ -636,12 +623,12 @@ void dibujar_objeto_temporal()
   case(Objetos::Zona):
     break;
   case(Objetos::Linea):
-    line(region, transformar(puntoOrigenobjeto), transformar(puntoFinobjeto), COLOR_BLANCO, 2, CV_AA);
+    line(diagrama_, transformar(puntoOrigenobjeto), transformar(puntoFinobjeto), COLOR_BLANCO, 2, CV_AA);
     break;
   case (Objetos::Cuadrado_Isometrico):
     {
-      cuadrado_isometrico ci(puntoOrigenobjeto, puntoFinobjeto);
-      ci.dibujarse(region);
+      cuadrado_isometrico ci(this, puntoOrigenobjeto, puntoFinobjeto);
+      ci.dibujarse();
       break;
     }
 
@@ -649,7 +636,7 @@ void dibujar_objeto_temporal()
 
 }
 
-void simulacion()
+void Mjolnir::simulacion()
 {
   Point p = transformacion_inversa(puntoActualMouse);
   for(int i=0; i<100; ++i)
@@ -658,7 +645,7 @@ void simulacion()
     {
       Point p1(p.x + i*(-10000), p.y + j*(-10000));
       Point p2(p.x + i*(-10000)-5000, p.y + j*(-10000)-5000);
-      circulo c(p1, (p2.x-p1.x)/2);
+      circulo c(this, p1, (p2.x-p1.x)/2);
       crear_objeto(c);
     }
   }

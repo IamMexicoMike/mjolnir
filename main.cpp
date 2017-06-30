@@ -32,12 +32,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   //db::prueba_db();
   db::entablar_escuchador_db();
 
-  ventana::registrarClase(hInstance);
+  ventana::instancia_programa_ = hInstance;
   ventana v("Martillo");
   ventana v2("ventana dos");
   //v.mover(0,0,ventana::rEscritorio.right, ventana::rEscritorio.bottom);
 
-  db::construir_objetos_sincronizados();
+  //db::construir_objetos_sincronizados();
 
   MSG Msg;
   while(GetMessage(&Msg, NULL, 0, 0) > 0)

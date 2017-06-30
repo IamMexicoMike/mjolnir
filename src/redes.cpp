@@ -10,7 +10,6 @@
 using namespace std;
 using namespace asio;
 
-extern void establecer_mensaje(string);
 extern configurador cfg;
 
 io_service iosvc;

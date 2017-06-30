@@ -14,21 +14,23 @@ namespace dialogos
 
 bool CALLBACK callback_seleccionar_host(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
-  static HWND hEditIP;
-  static HWND hEditPuerto;
   int id_edit_ip=42;
   int id_edit_puerto=43;
 
   switch(Message)
   {
     case WM_INITDIALOG:
-      hEditIP = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
-        WS_CHILD | WS_VISIBLE,
-        15,65,130,20, hwnd, (HMENU)id_edit_ip, GetModuleHandle(NULL), NULL); //no están en la misma escala que en los .rc
-      hEditPuerto = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
-        WS_CHILD | WS_VISIBLE,
-        15,90,130,20, hwnd, (HMENU)id_edit_puerto, GetModuleHandle(NULL), NULL);
-      break;
+      {
+
+        CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+          WS_CHILD | WS_VISIBLE, 15,65,130,20, hwnd, (HMENU)id_edit_ip,
+          GetModuleHandle(NULL), NULL); //no están en la misma escala que en los .rc
+        CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+          WS_CHILD | WS_VISIBLE,
+          15,90,130,20, hwnd, (HMENU)id_edit_puerto, GetModuleHandle(NULL), NULL);
+        break;
+      }
+
 
     return TRUE;
     case WM_COMMAND:
@@ -76,8 +78,12 @@ pair<string, string> dialogo_seleccion_host(ventana& v)
     return pair<string,string>(string(),string());
   }
 
-  else if(ret == -1)
+  else
+  {
     MessageBox(v.get_hwnd(), "Error creando dialogo", "Error", MB_OK | MB_ICONINFORMATION);
+    return pair<string,string>();
+  }
+
 }
 
 bool CALLBACK callback_query(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -119,9 +125,9 @@ bool CALLBACK callback_query(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
   return true;
 }
 
-void dialogo_query()
+void dialogo_query(HWND padre)
 {
-  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_QUERY), hVentanaPrincipal,
+  int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_QUERY), padre,
                       (DLGPROC)callback_query);
   if(ret == IDOK)
   {
@@ -130,12 +136,12 @@ void dialogo_query()
   }
 
   else if(ret == -1)
-    MessageBox(hVentanaPrincipal, "Error creando dialogo", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox(padre, "Error creando dialogo", "Error", MB_OK | MB_ICONINFORMATION);
 }
 
 
 
-void gui::alerta(string m)
+void gui::alerta(string m, HWND padre)
 {
-  MessageBox(hVentanaPrincipal, m.c_str(), "Alerta!", MB_ICONEXCLAMATION | MB_OK | MB_TOPMOST);
+  MessageBox(padre, m.c_str(), "Alerta!", MB_ICONEXCLAMATION | MB_OK | MB_TOPMOST);
 }

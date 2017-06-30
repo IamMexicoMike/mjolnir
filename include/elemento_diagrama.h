@@ -1,8 +1,9 @@
 #ifndef ELEMENTO_DIAGRAMA_H
 #define ELEMENTO_DIAGRAMA_H
 
-#include "redes.h"
+
 //#include "mjolnir.hpp"
+#include "redes.h"
 
 #include <typeinfo>
 #include <fstream>
@@ -40,8 +41,9 @@ enum class Objetos
 class objeto
 {
 public:
-  objeto():
+  objeto(Mjolnir* m):
     id_ (sid++), //primero asignamos, luego incrementamos
+    mjol_(m),
     b_seleccionado_(false), b_highlighteado_(false),
     color_(cv::Scalar(100,65,150)) {}
 
@@ -54,10 +56,10 @@ public:
   void highlightear(bool val=true){b_highlighteado_ = val;} //highlighteamos para efecto visual
   void seleccionar(bool val=true){b_seleccionado_ = val;} //seleccionamos para un efecto más permanente
   bool operator<(const objeto& o2) const {return (this->area() < o2.area());}
-  void dibujar_nombre(Mjolnir&) const;
+  void dibujar_nombre() const;
   void nombre(std::string nuevo_nombre) { nombre_ = nuevo_nombre; }
 
-  virtual void dibujarse(Mjolnir&)=0;
+  virtual void dibujarse()=0;
   virtual void arrastrar(const cv::Point pt)=0;
   virtual bool pertenece_a_area(const cv::Point pt) const=0;
   bool pertenece_a_punto_clave(const cv::Point pt);
@@ -73,6 +75,7 @@ public:
 
 protected:
   int id_;
+  Mjolnir* mjol_;
   cv::Point inicio_;
   cv::Point fin_;
   cv::Point centro_;
@@ -96,7 +99,8 @@ protected:
 class rectangulo : public objeto
 {
 public:
-  rectangulo(cv::Point inicio, cv::Point fin)
+  rectangulo(Mjolnir* ptrm, cv::Point inicio, cv::Point fin):
+    objeto(ptrm)
   {
     inicio_ = inicio, fin_ = fin;
     recalcular_dimensiones();
@@ -105,7 +109,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(Mjolnir&) override;
+  virtual void dibujarse() override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -119,7 +123,8 @@ public:
 class circulo : public objeto
 {
 public:
-  circulo(cv::Point centro, int radio)
+  circulo(Mjolnir* ptrm, cv::Point centro, int radio):
+    objeto(ptrm)
   {
     centro_ = centro;
     radio_ = std::abs(radio);
@@ -127,7 +132,7 @@ public:
     color_ = cv::Scalar(200,65,100);
     nombre_ = "C"+std::to_string(id_);
   }
-  virtual void dibujarse(Mjolnir&) override;
+  virtual void dibujarse() override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -145,9 +150,11 @@ protected:
 class linea : public objeto
 {
 public:
-  linea(cv::Point p1, cv::Point p2, bool relaciona=false)
+  linea(Mjolnir* ptrm, cv::Point p1, cv::Point p2, bool relaciona=false):
+    objeto(ptrm)
   {
     inicio_ = p1; fin_ = p2;
+
     area_ = 0xffffffff;
     color_ = cv::Scalar(255,255,255);
     nombre_ = "";
@@ -155,9 +162,9 @@ public:
     acepta_drops_ = false;
     es_dropeable_ = true;
   }
-  virtual void dibujarse(Mjolnir&) override;
+  virtual void dibujarse() override;
   virtual void arrastrar(const cv::Point pt) override;
-  virtual bool pertenece_a_area(const cv::Point) const override;
+  virtual bool pertenece_a_area(const cv::Point) const override;//la linea es el unico objeto que necesita ayuda para determinar si un punto cae en su area
   virtual void imprimir_datos() const override;
   virtual void avisar_objeto_destruido(objeto* o) override;
 
@@ -181,7 +188,8 @@ private:
 class cuadrado_isometrico : public objeto
 {
 public:
-   cuadrado_isometrico(cv::Point inicio, cv::Point fin)
+   cuadrado_isometrico(Mjolnir* ptrm, cv::Point inicio, cv::Point fin):
+     objeto(ptrm)
   {
     std::cout << inicio << '\t' << fin << '\n';
     inicio_ = inicio;
@@ -194,7 +202,7 @@ public:
   }
    std::pair<cv::Point, cv::Point> pts() const {return std::pair<cv::Point, cv::Point>(inicio_, fin_);} //absolutos
 
-  virtual void dibujarse(Mjolnir&) override;
+  virtual void dibujarse() override;
   virtual void arrastrar(const cv::Point pt) override;
   virtual bool pertenece_a_area(const cv::Point) const override;
   virtual void imprimir_datos() const override;
@@ -221,6 +229,6 @@ private:
   //std::array<cv::Point,4> vertices_; //std::array no es un argumento aceptable para pointPolygonTest...
 };
 
-void crear_relacion(objeto* o1, objeto* o2);
+std::unique_ptr<linea> crear_relacion(Mjolnir* m, objeto* o1, objeto* o2);
 
 #endif // ELEMENTO_DIAGRAMA_H

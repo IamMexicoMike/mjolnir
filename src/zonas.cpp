@@ -167,15 +167,17 @@ void rellenar_zona_telares() //está de lujo esta función. bien hechiza
     }
 }
 
-void zona::dibujarse(cv::Mat& m)
+void zona::dibujarse(Mjolnir& m)
 {
-  vector<Point> ps = puntos_desplazados();
-  fillConvexPoly(m, ps.data(), ps.size(), color_);
-  polylines(m, ps, true, COLOR_NEGRO, 1, CV_AA);
+  vector<Point> ps;
+  for(auto p : puntos_)
+      ps.emplace_back(m.transformar(p));
+  fillConvexPoly(m.diagrama_, ps.data(), ps.size(), color_);
+  polylines(m.diagrama_, ps, true, COLOR_NEGRO, 1, CV_AA);
   if(b_highlighteado_)
-    polylines(m, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA);
+    polylines(m.diagrama_, ps, true, COLOR_HIGHLIGHT_, 2, CV_AA);
   if(b_seleccionado_)
-    polylines(m, ps, true, COLOR_SELECCION, 2, CV_AA);
+    polylines(m.diagrama_, ps, true, COLOR_SELECCION, 2, CV_AA);
 }
 
 void zona::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto

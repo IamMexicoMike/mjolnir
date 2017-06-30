@@ -3,12 +3,6 @@
 using namespace std;
 using namespace cv;
 
-const std::string sync_rect::nombreclase="sync_rect";
-
-map<pair<string,int>, sync*> sync::objetos_sincronizados;
-set<sync*> sync::set_modificados;
-atomic<bool> sync::b_sync_cambio{false};
-
 string to_string(Point& p)
 {
   return string('(' + to_string(p.x) + ',' + to_string(p.y) + ')');
@@ -19,10 +13,10 @@ string descomponer_punto(Point& p)
   return string(to_string(p.x) + ',' + to_string(p.y) );
 }
 
-sync_rect::sync_rect(Point inicio, Point fin):
-  rectangulo(inicio,fin)
+sync_rect::sync_rect(Mjolnir* ptrm, Point inicio, Point fin):
+  rectangulo(ptrm, inicio,fin)
 {
-  string q = "INSERT INTO " + nombreclase + " (p1x, p1y, p2x, p2y) VALUES ("
+  string q = "INSERT INTO " + string(nombreclase) + " (p1x, p1y, p2x, p2y) VALUES ("
     + descomponer_punto(inicio) + ',' + descomponer_punto(fin) + ") RETURNING id";
   PGresult* res = PQexec(conexion, q.c_str());
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -34,14 +28,14 @@ sync_rect::sync_rect(Point inicio, Point fin):
   PQclear(res);
 }
 
-sync_rect::sync_rect(int id, Point inicio, Point fin):
-  rectangulo(inicio,fin)
+sync_rect::sync_rect(Mjolnir* ptrm, int id, Point inicio, Point fin):
+  rectangulo(ptrm, inicio,fin)
 {
   id_ = id;
 }
 
 
-void sync_rect::arrastrar(const Point pt) //no es realmente un punto, sino una diferencia entre dos puntos. Debe ser absoluto
+void sync_rect::arrastrar(const Point pt) //diferencia entre dos puntos. Debe ser absoluto
 {
   sync::b_sync_cambio=true; //ya levantaste una flag de que hubo un cambio en los sincronizados
   sync::set_modificados.insert(this); //ahora notifica que este objeto fue modificado
@@ -85,6 +79,7 @@ void sync_rect::actualizarse()
   PQclear(res);
 }
 
+/*
 void sync_rect::destruir()
 {
   eliminar_de_la_db<sync_rect>(id_);
@@ -99,4 +94,6 @@ void sync_rect::destruir()
   ptr_seleccionado=ptr_highlight=nullptr;
   empujar_queue_saliente(paq);
   b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
+
 }
+*/
