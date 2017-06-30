@@ -9,9 +9,6 @@
 #include "elemento_diagrama.h"
 #include "mjolnir.hpp"
 
-int aaaa=0;
-int bbbbb=3;
-
 class zona : public objeto
 {
 public:

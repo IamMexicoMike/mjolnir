@@ -651,3 +651,53 @@ void Mjolnir::simulacion()
   }
   determinar_propiedades_ubicacion(puntoActualMouse); //para actualizar highlight
 }
+
+void Mjolnir::destruir_objeto_seleccionado()
+{
+  if(ptr_seleccionado!=nullptr)
+  {
+    std::lock_guard<std::mutex> lck(mtx_objetos);
+    std::string paq = "ro" + std::to_string(ptr_seleccionado->id());
+    //avisamos a las lineas que ese objeto ya no existe
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido(ptr_seleccionado); //avisamos que el objeto con esa dirección será destruido
+    auto itr_seleccionado = std::find_if(objetos.begin(), objetos.end(), [&](std::unique_ptr<objeto> const& obj)
+      { return obj.get() == ptr_seleccionado; });
+    objetos.erase(itr_seleccionado);
+    ptr_seleccionado=ptr_highlight=nullptr;
+    empujar_queue_saliente(paq);
+    b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
+  }
+
+}
+
+void Mjolnir::destruir_objeto(int id)
+{
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  auto itr = std::find_if(objetos.begin(), objetos.end(), [&](std::unique_ptr<objeto> const& obj)
+    { return obj->id() == id; });
+  if(itr != objetos.end())
+  {
+    objeto* ptr = (*itr).get();
+    for(auto& o : objetos)
+      o->avisar_objeto_destruido(ptr); //atento a los usos de ptr y de itr
+    objetos.erase(itr); //itr solo es necesario para llamar a esta función
+    ptr_seleccionado=ptr_highlight=nullptr;
+    std::string paq = "ro" + std::to_string(id);
+    empujar_queue_saliente(paq);
+  }
+}
+
+void Mjolnir::ordenar_objetos() //debe ser llamada explícitamente por el usuario para evitar "sorpresas"
+{
+  std::lock_guard<std::mutex> lck(mtx_objetos);
+  if(ptr_highlight != nullptr)
+    ptr_highlight->highlightear(false);
+  if(ptr_seleccionado != nullptr)
+    ptr_seleccionado->seleccionar(false);
+  std::sort(objetos.begin(),objetos.end(),[&]
+            (const std::unique_ptr<objeto>& a, const std::unique_ptr<objeto>& b)
+            {return a->area() < b->area();});
+  ptr_seleccionado=ptr_highlight=nullptr;
+  b_drag=false; //cuando hacias drag y suprimias terminabas con un dangling ptr
+}

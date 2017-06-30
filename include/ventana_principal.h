@@ -28,35 +28,6 @@ void alerta_cierre_programa(std::string msg);
 void crear_dialogo_objeto(objeto* pobj);
 void mensaje(std::string msg, std::string titulo);
 
-class CallbackBase
-{
-public:
-  virtual void operator()() const { };
-  virtual ~CallbackBase() = 0;
-};
-
-CallbackBase::~CallbackBase() { }
-
-template<typename T>
-class Callback : public CallbackBase
-{
-public:
-  typedef void (T::*F)();
-
-  Callback( T& t, F f ) : t_(&t), f_(f) { }
-  void operator()() const { (t_->*f_)(); }
-
-private:
-  T* t_;
-  F  f_;
-};
-
-template<typename T>
-Callback<T> make_callback( T& t, void (T::*f) () )
-{
-  return Callback<T>( t, f );
-}
-
 class ventana
 {
 private:

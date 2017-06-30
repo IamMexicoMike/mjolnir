@@ -16,10 +16,10 @@ using namespace cv;
 int objeto::sid = 1; //hasta donde sabes debe definirse fuera de la clase, y no en el header
 const Point objeto::offset_puntos_clave_(3,3); //comentame
 
-Point operator/(Point p, const int d)
+/*Point operator/(Point p, const int d)
 {
   return Point(p.x/d, p.y/d);
-}
+}*/
 
 //-----------------------------------------------------------------------------------------------------------------
 
