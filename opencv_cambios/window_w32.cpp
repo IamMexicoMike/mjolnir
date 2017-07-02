@@ -115,7 +115,8 @@ typedef struct CvWindow
   CvMouseCallback on_mouse;
   void* on_mouse_param;
 
-  void (*fptr_callback_teclado)(int);
+  CvTecladoCallback on_teclado;
+  void* on_teclado_param;
 
   struct
   {
@@ -1246,8 +1247,8 @@ MainWindowProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
     switch(uMsg)
     {
     case WM_KEYDOWN:
-      if(window->fptr_callback_teclado!=nullptr)
-        window->fptr_callback_teclado((int)wParam);
+      if(window->on_teclado != nullptr)
+        window-> on_teclado ((int)wParam, window->on_teclado_param);
       else
         window->last_key = (int)wParam;
       break;
@@ -2001,18 +2002,26 @@ cvSetMouseCallback( const char* window_name, CvMouseCallback on_mouse, void* par
     __END__;
 }
 
-void mkSetKeyboardCallback( const char* nombre_ventana, void(*callback_teclado)(int k))
+CV_IMPL void
+mkSetKeyboardCallback( const char* nombre_ventana, CvTecladoCallback on_teclado, void* param)
 {
+    CV_FUNCNAME( "mkSetKeyboardCallback" );
+
+    __BEGIN__;
+
     CvWindow* window = 0;
 
     if( !nombre_ventana )
-        throw "NULL window name en kbcb";
+        CV_ERROR( CV_StsNullPtr, "Highgui: nombre_ventana es incorrecto");
 
     window = icvFindWindowByName(nombre_ventana);
     if( !window )
-        throw "ventana HWND vacio";
+        CV_ERROR( CV_StsNullPtr, "Highgui: ventana HWND vacio, error encontrando ventana por nombre");
 
-    window->fptr_callback_teclado = callback_teclado;
+    window->on_teclado = on_teclado;
+    window->on_teclado_param = param;
+
+    __END__;
 }
 
 CV_IMPL int cvGetTrackbarPos( const char* trackbar_name, const char* window_name )

@@ -6,7 +6,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "mjolnir.hpp"
-#include "redes.h"
 #include "elemento_diagrama.h"
 #include "zonas.hpp"
 #include "puerto_serial.h"
@@ -312,7 +311,7 @@ void Mjolnir::manejarInputTeclado(int k)
   b_cache_valida=false;
 }
 
-void Mjolnir::manejarInputMouse(int event, int x, int y, int flags, void*)
+void Mjolnir::manejarInputMouse(int event, int x, int y, int flags)
 {
   static bool botonMouseIzquierdoAbajo(false); //flechas, drag, drag n drop
   static bool botonMouseDerechoAbajo(false); //panning

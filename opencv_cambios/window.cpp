@@ -216,9 +216,9 @@ void cv::setMouseCallback( const string& windowName, MouseCallback onMouse, void
     cvSetMouseCallback(windowName.c_str(), onMouse, param);
 }
 
-void cv::setKeyboardCallback( const string& nombre_ventana, void(*callback_teclado)(int k) )
+void cv::setKeyboardCallback( const string& nombre_ventana, TecladoCallback onTeclado, void* param)
 {
-  mkSetKeyboardCallback(nombre_ventana.c_str(), callback_teclado);
+  mkSetKeyboardCallback(nombre_ventana.c_str(), onTeclado, param);
 }
 
 int cv::startWindowThread()

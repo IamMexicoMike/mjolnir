@@ -33,9 +33,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   db::entablar_escuchador_db();
 
   ventana::instancia_programa_ = hInstance;
-  auto v1 = make_unique<ventana>("Martillo");
-  v1->iniciar();
-  auto v2 = make_unique<ventana>("ventana dos");
+  ventana::registrarClase();
+
+  ventana v1("Martillo");
+  v1.iniciar();
+  ventana v2("ventana dos");
+  v2.iniciar();
   //v.mover(0,0,ventana::rEscritorio.right, ventana::rEscritorio.bottom);
 
   //db::construir_objetos_sincronizados();

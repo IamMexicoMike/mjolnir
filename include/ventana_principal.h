@@ -17,10 +17,6 @@
 #define ID_CB1 5201
 #define IDC_MAIN_EDIT 6000
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-bool crearVentana(HWND& hwnd, HINSTANCE& hInstance);
-void inicializar_diagrama(HWND& hwnd);
-void configuramos_parametros_diagrama(HWND& hwnd);
 BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 void alerta_cierre_programa(std::string msg);
@@ -32,18 +28,21 @@ class ventana
 private:
   HWND hwnd_;
   const char* nombre_;
-  const char* nombre_clase_win32_;
-  Mjolnir mjol_;
-  std::function<void(int)> f_teclado_;
-  std::function<void(int,int,int,int,void*)> f_mouse_;
-  std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)> fnwnprox;
+  std::string nombre_clase_win32_;
+  std::shared_ptr<Mjolnir> mjol_;
+  //std::function<void(int)> f_teclado_;
+  //std::function<void(int,int,int,int,void*)> f_mouse_;
 
 public:
+  static const char * sigh;
   static RECT rEscritorio;
   static HINSTANCE instancia_programa_;
 
-  LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-  void registrarClase();
+  LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  static LRESULT CALLBACK _stWndProc_(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  inline static ventana* ventanaDeHwnd(HWND hWnd) { return (ventana*)GetWindowLong(hWnd, GWLP_USERDATA); }
+
+  static void registrarClase();
   HWND get_hwnd() const { return hwnd_; }
   void crearVentana();
   void inicializar_diagrama();
@@ -52,21 +51,22 @@ public:
 
   ventana(const char* nombre):
     nombre_(nombre),
-    mjol_(nombre, this)
+    nombre_clase_win32_(std::string("_c") + nombre),
+    mjol_(std::make_shared<Mjolnir>(nombre_, this) )
   {
-    nombre_clase_win32_ = std::string("c_" + std::string(nombre)).c_str();
+    GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio
+    crearVentana();
   }
 
   void iniciar()
   {
-    registrarClase();
     //al arrancar el programa calculamos las dimensioens de la pantalla(escritorio) y las guardamos como una variable estática
     //const HWND hEscritorio = GetDesktopWindow();// obtén un handle a la ventana del escritorio
-    GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio
 
-    crearVentana();
     inicializar_diagrama();
     configuramos_parametros_diagrama();
+
+    mjol_->iniciar_callbacks();
 
     ShowWindow(hwnd_, SW_MAXIMIZE);
     UpdateWindow(hwnd_);

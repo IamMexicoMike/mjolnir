@@ -112,8 +112,10 @@ typedef void (*MouseCallback)(int event, int x, int y, int flags, void* userdata
 //! assigns callback for mouse events
 CV_EXPORTS void setMouseCallback(const string& winname, MouseCallback onMouse, void* userdata = 0);
 
+typedef void (*TecladoCallback)(int k, void* params);
+
 //! asignar callback para eventos del teclado, no tengo idea que hace CV_EXPORTS
-CV_EXPORTS void setKeyboardCallback(const string& winname, void(*callback_teclado)(int k));
+CV_EXPORTS void setKeyboardCallback(const string& winname, TecladoCallback onTeclado, void* userdata = 0);
 
 typedef void (CV_CDECL *TrackbarCallback)(int pos, void* userdata);
 

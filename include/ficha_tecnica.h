@@ -3,7 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN //se supone que hace muchos headers derivados no sean incluidos, y por ende acelerar compilación
 
-#include <elemento_diagrama.h>
+#include <windows.h>
 
 class ficha_tecnica
 {

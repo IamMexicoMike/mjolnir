@@ -7,33 +7,38 @@
 #include "commdlg.h"
 #include "wingdi.h"
 #include "sync.h"
-#include "zonas.hpp"
+//#include "zonas.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 using cv::Mat; using cv::Scalar; using cv::Point;
 using namespace std;
 using namespace std::placeholders;
 
 RECT ventana::rEscritorio;
+const char * ventana::sigh="hmmmmmm";
 
 extern void procesar_queue_cntrl();
 
 static WNDCLASSEX wc;
 HINSTANCE ventana::instancia_programa_;
 
-LRESULT CALLBACK WndProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
 
+LRESULT CALLBACK ventana::_stWndProc_(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  if (msg == WM_NCCREATE)
+    SetWindowLong(hwnd, GWLP_USERDATA, (long long)((LPCREATESTRUCT(lParam))->lpCreateParams));
+
+  ventana* v = ventanaDeHwnd(hwnd);
+  return v->WndProc(hwnd, msg, wParam, lParam);
 }
 
 void ventana::registrarClase()
 {
-  fnwnprox = std::bind(&ventana::WndProc, this, _1, _2, _3, _4);
-
   wc.cbSize        = sizeof(WNDCLASSEX);
   wc.style         = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
-  wc.lpfnWndProc   = fnwnprox.target<LRESULT(HWND,UINT,WPARAM,LPARAM)>(); //aquí se asigna el nombre del callback de la clase
+  wc.lpfnWndProc   = ventana::_stWndProc_;
   wc.cbClsExtra    = 0;
   wc.cbWndExtra    = 0;
   wc.hInstance     = ventana::instancia_programa_;
@@ -41,7 +46,7 @@ void ventana::registrarClase()
   wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
   wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MYMENU);
-  wc.lpszClassName = nombre_clase_win32_;
+  wc.lpszClassName = ventana::sigh;
   wc.hIconSm       = /*LoadIcon(NULL, IDI_APPLICATION);*/(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MJOLNIR), IMAGE_ICON, 16, 16, 0);
 
   if(!RegisterClassEx(&wc))
@@ -53,18 +58,18 @@ void ventana::crearVentana()
 {
   hwnd_ = CreateWindowEx(
       WS_EX_CONTEXTHELP,
-      nombre_clase_win32_,
+      ventana::sigh,
       nombre_,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, rEscritorio.right, rEscritorio.bottom,
-      NULL, NULL, ventana::instancia_programa_, NULL);
+      NULL, NULL, ventana::instancia_programa_, (void*)this);
 
   if(hwnd_ == NULL)
   {
     throw std::runtime_error("Error creando ventana");
   }
 
-
+  cout << "hwnd en crear: " << hwnd_ << '\n';
   mover(0, 0, ventana::rEscritorio.right, ventana::rEscritorio.bottom-50); //demasiada magia
 }
 
@@ -74,14 +79,14 @@ void ventana::inicializar_diagrama()
   GetWindowRect(hwnd_, &rVentana);             //guarda el tamaño de la ventana principal
   auto ancho_region = (rVentana.right - 200);      //hacemos al diagrama ligeramente más delgado que la ventana principal
   auto altura_region = (rVentana.bottom);
-  mjol_.dxy = Point(ancho_region/2, ancho_region/2);
+  mjol_->dxy = Point(ancho_region/2, ancho_region/2);
 
-  mjol_.diagrama_ = Mat(altura_region, ancho_region, CV_8UC4, Scalar(200,200,200));  //instanciamos la matriz del diagrama principal
-  mjol_.encabezado_ = Mat(mjol_.diagrama_.colRange(0, mjol_.diagrama_.cols).rowRange(0,30)); //instanciamos la submatriz del header
-  mjol_.HEADER_MSG = Point(mjol_.diagrama_.cols-300, mjol_.HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
+  mjol_->diagrama_ = Mat(altura_region, ancho_region, CV_8UC4, Scalar(200,200,200));  //instanciamos la matriz del diagrama principal
+  mjol_->encabezado_ = Mat(mjol_->diagrama_.colRange(0, mjol_->diagrama_.cols).rowRange(0,30)); //instanciamos la submatriz del header
+  mjol_->HEADER_MSG = Point(mjol_->diagrama_.cols-300, mjol_->HEADER0.y);                   //instanciamos el lugar donde irán los mensajes de diagrama
 
-  zonas_fabrica(&mjol_);
-  rellenar_zona_telares(&mjol_);
+  zonas_fabrica(mjol_.get());
+  rellenar_zona_telares(mjol_.get());
 }
 
 void ventana::configuramos_parametros_diagrama()
@@ -101,18 +106,8 @@ void ventana::configuramos_parametros_diagrama()
   SetWindowPos(hDiagrama, 0, 0, 0, sz_dia.right, sz_dia.bottom, SWP_NOSIZE);
   //mover( 0, -20, sz_dia.right, sz_dia.bottom);
   SendMessage(hDiagrama, WM_SETICON, ICON_BIG, IDI_MJOLNIR);
-  //auto mousecb = std::mem_fn(&Mjolnir::manejarInputMouse);
-
-  f_teclado_ = std::bind(&Mjolnir::manejarInputTeclado, std::ref(mjol_), _1);
-  cv::setKeyboardCallback(nombre_, f_teclado_.target<void(int)>() );
-
-  f_mouse_ = std::bind(&Mjolnir::manejarInputMouse, std::ref(mjol_), _1, _2, _3, _4,_5);
-  cv::setMouseCallback(nombre_, f_mouse_.target<void(int,int,int,int,void*)>() );
-
-
 }
 
-//LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch(msg)
@@ -155,7 +150,7 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
       CHOOSECOLOR c; ZeroMemory(&c, sizeof(CHOOSECOLOR)); c.lStructSize = sizeof(CHOOSECOLOR);
       c.Flags=CC_FULLOPEN|CC_RGBINIT; c.hwndOwner=hwnd; c.lpCustColors=ccref; c.rgbResult=csel;
       if(ChooseColor(&c))
-        mjol_.bckgnd_ = Scalar(GetBValue(c.rgbResult), GetGValue(c.rgbResult), GetRValue(c.rgbResult) );
+        mjol_->bckgnd_ = Scalar(GetBValue(c.rgbResult), GetGValue(c.rgbResult), GetRValue(c.rgbResult) );
       break;
     }
 
@@ -166,10 +161,10 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
     switch (wParam)
     {
       case ID_T30:
-        if(!mjol_.b_cache_valida)
+        if(!mjol_->b_cache_valida)
         {
-          mjol_.renderizarDiagrama(); //actualizamos el contenido de la matriz
-          mjol_.b_cache_valida = true;
+          mjol_->renderizarDiagrama(); //actualizamos el contenido de la matriz
+          mjol_->b_cache_valida = true;
         }
         procesar_queue_cntrl();
         db::checar_input_db();

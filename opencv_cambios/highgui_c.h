@@ -149,8 +149,11 @@ typedef void (CV_CDECL *CvMouseCallback )(int event, int x, int y, int flags, vo
 CVAPI(void) cvSetMouseCallback( const char* window_name, CvMouseCallback on_mouse,
                                 void* param CV_DEFAULT(NULL));
 
+typedef void (CV_CDECL *CvTecladoCallback)(int k, void* params);
+
 /* asignar callback para eventos de teclado */
-void mkSetKeyboardCallback( const char* nombre_ventana, void(*callback_teclado)(int k));
+CVAPI(void) mkSetKeyboardCallback( const char* nombre_ventana, CvTecladoCallback on_teclado,
+                                   void* param CV_DEFAULT(NULL));
 
 enum
 {

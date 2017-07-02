@@ -1,6 +1,10 @@
 #ifndef MJOLNIRHPP
 #define MJOLNIRHPP
 
+
+#define WIN32_LEAN_AND_MEAN
+
+#include "windows.h"
 #include "elemento_diagrama.h"
 #include "zonas.hpp"
 
@@ -17,13 +21,32 @@ enum class Objetos;
 
 const cv::Scalar COLOR_BLANCO{255,255,255};
 
-class Mjolnir{
+class Mjolnir : public std::enable_shared_from_this<Mjolnir>
+{
 public:
 
   Mjolnir(const char* nombre, ventana* padre_):
     nombre_(nombre)
   {
     objetos.reserve(1024); //realmente no es necesario, pero evita memallocs en startup
+  }
+
+  inline void iniciar_callbacks()
+  {
+    cv::setMouseCallback(nombre_, Mjolnir::callback_dispatcher_mouse, this);
+    cv::setKeyboardCallback(nombre_, Mjolnir::callback_dispatcher_tecl, this);
+  }
+
+  inline static void callback_dispatcher_tecl(int k, void* data)
+  {
+    Mjolnir* m=static_cast<Mjolnir*>(data);
+    m->manejarInputTeclado(k);
+  }
+
+  inline static void callback_dispatcher_mouse(int event, int x, int y, int flags, void* data)
+  {
+    Mjolnir* m=static_cast<Mjolnir*>(data);
+    m->manejarInputMouse(event, x, y, flags);
   }
 
   const char* nombre_;
@@ -98,8 +121,13 @@ public:
   objeto* encontrar_ptr_area(cv::Point& p)
   {
     for(const auto& uptr : objetos)
+    {
+      if(uptr==nullptr)
+        return nullptr;
       if(uptr->pertenece_a_area(p)) //si el punto cae dentro del área de un objeto...
         return uptr.get();
+    }
+
     return nullptr;
   };
 
@@ -120,7 +148,7 @@ public:
   void efecto_cuadricula();
   void renderizarDiagrama();
   void manejarInputTeclado(int k);
-  void manejarInputMouse(int event, int x, int y, int flags, void*);
+  void manejarInputMouse(int event, int x, int y, int flags);
   void crear_dialogo_objeto(objeto* pobj);
   void mensaje(std::string msg, std::string titulo);
   HWND padre() const;
