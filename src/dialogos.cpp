@@ -1,7 +1,7 @@
 #include "dialogos.h"
-#include "windows.h"
 #include <control.h>
 #include "postgres_funciones.h"
+#include "ventana_principal.h"
 
 using namespace std;
 

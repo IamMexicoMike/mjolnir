@@ -70,7 +70,7 @@ void sync_rect::actualizarse()
   PGresult* res = PQexec(conexion, query.c_str() ); //se ejecuta una query
   for(int i=0; i<PQntuples(res); ++i) //este loop es un bug detecter? probablemente sospechoso
   {
-    array<int,4> coords;
+    //array<int,4> coords;
     inicio_.x = stoi(PQgetvalue(res, i, 1)); //solo por ser rectangulos
     inicio_.y = stoi(PQgetvalue(res, i, 2)); //solo por ser rectangulos
     fin_.x = stoi(PQgetvalue(res, i, 3)); //solo por ser rectangulos

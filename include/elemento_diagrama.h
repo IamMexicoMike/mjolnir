@@ -1,10 +1,7 @@
 #ifndef ELEMENTO_DIAGRAMA_H
 #define ELEMENTO_DIAGRAMA_H
 
-//#include "redes.h"
-
 #include <memory>
-#include <typeinfo>
 #include <fstream>
 #include <opencv2/opencv.hpp>
 

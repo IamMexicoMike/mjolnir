@@ -4,7 +4,7 @@
 #include "pg/libpq-fe.h"
 #include <string>
 
-extern PGconn* conexion;//ATTN RAW PTR GLOBAL SIN COMMENTS
+extern PGconn* conexion;
 
 namespace db
 {

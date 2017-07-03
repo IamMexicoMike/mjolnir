@@ -1,6 +1,6 @@
 #include "ficha_tecnica.h"
 #include "ventana_principal.h"
-#include "mjolnir.hpp"
+//#include "mjolnir.hpp"
 #include "../recurso.h"
 
 #include <windows.h>

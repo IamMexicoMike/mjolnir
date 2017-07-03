@@ -125,14 +125,14 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
     case ID_PB1:
     {
-      LPWSTR buffer[256];
+      //LPWSTR buffer[256];
       //SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
       MessageBox(NULL, (LPCSTR)"diseñame", "Click boton", MB_ICONINFORMATION);
       break;
     }
     case ID_ACCION1:
     {
-      LPWSTR buffer[256];
+      //LPWSTR buffer[256];
       //SendMessage(hEdit, WM_GETTEXT, sizeof(buffer)/sizeof(buffer[0]), reinterpret_cast<LPARAM>(buffer));
       MessageBox(NULL, (LPCSTR)/*buffer*/"accion1", "Informacion!", MB_ICONINFORMATION);
       break;
@@ -192,54 +192,6 @@ LRESULT CALLBACK ventana::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
   }
   return DefWindowProc(hwnd, msg, wParam, lParam);
 }
-
-
-BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
-{
-  static objeto* pobj;
-
-  switch(Message)
-  {
-    case WM_INITDIALOG:
-      pobj = reinterpret_cast<objeto*>(lParam);
-      SetDlgItemTextA(hwnd, IDT_NVONOMBRE, pobj->nombre().c_str());
-      {
-        /*
-        cout << "huh\n";
-      HWND hEdit1 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
-        WS_CHILD | WS_VISIBLE |  ES_NUMBER,
-        30,60,144,100, hwnd, (HMENU)IDT_HEDIT1, GetModuleHandle(NULL), NULL);*/
-      }
-      break;
-
-    return TRUE;
-    case WM_COMMAND:
-      switch(LOWORD(wParam))
-      {
-        case IDOK:
-          {
-            char buf[128];
-            GetDlgItemText(hwnd, IDT_NVONOMBRE, buf, 128);
-            string s(buf);
-            pobj->nombre(s);
-            cout << s << '\t' << pobj->id() << pobj->nombre() << '\n';
-          }
-
-          EndDialog(hwnd, IDOK);
-        break;
-
-        case IDCANCEL:
-          EndDialog(hwnd, IDCANCEL);
-        break;
-
-      }
-    break;
-    default:
-        return FALSE;
-  }
-  return TRUE;
-}
-
 
 void alerta_cierre_programa(string msg)
 {

@@ -1,7 +1,6 @@
 #ifndef MJOLNIRHPP
 #define MJOLNIRHPP
 
-
 #define WIN32_LEAN_AND_MEAN
 
 #include "windows.h"
@@ -14,7 +13,6 @@
 
 #include <opencv2/opencv.hpp>
 
-class ventana;
 class objeto;
 class zona;
 enum class Objetos;
@@ -25,10 +23,11 @@ class Mjolnir : public std::enable_shared_from_this<Mjolnir>
 {
 public:
 
-  Mjolnir(const char* nombre, ventana* padre_):
+  Mjolnir(const char* nombre):
     nombre_(nombre)
   {
     objetos.reserve(1024); //realmente no es necesario, pero evita memallocs en startup
+    superzonas = crear_superzonas(this);
   }
 
   inline void iniciar_callbacks()
@@ -50,11 +49,10 @@ public:
   }
 
   const char* nombre_;
-  ventana* padre_;
 
   cv::Mat diagrama_;
   cv::Mat encabezado_;
-  cv::Scalar bckgnd_;
+  cv::Scalar bckgnd_{cv::Scalar(153,204,0)};
 
   int ancho_region;  //w = 2dx
   int altura_region; //h = 2dy

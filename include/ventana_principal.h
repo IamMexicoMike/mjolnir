@@ -17,8 +17,6 @@
 #define ID_CB1 5201
 #define IDC_MAIN_EDIT 6000
 
-BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-
 void alerta_cierre_programa(std::string msg);
 
 void mensaje(std::string msg, std::string titulo);
@@ -52,7 +50,7 @@ public:
   ventana(const char* nombre):
     nombre_(nombre),
     nombre_clase_win32_(std::string("_c") + nombre),
-    mjol_(std::make_shared<Mjolnir>(nombre_, this) )
+    mjol_(std::make_shared<Mjolnir>(nombre_) )
   {
     GetWindowRect(GetDesktopWindow(), &rEscritorio);// guarda el tamaño de la pantalla a la variable escritorio
     crearVentana();

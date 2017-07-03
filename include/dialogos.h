@@ -6,8 +6,12 @@
 #ifndef DIALOGOS_H
 #define DIALOGOS_H
 
+#define WIN32_LEAN_AND_MEAN
+
 #include <string>
-#include "ventana_principal.h"
+#include <windows.h>
+
+class ventana;
 
 namespace gui
 {

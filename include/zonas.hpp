@@ -38,7 +38,7 @@ private:
   std::vector<cv::Point> puntos_;
 };
 
-
+std::vector<zona> crear_superzonas(Mjolnir* pm);
 void zonas_fabrica(Mjolnir* pm);
 void rellenar_zona_telares(Mjolnir* pm);
 

@@ -15,6 +15,8 @@
 using namespace std;
 using namespace cv;
 
+BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+
 const Scalar BLANCO(255,255,255);
 const Scalar CAFE(0,51,102);
 const Scalar GRIS(200,200,200);
@@ -133,7 +135,7 @@ void Mjolnir::renderizarDiagrama() //No hay pedo si tratamos de dibujar una regi
   else
     b_dibujar_nombres = false;
 
-  for(auto& zz : superzonas) //relleno de superzonas
+  for(auto& zz : superzonas)
   {
     zz.dibujarse();
   }
@@ -702,8 +704,8 @@ void Mjolnir::ordenar_objetos() //debe ser llamada explícitamente por el usuario
 
 void Mjolnir::crear_dialogo_objeto(objeto* pobj)
 {
-  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), padre_->get_hwnd(),
-                           (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
+  int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), (HWND)cvGetWindowHandle(nombre_),
+                          (DLGPROC)DialogoTextoProc, reinterpret_cast<LPARAM>(pobj));
   if(ret == IDOK)
   {
     //has algo?
@@ -715,15 +717,61 @@ void Mjolnir::crear_dialogo_objeto(objeto* pobj)
   }
 
   else if(ret == -1)
-    MessageBox(padre_->get_hwnd(), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+    MessageBox((HWND)cvGetWindowHandle(nombre_), "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 }
 
 void Mjolnir::mensaje(string msg, string titulo)
 {
-  MessageBox(padre_->get_hwnd(), msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
+  MessageBox((HWND)cvGetWindowHandle(nombre_), msg.c_str(), titulo.c_str(), MB_OK | MB_ICONINFORMATION);
 }
 
 HWND Mjolnir::padre() const
 {
-  return padre_->get_hwnd();
-}bool crear_dialogo_serial(std::vector<std::string>*);
+  return nullptr;//padre_->get_hwnd();
+}
+
+BOOL CALLBACK DialogoTextoProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+  static objeto* pobj;
+
+  switch(Message)
+  {
+    case WM_INITDIALOG:
+      pobj = reinterpret_cast<objeto*>(lParam);
+      SetDlgItemTextA(hwnd, IDT_NVONOMBRE, pobj->nombre().c_str());
+      {
+        /*
+        cout << "huh\n";
+      HWND hEdit1 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+        WS_CHILD | WS_VISIBLE |  ES_NUMBER,
+        30,60,144,100, hwnd, (HMENU)IDT_HEDIT1, GetModuleHandle(NULL), NULL);*/
+      }
+      break;
+
+    return TRUE;
+    case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+        case IDOK:
+          {
+            char buf[128];
+            GetDlgItemText(hwnd, IDT_NVONOMBRE, buf, 128);
+            string s(buf);
+            pobj->nombre(s);
+            cout << s << '\t' << pobj->id() << pobj->nombre() << '\n';
+          }
+
+          EndDialog(hwnd, IDOK);
+        break;
+
+        case IDCANCEL:
+          EndDialog(hwnd, IDCANCEL);
+        break;
+
+      }
+    break;
+    default:
+        return FALSE;
+  }
+  return TRUE;
+}

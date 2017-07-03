@@ -3,8 +3,13 @@
 
 #include <map>
 #include <atomic>
+#include <set>
+#include <opencv2/opencv.hpp>
+#include "pg/libpq-fe.h"
 #include "elemento_diagrama.h"
-#include "postgres_funciones.h"
+
+class Mjolnir;
+extern PGconn* conexion;
 
 /*siempre que se crea un objeto de la base de datos, su creación debe ser "mutexeada" por la base de datos
 un mutex local no impediría que dos procesos cliente creasen un objeto sincronizado con el mismo id*/

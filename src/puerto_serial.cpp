@@ -115,8 +115,7 @@ bool crear_dialogo_serial(vector<string>* puertos_disponibles)
 {
   int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_SERIAL), nullptr,
                            (DLGPROC)DialogoSerial, reinterpret_cast<LPARAM>(puertos_disponibles));
- /*int ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROPIEDADES_OBJETO), mjol_->padre(),
-      (DLGPROC)DialogoTextoProc, 0);*/
+
   if(ret==-1)
   {
     MessageBox(nullptr, "Error al crear props de Puerto Serial", "Error", MB_OK | MB_ICONINFORMATION);

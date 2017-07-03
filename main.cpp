@@ -3,8 +3,6 @@
 
 #include "redes.h"
 #include "ventana_principal.h"
-#include "mjolnir.hpp"
-#include "elemento_diagrama.h"
 #include "postgres_funciones.h"
 #include "sync.h"
 #include "configuracion.hpp"
